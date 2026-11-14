@@ -351,9 +351,14 @@ def consolidate(plan, evidence_dir, ledger, *, run_url):
             len(proposed["scans"]) + (
                 tracked - len(proposed["scans"])) != tracked):
         raise ValueError("Coverage conservation failed")
-    validate_ledger(proposed, list(expected) +
-                    [e["bundle"] for e in ledger["scans"]] +
-                    [e["bundle"] for e in ledger.get("known_lfs_not_yet_scanned", [])])
+    # In recheck mode source paths also exist in the committed ledger.
+    # The planner already rejects duplicates inside each collection, so
+    # validate the canonical union rather than inventing duplicate Git paths.
+    accounted_paths = sorted(set(expected) |
+                             {e["bundle"] for e in ledger["scans"]} |
+                             {e["bundle"] for e in
+                              ledger.get("known_lfs_not_yet_scanned", [])})
+    validate_ledger(proposed, accounted_paths)
     return {
         "schema_version": 1, "tracked_bundles": tracked,
         "documented_before": plan["documented_scans_before"],
