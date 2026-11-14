@@ -322,6 +322,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-character-heads-batch.md.
   Source asset metadata is not authoritative gameplay.
 
+- W1-W source-verified ten original medium female body UnityFS
+  bundles (**68,246,900** actual original bytes), **10/10**
+  parsed MonoBehaviours, **5 Mesh**, **27 Texture2D**, **11 Material**
+  objects, zero unparsed records or new numeric caps, and no
+  exported original media. Ledger now documents **268/330**
+  original bundles and **82,007** parsed MonoBehaviours. **62**
+  originals remain unscanned (42 medium non-LFS, 20 LFS),
+  plus **42** historic unresolved numeric caps. Verified original
+  run: https://github.com/Nippytime/rabron/actions/runs/43640115769 .
+  See reconstruction/docs/medium-female-bodies-batch.md.
+  Serialized client metadata is not authoritative gameplay.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
