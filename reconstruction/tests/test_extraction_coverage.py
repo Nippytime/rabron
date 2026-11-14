@@ -22,9 +22,9 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 268)
+        self.assertEqual(len(LEDGER["scans"]), 278)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 82007)
+                             for entry in LEDGER["scans"]), 82031)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
                              for entry in LEDGER["scans"]), 72)
         self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 0)
@@ -33,7 +33,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 268)
+        self.assertEqual(len(known), 278)
         self.assertEqual(len(pending), 0)
 
     def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
@@ -67,7 +67,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         statuses = {e["bundle"]: e["status"] for e in plan["backlog"]}
         self.assertEqual(statuses[tutorial["bundle"]],
                          "inspected_no_monobehaviours")
-        self.assertEqual(plan["historically_documented_scan_bundles"], 268)
+        self.assertEqual(plan["historically_documented_scan_bundles"], 278)
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]
@@ -906,6 +906,65 @@ class ExtractionCoverageTests(unittest.TestCase):
             expected = (5 if "f_body_28_type_1_paint_1" in e["bundle"]
                         else 0)
             self.assertEqual(e["objects_by_type"].get("Mesh", 0), expected)
+
+    def test_w1x_ten_real_character_customizer_original_sources(self):
+        run = "https://github.com/Nippytime/rabron/actions/runs/43641144643"
+        manifest = json.loads(
+            (ROOT / "data/medium_character_customizer_source_targets.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        scans = [e for e in LEDGER["scans"] if e.get("run_url") == run]
+        self.assertEqual(len(scans), 10)
+        self.assertEqual({e["bundle"] for e in scans}, set(manifest["bundles"]))
+        self.assertEqual(sum(e["size_bytes"] for e in scans), 74126821)
+        self.assertEqual(sum(e["monobehaviours_total"] for e in scans), 24)
+        self.assertEqual(sum(e["monobehaviours_parsed"] for e in scans), 24)
+        self.assertEqual(sum(e["unparsed_records"] for e in scans), 0)
+        self.assertEqual(sum(e["numeric_field_cap_records"] for e in scans), 0)
+        self.assertEqual(sum(e["objects_by_type"].get("Mesh", 0)
+                             for e in scans), 107)
+        self.assertEqual(sum(e["objects_by_type"].get("Texture2D", 0)
+                             for e in scans), 74)
+        self.assertEqual(sum(e["objects_by_type"].get("Material", 0)
+                             for e in scans), 29)
+        self.assertTrue(all(
+            e["size_bytes"] ==
+            manifest["expected_git_blobs"][e["bundle"]]["size_bytes"]
+            and e["git_blob_sha"] ==
+            manifest["expected_git_blobs"][e["bundle"]]["git_blob_sha"]
+            and len(e["sha256"]) == 64
+            and e["monobehaviours_total"] == e["monobehaviours_parsed"]
+            and e["objects_by_type"]["AssetBundle"] == 1
+            and e["bounded_numeric_scan_complete"] is True
+            and e["numeric_field_limit"] == 2048
+            and e["numeric_depth_limit"] == 32
+            and e["scan_evidence"] ==
+            "GitHub Actions W1-X medium-character-customizer source inventory artifact"
+            and all(v == 0 for v in e["candidate_field_counts"].values())
+            for e in scans
+        ))
+        keychain = next(
+            e for e in scans if e["bundle"].endswith(
+                "characterkeychainsviewdescription.bundle"
+            )
+        )
+        self.assertEqual(keychain["monobehaviours_total"], 15)
+        self.assertEqual(keychain["objects_by_type"]["Mesh"], 45)
+        self.assertEqual(keychain["objects_by_type"]["Texture2D"], 42)
+        self.assertEqual(keychain["objects_by_type"]["Material"], 16)
+        self.assertEqual(len([
+            e for e in scans if e["monobehaviours_total"] == 1
+        ]), 9)
+        for e in scans:
+            if e is keychain:
+                continue
+            head = "characterheadsviewdescription_" in e["bundle"]
+            unmeshed = "f_body_42_type_1_paint_1" in e["bundle"]
+            self.assertEqual(
+                e["objects_by_type"].get("Mesh", 0),
+                16 if head else 0 if unmeshed else 5,
+            )
 
     def test_verified_selected_path_ids_and_remaining_caps(self):
         recovery = json.loads((ROOT / "data/targeted_numeric_recovery.json").read_text(
