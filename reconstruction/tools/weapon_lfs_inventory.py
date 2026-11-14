@@ -150,6 +150,30 @@ def reconcile(plan, records, ledger, run_url, tracked, *,
                 type(record.get("unparsed_records")) is not int or
                 record["unparsed_records"] < 0):
             raise ValueError("Source record lacks measured original identity")
+        total = record["monobehaviours_total"]
+        parsed = record.get("monobehaviours_parsed")
+        unparsed = record["unparsed_records"]
+        capped = record.get("numeric_field_cap_records")
+        complete = record.get("bounded_numeric_scan_complete")
+        objects = record.get("objects_by_type")
+        candidates = record.get("candidate_field_counts")
+        if (type(parsed) is not int or parsed < 0 or
+                parsed + unparsed != total or
+                type(capped) is not int or not 0 <= capped <= parsed or
+                type(complete) is not bool or
+                complete != (unparsed == 0 and capped == 0) or
+                not isinstance(objects, dict) or not objects or
+                any(not isinstance(name, str) or not name or
+                    type(count) is not int or count < 0
+                    for name, count in objects.items()) or
+                sum(objects.values()) <= 0 or
+                objects.get("MonoBehaviour", 0) != total or
+                not isinstance(candidates, dict) or
+                set(candidates) != {"economy", "combat", "progression",
+                                    "timing_and_world"} or
+                any(type(count) is not int or count < 0
+                    for count in candidates.values())):
+            raise ValueError("Original Unity object/MonoBehaviour/numeric accounting mismatch")
     if plan["mode"] == "new":
         if any(e["bundle"] in old for e in records):
             raise ValueError("Original source was documented before scan")

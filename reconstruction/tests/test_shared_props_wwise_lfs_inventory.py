@@ -85,6 +85,43 @@ class SharedPropsWwiseLfsTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "measured original identity"):
             reconcile(plan, bad, self.ledger, "test-run", self.git,
                       scan_evidence=AH_EVIDENCE)
+        # Reconciliation must reject contradictory measured metadata, even
+        # when the original SHA/OID/byte fingerprints themselves match.
+        mutations = (
+            ("monobehaviours_total", 1),
+            ("monobehaviours_parsed", 1),
+            ("unparsed_records", 1),
+            ("numeric_field_cap_records", 1),
+            ("bounded_numeric_scan_complete", False),
+            ("objects_by_type", {"AssetBundle": 1, "MonoBehaviour": 1}),
+            ("objects_by_type", {"AssetBundle": 0}),
+            ("candidate_field_counts", {"combat": -1, "economy": 0,
+                                        "progression": 0, "timing_and_world": 0}),
+        )
+        for field, value in mutations:
+            corrupt = copy.deepcopy(records)
+            corrupt[0][field] = value
+            with self.subTest(field=field, value=value):
+                with self.assertRaisesRegex(ValueError, "accounting"):
+                    reconcile(plan, corrupt, self.ledger, "test-run", self.git,
+                              scan_evidence=AH_EVIDENCE)
+
+        # Real source inventories may legitimately have unparsed records and
+        # numeric caps; preserve these explicitly instead of claiming success.
+        partial = copy.deepcopy(records)
+        partial[0].update({
+            "monobehaviours_total": 3, "monobehaviours_parsed": 2,
+            "unparsed_records": 1, "numeric_field_cap_records": 1,
+            "bounded_numeric_scan_complete": False,
+            "objects_by_type": {"AssetBundle": 1, "MonoBehaviour": 3},
+        })
+        partial_report, partial_ledger = reconcile(
+            plan, partial, self.ledger, "test-run", self.git,
+            scan_evidence=AH_EVIDENCE,
+        )
+        self.assertEqual(partial_report["new_documented"], 2)
+        self.assertEqual(partial_ledger["scans"][0]["unparsed_records"], 1)
+        self.assertEqual(partial_ledger["scans"][0]["numeric_field_cap_records"], 1)
         report, proposed = reconcile(
             plan, records, self.ledger, "test-run", self.git,
             scan_evidence=AH_EVIDENCE,
