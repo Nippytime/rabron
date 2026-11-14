@@ -89,6 +89,59 @@ class SmallBundleInventoryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             make_plan(data, self.ledger, expected_tracked=len(data) + 1)
 
+    def test_w1g_exact_medium_targets_and_recheck_gate(self):
+        root = Path(__file__).resolve().parents[1]
+        manifest = json.loads(
+            (root / "data/medium_source_targets.json").read_text(encoding="utf-8")
+        )
+        targets = manifest["bundles"]
+        self.assertEqual(manifest["schema_version"], 1)
+        self.assertEqual(len(targets), 10)
+        self.assertEqual(len(set(targets)), 10)
+        self.assertTrue(all(x.endswith(".bundle") for x in targets))
+        sources = {p: {"bundle": p, "git_blob_sha": "a" * 40,
+                       "git_blob_size": 2 * 1024 * 1024} for p in targets}
+        label = "GitHub Actions W1-G medium-source inventory artifact"
+        args = {"expected_tracked": 10, "targets": targets,
+                "min_size": 1048576, "max_size": 20971519,
+                "batch_size": 3, "scan_evidence": label}
+        plan = make_plan(sources, self.ledger, **args)
+        self.assertEqual(plan["selected_small_sources"], 10)
+        self.assertEqual([len(g["sources"]) for g in plan["batches"]], [3, 3, 3, 1])
+        self.assertEqual(plan["mode"], "new")
+        for batch in range(4):
+            self.assertLessEqual(len(selected_batch(plan, batch)), 3)
+        fake_scans = [
+            {"bundle": p, "sha256": "b" * 64, "size_bytes": 2 * 1024 * 1024,
+             "git_blob_sha": "a" * 40, "scan_evidence": label,
+             "monobehaviours_total": 0, "monobehaviours_parsed": 0,
+             "numeric_field_cap_records": 0} for p in targets
+        ]
+        documented = {**self.ledger, "scans": fake_scans}
+        recheck = make_plan(sources, documented, **args)
+        self.assertEqual(recheck["mode"], "recheck")
+        self.assertEqual(recheck["recheck_documented_sources"], 10)
+        self.assertEqual(recheck["selected_small_sources"], 10)
+        self.assertEqual([len(x["sources"]) for x in recheck["batches"]],
+                         [3, 3, 3, 1])
+        with self.assertRaisesRegex(ValueError, "partly documented"):
+            make_plan(sources, {**self.ledger, "scans": fake_scans[:1]}, **args)
+        altered = {**sources}
+        altered[targets[0]] = {**sources[targets[0]], "git_blob_size": 200}
+        with self.assertRaisesRegex(ValueError, "size or LFS"):
+            make_plan(altered, self.ledger, **args)
+        with self.assertRaisesRegex(ValueError, "missing"):
+            make_plan(sources, self.ledger, **{**args, "targets": targets + [
+                BUNDLE_PREFIX + "never-existed.bundle"]})
+        with self.assertRaisesRegex(ValueError, "unique"):
+            make_plan(sources, self.ledger,
+                      **{**args, "targets": targets + [targets[0]]})
+        with self.assertRaisesRegex(ValueError, "lacks complete matching"):
+            make_plan(sources,
+                      {**self.ledger, "scans": [
+                          {**x, "scan_evidence": "different evidence"}
+                          for x in fake_scans]}, **args)
+
     def test_batch_rejects_unsafe_paths_duplicate_ids_and_sizes(self):
         plan = make_plan({path("ok"): entry("ok")}, self.ledger, expected_tracked=1)
         self.assertEqual(len(selected_batch(plan, 0)), 1)

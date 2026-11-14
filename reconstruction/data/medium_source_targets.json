@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "scope": "W1-G: exact ten medium weapon and vehicle original UnityFS paths",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-buletti_soltempra_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-royal_e_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-royal_j_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-fukurou_tensa_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-longhorn_titan_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-longhorn_wild_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/vehicle-car-fukurou_spark_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/weapon-dp9_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/weapon-ordr12_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/weapon-starh_assets_all.bundle"
+  ]
+}
