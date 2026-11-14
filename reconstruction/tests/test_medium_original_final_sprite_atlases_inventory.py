@@ -32,7 +32,7 @@ class MediumOriginalFinalSpriteAtlasesInventoryTests(unittest.TestCase):
         }
         self.ledger = {"schema_version": 1, "scans": [],
                        "known_lfs_not_yet_scanned": []}
-        self.args = {"targets": self.targets, "expected_tracked": 10,
+        self.args = {"targets": self.targets, "expected_tracked": 2,
                      "batch_size": 2, "min_size": MIN_SIZE,
                      "max_size": MAX_SIZE, "scan_evidence": EVIDENCE}
 
