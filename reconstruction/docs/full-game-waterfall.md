@@ -158,6 +158,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   Details: reconstruction/docs/large-world-scene-batch.md. These
   are bounded client metadata, **not authoritative game formulas**.
 
+- W1-J inspected three more large non-LFS original weapon UnityFS
+  bundles, **135,500,927 bytes**, **246/246** parsed MonoBehaviours,
+  0 unparsed typetrees and **0 new field/depth numeric caps**.
+  These had 594 combat-path keyword matches, **not verified server
+  ballistics, damage, recoil, or combat formulas**. Machine ledger
+  now covers **164/330** documented original bundles and **80,180**
+  parsed MonoBehaviours. **166** original bundle paths remain without
+  scans (140 medium, 6 large, 20 LFS), with **35 unresolved numeric
+  field-cap records**. Original-byte/source run:
+  https://github.com/Nippytime/rabron/actions/runs/43629339564 .
+  Details: reconstruction/docs/large-weapon-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
