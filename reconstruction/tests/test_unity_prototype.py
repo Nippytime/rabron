@@ -198,12 +198,48 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Guard should not see a player directly behind", smoke)
         self.assertIn("session.ControlStaff();", smoke)
 
+    def test_local_save_is_versioned_validated_and_written_after_actions(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(encoding="utf-8")
+        model = (ROOT / "game/Core/HeistSessionSnapshot.cs").read_text(
+            encoding="utf-8"
+        )
+        director = read("PrototypeDirector.cs")
+        store = read("PrototypeSaveStore.cs")
+        manifest = json.loads((UNITY / "Packages/manifest.json").read_text(
+            encoding="utf-8"
+        ))
+
+        self.assertEqual(
+            manifest["dependencies"]["com.unity.modules.jsonserialize"], "1.0.0"
+        )
+        self.assertIn("[Serializable]", model)
+        self.assertIn("public const int CurrentVersion = 1;", model)
+        self.assertIn("public long LaunderingReadyAt;", model)
+        self.assertIn("public string[] LootIds", model)
+        self.assertIn("HeistSessionSnapshot ExportSnapshot()", core)
+        self.assertIn("static HeistSession FromSnapshot(", core)
+        self.assertIn("Enum.IsDefined", core)
+        self.assertIn("invalid or duplicate loot", core)
+        self.assertIn("Save contains inconsistent heist state", core)
+        self.assertIn("JsonUtility.ToJson(session.ExportSnapshot())", store)
+        self.assertIn("JsonUtility.FromJson<HeistSessionSnapshot>", store)
+        self.assertIn("HeistSession.FromSnapshot(checkpoint)", store)
+        self.assertIn("File.Replace(temporary, target, target + \".bak\")", store)
+        self.assertIn("Application.persistentDataPath", store)
+        self.assertIn("PrototypeSaveStore.Load(out string startupMessage)", director)
+        self.assertIn("_cashPile.SetAmount(_session.CounterCash)", director)
+        self.assertIn("SaveProgress();", director)
+        self.assertIn("OnApplicationQuit()", director)
+        self.assertNotIn("JsonUtility", core)
+        self.assertNotIn("UnityEngine", core)
+        self.assertNotIn("BankBalance =", store)
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")
         self.assertIn("UnityEngine.InputSystem", motor)
         self.assertNotRegex(motor, r"\bInput\.Get(?:Key|Axis|Button)")
-        self.assertIn("new HeistSession()", director)
+        self.assertIn("PrototypeSaveStore.Load(out string startupMessage)", director)
         self.assertIn("_session.SellLoot(", director)
         self.assertIn("_session.CollectCounterCash()", director)
         self.assertIn("_session.StartLaundering(", director)
