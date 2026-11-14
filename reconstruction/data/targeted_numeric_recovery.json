@@ -1,0 +1,134 @@
+{
+  "schema_version": 1,
+  "source": "Seven actual GitHub Actions UnityPy jobs; source artifact ZIPs verified directly before recording IDs",
+  "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+  "numeric_field_limit_initial": 8192,
+  "numeric_depth_limit_initial": 32,
+  "numeric_field_limit_retry": 16384,
+  "numeric_depth_limit_retry": 48,
+  "warning": "These are only older field-capped client MonoBehaviours. Unresolved paths still hit field_limit. Resolved does NOT mean the entire bundle or any server formula was recovered.",
+  "record_counts": {
+    "historical": 56,
+    "resolved": 30,
+    "unresolved": 26,
+    "adaptive_retried": 36
+  },
+  "bundles": [
+    {
+      "bundle": "location-city-data_assets_all.bundle",
+      "source_sha256": "2ca8ae45348fff1c9c3359a0e82afa39f7fe9df41fcadbbffab9df1b11b73e56",
+      "adaptive_retry_count": 1,
+      "resolved_path_ids": [
+        "6111549739877543010"
+      ],
+      "unresolved_path_ids": [
+        "3918974306631258410"
+      ]
+    },
+    {
+      "bundle": "location-hub-data_assets_all.bundle",
+      "source_sha256": "6fd2d0d3c6f65724cb77b10191b053a795ded2bab0259e7b6f94cee815bef537",
+      "adaptive_retry_count": 1,
+      "resolved_path_ids": [
+        "-1451297451853939360",
+        "3703928420863442272",
+        "6745442369250655584",
+        "6969843944786361696"
+      ],
+      "unresolved_path_ids": [
+        "-6948716397632140475"
+      ]
+    },
+    {
+      "bundle": "inbuild_assets_all.bundle",
+      "source_sha256": "d4bff10e5f31e8e10b3bbf979aa6ee872bed5daff59765b1837fe1d733747531",
+      "adaptive_retry_count": 0,
+      "resolved_path_ids": [
+        "-7101112594373212236",
+        "-6178061982167731987",
+        "-3974259762361675838",
+        "-1768484230018313365",
+        "584424631916566255",
+        "1417514014994530064",
+        "4155243097935763181",
+        "4447776306033670972",
+        "6577911032471961945",
+        "6674364785201038640"
+      ],
+      "unresolved_path_ids": []
+    },
+    {
+      "bundle": "scriptableobjects_assets_all.bundle",
+      "source_sha256": "239f015bc6f351dc315ac403a2758efacfb167cab05188e05082e76ee021b4fd",
+      "adaptive_retry_count": 23,
+      "resolved_path_ids": [
+        "-8846968555416057814",
+        "-8445173867161874155",
+        "-4256393041697844081",
+        "967859679816014360",
+        "1373853351558942100",
+        "1485495332141715413",
+        "3902212648956807988",
+        "6643350194282961893",
+        "6934093407754638982"
+      ],
+      "unresolved_path_ids": [
+        "-8984743335110989569",
+        "-6880439447429988476",
+        "-4705119018695018341",
+        "-4145641406362006272",
+        "-3843751132943658796",
+        "-3579610552660460106",
+        "-3190504711142660084",
+        "-2934352302091539275",
+        "-334414493498828344",
+        "210776964090079928",
+        "2419282313673000265",
+        "2702694718534134963",
+        "4452446816831188613",
+        "6268590625303816692",
+        "7129049879955874570",
+        "7903995337218398082"
+      ]
+    },
+    {
+      "bundle": "location-sectorcenter-data_assets_all.bundle",
+      "source_sha256": "864c3b64feeebd62784515af9595a5fe1169213acaddbddfb39823e66529928a",
+      "adaptive_retry_count": 1,
+      "resolved_path_ids": [],
+      "unresolved_path_ids": [
+        "-5683634635988507070"
+      ]
+    },
+    {
+      "bundle": "location-settlement2-data_assets_all.bundle",
+      "source_sha256": "2a951aa3587d0999334dd6ea878ed47cc65f480ea4320c41776b473c23df13c2",
+      "adaptive_retry_count": 1,
+      "resolved_path_ids": [],
+      "unresolved_path_ids": [
+        "7207044410419505872"
+      ]
+    },
+    {
+      "bundle": "location-settlement-data_assets_all.bundle",
+      "source_sha256": "43018ce5ec95c4dfdd433b71d1460ada17cf4dbd79d8abbd70c2bf00b5c83534",
+      "adaptive_retry_count": 9,
+      "resolved_path_ids": [
+        "-8654980823967826355",
+        "-2220771835348702345",
+        "-1760097196397485974",
+        "4275164938263878367",
+        "7370730855449795531",
+        "7468479868627535054"
+      ],
+      "unresolved_path_ids": [
+        "-7540820411241275155",
+        "243319225941256480",
+        "4019939460806254149",
+        "4175005308001937696",
+        "7403408788454761108",
+        "7984937374428417736"
+      ]
+    }
+  ]
+}
