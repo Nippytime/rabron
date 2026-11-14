@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "scope": "W1-N seven exact original non-LFS medium police-body customization UnityFS sources",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_1_manpolicebody.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_1_womanpolicebody.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_2_manpolicebody.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_2_womanpolicebody.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_3_manpolicebody.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_3_womanpolicebody.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_charactercopbodiesviewdescription_0_womanpolicebody.asset.bundle"
+  ]
+}
