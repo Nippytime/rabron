@@ -385,6 +385,16 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   Verified original source Actions: https://github.com/Nippytime/rabron/actions/runs/43647615982 .
   See reconstruction/docs/medium-original-cosmetic-atlases-batch.md.
 
+- W1-AB source-verified the last two unscanned medium non-LFS original
+  female-body HD/QHD sprite-atlas sources (**3,419,828** source bytes),
+  both with **0** MonoBehaviours, total **2 SpriteAtlas** and
+  **4 Texture2D**, zero unparsed/new caps. Original-byte source run:
+  https://github.com/Nippytime/rabron/actions/runs/43648244327 .
+  Ledger **310/330** original bundles, **82,133** parsed MonoBehaviours,
+  **20** original LFS paths still unscanned and **42** old caps unresolved.
+  See reconstruction/docs/medium-original-final-sprite-atlases-batch.md.
+  These client art inventories are not authoritative game rules.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
