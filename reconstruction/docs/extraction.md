@@ -86,7 +86,22 @@ Use a bounded amount of memory and CPU, retain checksums, and mark any
 still-truncated fields as unknown. Keep authored code and research metadata
 separate from the original proprietary files.
 
-## Dependencies and limitations
+## Verified W1-C targeted overflow results
+
+A new seven-source Actions run recovered the historical cap-limited path IDs
+without re-exporting all MonoBehaviours:
+https://github.com/Nippytime/rabron/actions/runs/43586244089 .
+
+The original **56** field-limit records were all reproduced against the
+source SHA-256. **30** are no longer capped at the documented 8,192-field /
+32-depth pass plus bounded 16,384-field / 48-depth retry. **26** remain
+truncated at the numeric field cap. This is explicitly **not** complete
+bundle, IL2CPP or server formula extraction. The complete source-identified
+path-ID result is recorded in
+reconstruction/data/targeted_numeric_recovery.json and described in
+reconstruction/docs/capped-numeric-rescan.md.
+
+
 
 - UnityPy 1.25.4 docs: https://pypi.org/project/UnityPy/
 - UnityPy API (parse_as_dict, peek_name):
