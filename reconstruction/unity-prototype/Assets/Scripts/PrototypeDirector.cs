@@ -75,8 +75,8 @@ namespace Rabron.Prototype
                     try
                     {
                         Perform(focused, now);
-                        SaveProgress();
                         Notice("Completed: " + focused.Label);
+                        SaveProgress();
                     }
                     catch (Exception error) when (error is InvalidOperationException ||
                                                   error is ArgumentException ||
