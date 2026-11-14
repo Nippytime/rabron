@@ -430,6 +430,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   **42** older numeric caps unresolved. Source report:
   reconstruction/docs/weapon-rc556-tag12k-lfs-source-batch.md.
 
+- W1-AF source-verified two original KL545 weapon and character
+  Git LFS UnityFS sources (**202,857,969** actual original bytes),
+  **4,657/4,657** parsed MonoBehaviours, **330 Mesh**,
+  **99 Texture2D**, **2,563 AnimationClip**, zero unparsed/new
+  numeric caps. **532 combat** and **5,595 timing/world**
+  numeric keyword matches are client serialized metadata candidates,
+  not authoritative weapon or server logic. Original-byte scan:
+  https://github.com/Nippytime/rabron/actions/runs/43651416997 .
+  Ledger now documents **318/330** original UnityFS sources,
+  **87,223** parsed MonoBehaviours; **12** LFS originals remain
+  unscanned, **42** older numeric caps unresolved. See
+  reconstruction/docs/kl545-character-lfs-source-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
