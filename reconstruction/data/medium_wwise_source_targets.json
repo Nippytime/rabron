@@ -1,0 +1,9 @@
+{
+  "schema_version": 1,
+  "scope": "W1-M three exact original non-LFS medium Wwise UnityFS source banks",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/wwisedata_windows_battle_localized_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/wwisedata_windows_gamestart_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/wwisedata_windows_initbank_assets_all.bundle"
+  ]
+}

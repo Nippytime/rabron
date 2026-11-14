@@ -22,18 +22,18 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 170)
+        self.assertEqual(len(LEDGER["scans"]), 173)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 81824)
+                             for entry in LEDGER["scans"]), 81829)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
-                             for entry in LEDGER["scans"]), 68)
+                             for entry in LEDGER["scans"]), 72)
         self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 0)
         self.assertIn("GameAssembly.dll", LEDGER["blocking_missing_sources"][0])
 
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 170)
+        self.assertEqual(len(known), 173)
         self.assertEqual(len(pending), 0)
 
     def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
@@ -67,7 +67,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         statuses = {e["bundle"]: e["status"] for e in plan["backlog"]}
         self.assertEqual(statuses[tutorial["bundle"]],
                          "inspected_no_monobehaviours")
-        self.assertEqual(plan["historically_documented_scan_bundles"], 170)
+        self.assertEqual(plan["historically_documented_scan_bundles"], 173)
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]
@@ -436,6 +436,45 @@ class ExtractionCoverageTests(unittest.TestCase):
         self.assertIs(wwise["bounded_numeric_scan_complete"], False)
         self.assertEqual(wwise["numeric_field_cap_records"], 1)
 
+    def test_w1m_medium_wwise_verified_partial_numeric_sources(self):
+        run = "https://github.com/Nippytime/rabron/actions/runs/43631572017"
+        names = json.loads(
+            (ROOT / "data/medium_wwise_source_targets.json").read_text(
+                encoding="utf-8"
+            )
+        )["bundles"]
+        actual = [e for e in LEDGER["scans"] if e.get("run_url") == run]
+        self.assertEqual(len(actual), 3)
+        self.assertEqual({e["bundle"] for e in actual}, set(names))
+        self.assertEqual(sum(e["size_bytes"] for e in actual), 27353739)
+        self.assertEqual(sum(e["monobehaviours_total"] for e in actual), 5)
+        self.assertEqual(sum(e["monobehaviours_parsed"] for e in actual), 5)
+        self.assertEqual(sum(e["unparsed_records"] for e in actual), 0)
+        self.assertEqual(sum(e["numeric_field_cap_records"] for e in actual), 4)
+        self.assertEqual(
+            {e["bundle"].rsplit("/", 1)[-1]: (
+                e["monobehaviours_parsed"], e["numeric_field_cap_records"]
+            ) for e in actual},
+            {
+                "wwisedata_windows_battle_localized_assets_all.bundle": (2, 2),
+                "wwisedata_windows_gamestart_assets_all.bundle": (2, 1),
+                "wwisedata_windows_initbank_assets_all.bundle": (1, 1),
+            },
+        )
+        self.assertTrue(all(
+            1048576 <= e["size_bytes"] < 20971520 and
+            e["numeric_field_limit"] == 2048 and
+            e["numeric_depth_limit"] == 32 and
+            len(e["sha256"]) == 64 and len(e["git_blob_sha"]) == 40 and
+            e["bounded_numeric_scan_complete"] is False and
+            e["scan_evidence"] ==
+            "GitHub Actions W1-M medium-wwise source inventory artifact" and
+            all(e["candidate_field_counts"][k] == 0 for k in (
+                "combat", "economy", "progression", "timing_and_world"
+            ))
+            for e in actual
+        ))
+
     def test_verified_selected_path_ids_and_remaining_caps(self):
         recovery = json.loads((ROOT / "data/targeted_numeric_recovery.json").read_text(
             encoding="utf-8"
@@ -474,15 +513,15 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths.extend(entry["bundle"] for entry in
                      LEDGER["known_lfs_not_yet_scanned"])
         planned = plan_scans(paths, LEDGER)
-        self.assertEqual(planned["historic_field_capped_records"], 68)
-        self.assertEqual(planned["remaining_historic_field_capped_records"], 38)
+        self.assertEqual(planned["historic_field_capped_records"], 72)
+        self.assertEqual(planned["remaining_historic_field_capped_records"], 42)
         statuses = {entry["bundle"]: entry["status"] for entry
                     in planned["backlog"]}
         self.assertEqual(
             statuses[BUNDLE_PREFIX + "inbuild_assets_all.bundle"],
             "historic_caps_resolved_scope_partial",
         )
-        self.assertEqual(planned["statuses"]["partial_field_cap"], 17)
+        self.assertEqual(planned["statuses"]["partial_field_cap"], 20)
         self.assertEqual(planned["statuses"][
             "historic_caps_resolved_scope_partial"], 1)
 
