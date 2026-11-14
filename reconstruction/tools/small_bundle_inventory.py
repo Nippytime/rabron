@@ -41,6 +41,10 @@ def parse_git_tree(raw):
             raise ValueError("Malformed Git tree record")
         parts = meta.decode("ascii").split()
         path = path_bytes.decode("utf-8")
+        # The Addressables directory also tracks catalog .bin/.hash files.
+        # They are not UnityFS sources and must not enter the bundle inventory.
+        if not path.endswith(".bundle"):
+            continue
         if (len(parts) != 4 or parts[0] != "100644" or
                 parts[1] != "blob" or not SHA1.fullmatch(parts[2]) or
                 not SAFE_BUNDLE.fullmatch(path)):
@@ -152,12 +156,6 @@ def inspect_source(entry):
     try:
         inventory = scan_bundle(path, max_fields=MAX_FIELDS,
                                 max_depth=MAX_DEPTH, expected_sha256=sha256)
-        summary = summarize(inventory, samples_per_category=3)
-        validated = validate(
-            inventory, summary, source=str(path),
-            expected_size=entry["git_blob_size"],
-            max_fields=MAX_FIELDS, max_depth=MAX_DEPTH,
-        )
     except Exception as exc:
         # A valid original blob can have a schema this UnityPy version cannot
         # parse. Preserve this as a *failed scan attempt*, not as zero objects.
@@ -167,6 +165,14 @@ def inspect_source(entry):
             raise
         result["parse_error_type"] = type(exc).__name__
         return result
+    # Validation errors mean evidence disagrees with actual bytes/counts.
+    # They must fail CI instead of being relabeled as parser limitations.
+    summary = summarize(inventory, samples_per_category=3)
+    validated = validate(
+        inventory, summary, source=str(path),
+        expected_size=entry["git_blob_size"],
+        max_fields=MAX_FIELDS, max_depth=MAX_DEPTH,
+    )
     result.update({
         "source_status": (
             "bounded_mono_numeric_complete" if
