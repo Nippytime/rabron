@@ -162,6 +162,28 @@ class SmallBundleInventoryTests(unittest.TestCase):
                              if group[0]["bundle"] == capped["bundle"] else 0)
             self.assertTrue(any(e["numeric_field_cap_records"] == 1
                                 for e in proposal["scans"]))
+            # Committing measured evidence must not create an empty green
+            # matrix: next run rechecks exact original bytes and identities.
+            recheck = make_plan(
+                {e["bundle"]: e for e in (zero, capped)},
+                proposal, expected_tracked=2,
+            )
+            self.assertEqual(recheck["mode"], "recheck")
+            self.assertEqual(recheck["eligible_small_sources"], 0)
+            self.assertEqual(recheck["recheck_documented_sources"], 2)
+            second, preserved = consolidate(
+                recheck, Path(folder), proposal, run_url="new-run",
+            )
+            self.assertEqual(second["new_documented"], 0)
+            self.assertEqual(second["source_reverified"], 2)
+            self.assertEqual(preserved, proposal)
+            altered = [dict(row) for row in group]
+            altered[0]["sha256"] = "f" * 64
+            output.write_text(json.dumps({
+                "batch_id": 0, "sources": altered,
+            }))
+            with self.assertRaisesRegex(ValueError, "evidence drift"):
+                consolidate(recheck, Path(folder), proposal, run_url="new-run")
             group.pop()
             output.write_text(json.dumps({"batch_id": 0, "sources": group}))
             with self.assertRaisesRegex(ValueError, "Missing"):

@@ -104,6 +104,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   law enforcement, economy, or player imprisonment rules. See
   reconstruction/docs/weapon-vehicle-prison-batch.md.
 
+- W1-F directly inventoried **117** more small, original non-LFS
+  UnityFS sources (1,024–999,999 Git blob bytes), with Git blob IDs and
+  independently computed SHA-256 at UnityPy 1.25.4 / 2,048 fields / depth
+  32. This added **4,272/4,272** parsed MonoBehaviours; 73 bundles had
+  zero MonoBehaviours (not missing gameplay rules). **7** localization
+  records remain field-capped. Ledger total is now **142/330** source
+  passes and **14,855** parsed MonoBehaviours, with **188** original
+  bundles and **33** field-capped records still incomplete (26 prior,
+  7 new). All six source batches and reconciliation passed:
+  https://github.com/Nippytime/rabron/actions/runs/43590995615 .
+  See reconstruction/docs/small-source-batch.md for measured scope and
+  explicit limitations.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file

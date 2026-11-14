@@ -93,14 +93,30 @@ def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330):
         if path not in scanned and path not in pending_lfs
         and MIN_SIZE <= entry["git_blob_size"] <= MAX_SIZE
     ]
-    # Size comes from Git tree, not a checkout; 133-byte LFS pointers are
-    # intentionally excluded. The worker also rejects any pointer bytes.
+    # Once the measured W1-F entries are committed, keep exercising the same
+    # binary provenance gate instead of generating an empty matrix.
+    recheck = []
+    if not eligible:
+        recheck = [
+            entry for path, entry in sorted(entries.items())
+            if path in scanned and scanned[path].get("scan_evidence") ==
+            "GitHub Actions W1-F small-source inventory artifact"
+        ]
+        for entry in recheck:
+            documented = scanned[entry["bundle"]]
+            if (documented.get("git_blob_sha") != entry["git_blob_sha"] or
+                    documented.get("size_bytes") != entry["git_blob_size"]):
+                raise ValueError("Previously documented Git source changed: " +
+                                 entry["bundle"])
+    # Size comes from the pinned Git tree, not checkout or LFS pointer bytes.
+    selected = eligible or recheck
     batches = [
-        {"id": index // batch_size, "sources": eligible[index:index + batch_size]}
-        for index in range(0, len(eligible), batch_size)
+        {"id": index // batch_size, "sources": selected[index:index + batch_size]}
+        for index in range(0, len(selected), batch_size)
     ]
-    selected = [e["bundle"] for group in batches for e in group["sources"]]
-    if len(set(selected)) != len(selected):
+    selected_paths = [e["bundle"] for group in batches
+                      for e in group["sources"]]
+    if len(set(selected_paths)) != len(selected_paths):
         raise ValueError("Duplicate planned source")
     if len(scanned) + (len(entries) - len(scanned)) != expected_tracked:
         raise ValueError("Source conservation failed")
@@ -109,6 +125,9 @@ def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330):
         "documented_scans_before": len(scanned),
         "unscanned_before": len(entries) - len(scanned),
         "eligible_small_sources": len(eligible),
+        "recheck_documented_sources": len(recheck),
+        "selected_small_sources": len(selected),
+        "mode": "recheck" if recheck else "new",
         "excluded_pending_lfs": len(pending_lfs),
         "batch_size": batch_size, "batches": batches,
         "warning": "Git blob inventory only; no binary extraction completed at planning.",
@@ -243,7 +262,7 @@ def consolidate(plan, evidence_dir, ledger, *, run_url):
         item["bundle"]: item
         for group in plan["batches"] for item in group["sources"]
     }
-    if len(expected) != plan["eligible_small_sources"]:
+    if len(expected) != plan["selected_small_sources"]:
         raise ValueError("Planner totals conflict")
     seen = {}
     for group in plan["batches"]:
@@ -300,10 +319,35 @@ def consolidate(plan, evidence_dir, ledger, *, run_url):
             "objects_by_type": e["objects_by_type"],
             "candidate_field_counts": e["candidate_field_counts"],
         })
-    proposed = {**ledger, "scans": ledger["scans"] + new}
+    if plan.get("mode") == "recheck":
+        # A regression in a source already measured as scanned is an error,
+        # never a silent reduction in documented coverage.
+        if incomplete:
+            raise ValueError("Previously documented source became unparseable")
+        known = {e["bundle"]: e for e in ledger["scans"]}
+        compare = (
+            "sha256", "git_blob_sha", "size_bytes", "monobehaviours_total",
+            "monobehaviours_parsed", "numeric_field_cap_records",
+            "unparsed_records", "bounded_numeric_scan_complete",
+            "numeric_field_limit", "numeric_depth_limit", "objects_by_type",
+            "candidate_field_counts",
+        )
+        for entry in new:
+            prior = known.get(entry["bundle"])
+            if prior is None or any(prior.get(key) != entry.get(key)
+                                    for key in compare):
+                raise ValueError("Rechecked source evidence drift: " +
+                                 entry["bundle"])
+        proposed = ledger
+        newly_documented = 0
+    elif plan.get("mode") == "new":
+        proposed = {**ledger, "scans": ledger["scans"] + new}
+        newly_documented = len(new)
+    else:
+        raise ValueError("Unsupported planner mode")
     tracked = plan["tracked_bundles"]
     if (len(ledger["scans"]) != plan["documented_scans_before"] or
-            len(new) + len(incomplete) != plan["eligible_small_sources"] or
+            len(new) + len(incomplete) != plan["selected_small_sources"] or
             len(proposed["scans"]) + (
                 tracked - len(proposed["scans"])) != tracked):
         raise ValueError("Coverage conservation failed")
@@ -313,7 +357,9 @@ def consolidate(plan, evidence_dir, ledger, *, run_url):
     return {
         "schema_version": 1, "tracked_bundles": tracked,
         "documented_before": plan["documented_scans_before"],
-        "new_documented": len(new), "documented_after": len(proposed["scans"]),
+        "new_documented": newly_documented,
+        "source_reverified": len(new) - newly_documented,
+        "documented_after": len(proposed["scans"]),
         "unscanned_after": tracked - len(proposed["scans"]),
         "unparseable_attempts": incomplete,
         "source_run_url": run_url,
