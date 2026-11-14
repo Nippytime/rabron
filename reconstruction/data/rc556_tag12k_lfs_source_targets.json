@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AE two original Git LFS RC556 and TAG12K UnityFS sources; original pointer identities only",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/weapon-rc556_assets_all.bundle",
+      "git_blob_sha": "4c51f7052cb25f2e2771e4e468a02a2e45526658",
+      "lfs_oid_sha256": "b03dc0972f2727aca8f442d66fd1f4f7a1511bd2064a4f085bf3fae59b7f1d53",
+      "size_bytes": 69142769
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/weapon-tag12k_assets_all.bundle",
+      "git_blob_sha": "b238f66934df26e159a9b7c593ba5b3f3af334f3",
+      "lfs_oid_sha256": "ad2678f11e396cfb1e86e637737a4305048f335a5c10551e515db274c39fbe6b",
+      "size_bytes": 58972603
+    }
+  ]
+}
