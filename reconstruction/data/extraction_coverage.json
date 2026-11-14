@@ -7055,6 +7055,292 @@
       "size_bytes": 4329612,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-beards_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "4ace2b72a0fd71a47750b95a409180edfcf04c52",
+      "monobehaviours_parsed": 55,
+      "monobehaviours_total": 55,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 11,
+        "Mesh": 184,
+        "MonoBehaviour": 55
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "7d97372640c9901c68af4eac6dc94bed88a38108c0a9c08ddbe26c3354d01a1c",
+      "size_bytes": 9635722,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-fhair-bob_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b9a5670e19e5cf2b597b186ed89fd941f31c4c2c",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Mesh": 12,
+        "MonoBehaviour": 8
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "acd7cf67fdf9d4d46728f02809f2f3b13efaae004d999df4b5dfa7052a725ec5",
+      "size_bytes": 1554717,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-fhair-pixie_long_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "15eae29dcee85b56e26616b4eb3f07d3db9695b9",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Mesh": 16,
+        "MonoBehaviour": 8
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "b0c51f58d5d873d79b0bc01e804b171e99f89e3f7979096b46cb8c1e809af8fa",
+      "size_bytes": 1693016,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-fhair-wolfcut_short_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b11e124fe2a2eee0b99f2f53a66d9cd00355a4df",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 2,
+        "Mesh": 12,
+        "MonoBehaviour": 8
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "8c0452e59e45d71b9bfdd6ef1e0caff6e70b250e18ea5ca22883c955c1812dc0",
+      "size_bytes": 1444807,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-hair-balding_comb_over_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "bd1f2769846402414d5773dec86b2428a4f3eee8",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 2,
+        "Mesh": 10,
+        "MonoBehaviour": 8,
+        "Texture2D": 1
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "56476b669697d6499f8e6ebe3b9a19fe142885aba8f11ecfe34888763aab0caa",
+      "size_bytes": 1623093,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-hair-classic_slick_back_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b0734fb0801090af82ac9b8afdbe9d0f8cd55137",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 2,
+        "Mesh": 16,
+        "MonoBehaviour": 8
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "66c6637ef104a1a3908a55bf796ee950cb7f378de9c1580347d5d8af2860dc8a",
+      "size_bytes": 1779929,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-hair-mop_top_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "cd5b8acef613bd84406e1a8327be3f947883d7fe",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 2,
+        "Mesh": 16,
+        "MonoBehaviour": 8,
+        "Texture2D": 1
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "e2f7ff874105f1342e49557bf277b135f3fef845a066efb0d6c172cc4a915a38",
+      "size_bytes": 2518336,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-hair-slicked_back_middle_part_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "52c4adfe56d940f1770c2ae305505bfcacca5d18",
+      "monobehaviours_parsed": 8,
+      "monobehaviours_total": 8,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 2,
+        "Mesh": 16,
+        "MonoBehaviour": 8
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "4768e7e9c455dc5909c59a4facb5ec0462f602d09a39f25f7fe1dddb63e902ed",
+      "size_bytes": 1808340,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-45_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "edbf1c0f257b9daf284e05b27b8481d20fc90871",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "b9660f2468bcd8e7a261d6d4e8a35786b4467d73b61388a6aa85fd093287ccd4",
+      "size_bytes": 1490493,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character__sharedsources.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "5782363abd11137decdd7f5c3cea8cd2d3f1ee3f",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 8
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43638364286",
+      "scan_evidence": "GitHub Actions W1-U medium-character-cosmetics source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "a8f2fa8ac15fc8507b56e34714f8b41260de9f13722b2fb7b619747d98992d38",
+      "size_bytes": 1791505,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],
