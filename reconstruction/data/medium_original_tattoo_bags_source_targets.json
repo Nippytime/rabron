@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-Z: ten original medium tattoo/makeup materials and character bag UnityFS sources, 5 tattoo/makeup plus 5 bags",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character_man_materials_tattoo.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character_woman_materials_makeup.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character_woman_materials_tattoo.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/tattoo_assets_assets_content_character_man_materials_tattoo_m_tattoo_set1_anim.png.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/tattoo_assets_assets_content_character_woman_materials_tattoo_f_tattoo_set1_anim.png.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_15_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_15_type_1_paint_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_21_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_copbag.asset.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character_man_materials_tattoo.bundle": {
+      "size_bytes": 6339105,
+      "git_blob_sha": "3033c0093020b9449e330ba26c62bd3505b26cfd"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character_woman_materials_makeup.bundle": {
+      "size_bytes": 1385580,
+      "git_blob_sha": "bb4aff82272b6acba64f7536aaad66b45360832c"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character_woman_materials_tattoo.bundle": {
+      "size_bytes": 7753957,
+      "git_blob_sha": "a54872b6f8a51b7bd681ff1280310a0e0fdf0731"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/tattoo_assets_assets_content_character_man_materials_tattoo_m_tattoo_set1_anim.png.bundle": {
+      "size_bytes": 6570822,
+      "git_blob_sha": "c18bf0d75c8dc4e6ca7ce41c2c66113db9ecffc1"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/tattoo_assets_assets_content_character_woman_materials_tattoo_f_tattoo_set1_anim.png.bundle": {
+      "size_bytes": 5369524,
+      "git_blob_sha": "9c5c9325b8144a568b294951cd2378a95cf3f399"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_15_type_1_paint_1.asset.bundle": {
+      "size_bytes": 1652969,
+      "git_blob_sha": "838530ddd4dd870bba6b8c8b0304641051d1d34c"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_15_type_1_paint_2.asset.bundle": {
+      "size_bytes": 1687972,
+      "git_blob_sha": "f02b641242542a6428ec5a4367b15f17eaf298b1"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_21_type_1_paint_1.asset.bundle": {
+      "size_bytes": 1989686,
+      "git_blob_sha": "2d58808bcef21d8469c78ecc9ed7a17abe14cb9d"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_1.asset.bundle": {
+      "size_bytes": 1697352,
+      "git_blob_sha": "7cb799d2b8e0b0e3f18ca6fbf9f0b38cd93dfcc6"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_copbag.asset.bundle": {
+      "size_bytes": 1247994,
+      "git_blob_sha": "e1f40c3d044c66684681456daedd8b7fec8756c7"
+    }
+  }
+}
