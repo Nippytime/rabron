@@ -30,6 +30,13 @@ namespace Rabron.Prototype.Editor
                 return;
             }
 
+            // A stable product/company name gives the Editor and Windows
+            // player the same persistentDataPath for this local-only demo.
+            if (PlayerSettings.companyName != "RabronReconstruction")
+                PlayerSettings.companyName = "RabronReconstruction";
+            if (PlayerSettings.productName != "RabronPrototype")
+                PlayerSettings.productName = "RabronPrototype";
+
             if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null)
             {
                 if (!AssetDatabase.IsValidFolder("Assets/Scenes"))
