@@ -77,6 +77,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("AddComponent<PrototypeDirector>()", boot)
         self.assertIn("EditorSceneManager.SaveScene", installer)
         self.assertIn("EditorBuildSettingsScene", installer)
+        self.assertIn('PlayerSettings.companyName = "RabronReconstruction"', installer)
+        self.assertIn('PlayerSettings.productName = "RabronPrototype"', installer)
         self.assertIn("BuildPipeline.BuildPlayer", installer)
         self.assertIn("BuildTarget.StandaloneWindows64", installer)
         self.assertIn("AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath)", installer)
