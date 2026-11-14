@@ -8231,6 +8231,315 @@
       "size_bytes": 3949400,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shaders_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "e56dae5adbe5ed015b4f72d004db2901907e4781",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "ComputeShader": 6,
+        "Material": 53,
+        "Shader": 155,
+        "ShaderVariantCollection": 6,
+        "Texture2D": 12
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "9f10f7434ad49ca275d511c3c8847d76e848e5c739855a9ec07b6fb37e4176ac",
+      "size_bytes": 14633538,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/tattoo_scenes_tattoounlock.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 2,
+        "timing_and_world": 103
+      },
+      "git_blob_sha": "806d8d907edd9cae26bc6583b40f1c6a411eb0f9",
+      "monobehaviours_parsed": 94,
+      "monobehaviours_total": 94,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "Animator": 7,
+        "AssetBundle": 1,
+        "Camera": 1,
+        "Canvas": 1,
+        "CanvasRenderer": 1,
+        "Cubemap": 1,
+        "GameObject": 439,
+        "LODGroup": 22,
+        "Light": 17,
+        "LightProbeGroup": 1,
+        "LightProbes": 1,
+        "LightingSettings": 1,
+        "LightmapSettings": 1,
+        "Material": 1,
+        "Mesh": 4,
+        "MeshFilter": 85,
+        "MeshRenderer": 86,
+        "MonoBehaviour": 94,
+        "NavMeshSettings": 1,
+        "PlayableDirector": 1,
+        "PreloadData": 1,
+        "RectTransform": 2,
+        "ReflectionProbe": 1,
+        "RenderSettings": 1,
+        "SkinnedMeshRenderer": 32,
+        "Texture2D": 6,
+        "Transform": 437
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "a37e7b6246882363fa549a59264db5576a0af7233c153aeea13359c904fbc4f1",
+      "size_bytes": 2726770,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_achievementboard_achievementboard_4k.spriteatlasv2.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "1ae76d2293acbc17aea8781d0c059e8b3e111298",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Sprite": 35,
+        "SpriteAtlas": 1,
+        "Texture2D": 1
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "25eee2886f8e22298fffa9588f16abbf6a8ea348837fa929421ad20953f53039",
+      "size_bytes": 2572274,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_achievementboard_achievementboard_qhd.spriteatlasv2.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "2c416f8776ad030981d708c1885ada61302ad0ea",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 1
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "efb1e38fc1963f6f7a837b482a99d0377db3b18016f9e2d3dba1762e717cb5cd",
+      "size_bytes": 2376885,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_all__fullspriteatlas_hd.spriteatlasv2.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "6118e344cb4347627f1cde775f3b79f248c8930d",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 1
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "ba1929524e0cc9268bd84e79eb77254cea10fa2ef81c6b8a4ab66d2a24bb1407",
+      "size_bytes": 9252721,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_all__fullspriteatlas_qhd.spriteatlasv2.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "568cf700232515f0003a7365c366a4d88bd9eb38",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 1
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "53befb5f121954ed8b34b47446c3b7bfdc6155d3b02948fdc9eed34ceec6d473",
+      "size_bytes": 15949340,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_4k.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "fc802e30fe79214f66b0ea80ecbf11d36832a32c",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "a3e307119b5aaf5cc1043af7a5715430308c4a3acb1a6b1adbff71025908fe35",
+      "size_bytes": 1405211,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_4k.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "89132045f3b4ea2d58c657977164b25b4611e852",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Sprite": 102,
+        "SpriteAtlas": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "e0793fddd011f1758e0558092dee9291574d771ed2e4eb20635d858aa401f357",
+      "size_bytes": 2251297,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_hd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "1fbd33a694ac7c90660645c409215a0699cd9216",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "9c769f0ddf6fb20e46382b1855fa09a766c570a15d6cb6df46a50702925ee854",
+      "size_bytes": 2209627,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_qhd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "0301302af83aac247b7a74109ffdebb2b4f68bc9",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43646079579",
+      "scan_evidence": "GitHub Actions W1-Y medium-original-ui-shaders-atlas source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "a76ea5a4d95ef8313af90fc179d1a1dd0254d009a9a94f7ea4ad71abc24a5b83",
+      "size_bytes": 2209641,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],

@@ -346,6 +346,21 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-character-customizer-batch.md.
   Client assets do not establish original gameplay authority.
 
+- W1-Y source-verified ten original shaders, tattoo-unlock scene,
+  achievement/UI and weapon/car sprite-atlas UnityFS sources
+  (**55,587,304** exact Git source bytes), **94/94** parsed
+  MonoBehaviours (all in the tattoo scene), **155 Shader**,
+  **137 Sprite**, **8 SpriteAtlas**, **33 Texture2D**,
+  zero unparsed records/new numeric caps and no original media exported.
+  Keyword field observations: 2 progression and 103 timing/world candidates,
+  not original authoritative gameplay methods. Ledger now **288/330**
+  original bundles and **82,125** parsed MonoBehaviours;
+  **42** originals unscanned (22 medium non-LFS, 20 LFS), with
+  **42** historic unresolved numeric caps. Real-original source Actions:
+  https://github.com/Nippytime/rabron/actions/runs/43646079579 .
+  See reconstruction/docs/medium-original-ui-shaders-atlas-batch.md.
+  Client shader/UI source metadata does not prove live game formulas.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
