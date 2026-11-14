@@ -131,6 +131,29 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("DirtyCash =", presenter)
         self.assertNotIn("BankBalance =", presenter)
 
+    def test_interactions_and_camera_obey_world_colliders(self):
+        director = read("PrototypeDirector.cs")
+        motor = read("ThirdPersonMotor.cs")
+        query = read("WorldOcclusion.cs")
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("distance < best && CanReachStation(marker)", director)
+        self.assertIn("WorldOcclusion.HasClearLine(", director)
+        self.assertIn("WorldOcclusion.ClampCamera(", motor)
+        self.assertIn("Physics.RaycastNonAlloc(", query)
+        self.assertIn("Physics.SphereCastNonAlloc(", query)
+        self.assertIn("QueryTriggerInteraction.Ignore", query)
+        self.assertIn("hit.collider.transform.IsChildOf(ignore)", query)
+        self.assertIn("count == hits.Length", query)
+        self.assertIn("Physics.SyncTransforms()", smoke)
+        self.assertIn("Warehouse wall must block interactions", smoke)
+        self.assertIn("Artwork must be interactable from inside", smoke)
+        self.assertIn("Follow camera must remain on the near side", smoke)
+        self.assertNotIn("Physics.RaycastAll(", query)
+        self.assertNotIn("Physics.SphereCastAll(", query)
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")
