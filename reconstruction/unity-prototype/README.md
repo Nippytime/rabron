@@ -6,6 +6,21 @@ This is an independently authored playable **prototype design**, using Unity
 primitives and the tested reconstruction gameplay core. It is not the original
 ROB RUN source or a claim of numerical/mechanical parity.
 
+## Small clone (recommended on Windows)
+
+The source repository holds a large reference-game binary inventory; the
+prototype only needs the \`reconstruction/\` subtree. From PowerShell:
+
+~~~powershell
+git clone --filter=blob:none --sparse https://github.com/Nippytime/rabron.git
+cd rabron
+git sparse-checkout set reconstruction
+~~~
+
+This avoids downloading the original Unity assets to open the prototype.
+The local gameplay package still resolves because it also lives inside
+\`reconstruction/\`.
+
 ## Open and play
 
 1. Install Unity **6000.3.18f1** (or compatible Unity 6000.3 release) with
