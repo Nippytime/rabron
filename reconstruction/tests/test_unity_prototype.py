@@ -72,6 +72,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("AddComponent<PrototypeDirector>()", boot)
         self.assertIn("EditorSceneManager.SaveScene", installer)
         self.assertIn("EditorBuildSettingsScene", installer)
+        self.assertIn("BuildPipeline.BuildPlayer", installer)
+        self.assertIn("BuildTarget.StandaloneWindows64", installer)
 
     def test_original_game_assets_are_not_embedded(self):
         artifacts = tuple(p for p in UNITY.rglob("*") if p.is_file()
