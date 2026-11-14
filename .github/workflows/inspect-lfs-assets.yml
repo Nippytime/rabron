@@ -1,0 +1,74 @@
+name: Inspect priority Git LFS gameplay assets
+
+# Explicitly NOT triggered for each PR edit: binary LFS bandwidth is expensive.
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/inspect-lfs-assets.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-lfs:
+    name: inspect-${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: shared-global
+            bundle: shared-global_assets_all.bundle
+          - label: settlement
+            bundle: location-settlement-data_assets_all.bundle
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
+          sparse-checkout-cone-mode: false
+      - name: Fetch only the selected Git LFS binary
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}"
+          git lfs install --local
+          git lfs pull --include="$asset" --exclude="*"
+          signature="$(head -c 7 "$asset")"
+          if [ "$signature" != "UnityFS" ]; then
+            echo "::error::LFS object not downloaded: expected real UnityFS bundle at $asset"
+            exit 1
+          fi
+          sha256sum "$asset"
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned extractor
+        run: python -m pip install UnityPy==1.25.4
+      - name: Inspect and summarize selected Unity bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python reconstruction/tools/extract_unity_bundle.py \
+            "StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}" \
+            --max-fields 512 \
+            --output "$RUNNER_TEMP/raw.json"
+          python reconstruction/tools/summarize_numeric_evidence.py \
+            "$RUNNER_TEMP/raw.json" \
+            --samples-per-category 50 \
+            --output "$RUNNER_TEMP/summary.json"
+      - name: Preserve scanned data and partial-extraction warnings
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: lfs-source-evidence-${{ matrix.label }}
+          path: |
+            ${{ runner.temp }}/raw.json
+            ${{ runner.temp }}/summary.json
+          if-no-files-found: warn
+          retention-days: 30
