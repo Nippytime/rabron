@@ -53,5 +53,28 @@ namespace Rabron.Prototype.Editor
             if (string.IsNullOrEmpty(active.path) && !active.isDirty)
                 EditorSceneManager.OpenScene(ScenePath);
         }
+
+        [MenuItem("Tools/Rabron/Build Windows Prototype")]
+        private static void BuildWindows()
+        {
+            EnsureScene();
+            const string output = "Builds/RabronPrototype.exe";
+            Directory.CreateDirectory("Builds");
+
+            var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions
+            {
+                scenes = new[] { ScenePath },
+                locationPathName = output,
+                target = BuildTarget.StandaloneWindows64,
+                options = BuildOptions.None
+            });
+
+            if (result.summary.result != UnityEditor.Build.Reporting.BuildResult.Succeeded)
+                throw new System.InvalidOperationException(
+                    "Unity could not build the prototype. Install Windows Build Support " +
+                    "for this Editor and inspect the Console. Details: " + result.summary.result);
+
+            Debug.Log("Windows prototype built at " + Path.GetFullPath(output));
+        }
     }
 }
