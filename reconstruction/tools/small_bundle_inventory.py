@@ -7,8 +7,10 @@ perform read-only UnityPy scans. Evidence artifacts contain metadata only.
 import argparse
 import hashlib
 import json
+import os
 import re
 import subprocess
+import urllib.request
 from pathlib import Path
 
 from reconstruction.tools.extract_unity_bundle import scan_bundle
@@ -30,42 +32,55 @@ SAFE_BUNDLE = re.compile(
 SHA1 = re.compile(r"^[a-f0-9]{40}$")
 
 
-def parse_git_tree(raw):
-    """Parse exact Git tree object sizes, not working-tree or LFS sizes."""
+def parse_tree_response(payload, expected_sha):
+    """Validate GitHub's recursive Git tree metadata without fetching blobs."""
+    if (payload.get("sha") != expected_sha or
+            payload.get("truncated") is not False or
+            not isinstance(payload.get("tree"), list)):
+        raise ValueError("Git tree metadata missing, truncated or wrong commit")
     entries = {}
-    for line in raw.split(b"\0"):
-        if not line:
-            continue
-        meta, sep, path_bytes = line.partition(b"\t")
-        if not sep:
-            raise ValueError("Malformed Git tree record")
-        parts = meta.decode("ascii").split()
-        path = path_bytes.decode("utf-8")
-        # The Addressables directory also tracks catalog .bin/.hash files.
-        # They are not UnityFS sources and must not enter the bundle inventory.
-        if not path.endswith(".bundle"):
-            continue
-        if (len(parts) != 4 or parts[0] != "100644" or
-                parts[1] != "blob" or not SHA1.fullmatch(parts[2]) or
-                not SAFE_BUNDLE.fullmatch(path)):
+    for item in payload["tree"]:
+        path = item.get("path")
+        if not isinstance(path, str):
+            raise ValueError("Git tree contains an invalid path")
+        if not (path.startswith(BUNDLE_PREFIX) and path.endswith(".bundle")):
+            continue  # Addressables catalog and other repository contents.
+        sha, size = item.get("sha"), item.get("size")
+        if (not SAFE_BUNDLE.fullmatch(path) or
+                item.get("type") != "blob" or item.get("mode") != "100644" or
+                not isinstance(sha, str) or not SHA1.fullmatch(sha) or
+                type(size) is not int or size < 0):
             raise ValueError("Unexpected or unsafe Git tree entry: " + path)
         if path in entries:
             raise ValueError("Duplicate Git tree path: " + path)
-        size = int(parts[3])
-        if size < 0:
-            raise ValueError("Invalid Git blob size")
-        entries[path] = {"bundle": path, "git_blob_sha": parts[2],
-                         "git_blob_size": size}
+        entries[path] = {
+            "bundle": path, "git_blob_sha": sha, "git_blob_size": size,
+        }
     return entries
 
 
 def tree_entries(ref="HEAD"):
-    output = subprocess.run(
-        ["git", "ls-tree", "-r", "-l", "-z", ref, "--", BUNDLE_PREFIX],
-        check=True, capture_output=True,
-    ).stdout
-    return parse_git_tree(output)
-
+    # The local tree SHA pins API metadata to the checked-out PR merge ref;
+    # git rev-parse reads no game blobs, unlike git ls-tree -l in a blobless clone.
+    tree_sha = subprocess.run(
+        ["git", "rev-parse", f"{ref}^{{tree}}"],
+        check=True, text=True, capture_output=True,
+    ).stdout.strip()
+    repo = os.environ.get("GITHUB_REPOSITORY", "")
+    token = os.environ.get("GITHUB_TOKEN", "")
+    if (not SHA1.fullmatch(tree_sha) or
+            not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repo) or
+            not token):
+        raise ValueError("Missing trusted Git tree, repository or Actions token")
+    url = f"https://api.github.com/repos/{repo}/git/trees/{tree_sha}?recursive=1"
+    request = urllib.request.Request(url, headers={
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {token}",
+        "X-GitHub-Api-Version": "2022-11-28",
+    })
+    with urllib.request.urlopen(request, timeout=30) as response:
+        payload = json.load(response)
+    return parse_tree_response(payload, expected_sha=tree_sha)
 
 def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330):
     if not 1 <= batch_size <= MAX_BATCH_SIZE:
