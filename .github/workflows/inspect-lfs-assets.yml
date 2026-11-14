@@ -38,7 +38,10 @@ jobs:
           set -euo pipefail
           asset="StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}"
           git lfs install --local
-          git lfs pull --include="$asset" --exclude="*"
+          # The exclusion must be EMPTY: '--exclude=*' excludes even the
+          # selected include and silently leaves a 133-byte pointer behind.
+          git lfs pull --include="$asset" --exclude=""
+          git lfs checkout "$asset"
           signature="$(head -c 7 "$asset")"
           if [ "$signature" != "UnityFS" ]; then
             echo "::error::LFS object not downloaded: expected real UnityFS bundle at $asset"
