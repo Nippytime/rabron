@@ -150,6 +150,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Physics.SyncTransforms()", smoke)
         self.assertIn("Warehouse wall must block interactions", smoke)
         self.assertIn("Artwork must be interactable from inside", smoke)
+        self.assertIn("Cash counter must block collection from its front", smoke)
+        self.assertIn("Cash must be reachable from behind the counter", smoke)
         self.assertIn("Follow camera must remain on the near side", smoke)
         self.assertNotIn("Physics.RaycastAll(", query)
         self.assertNotIn("Physics.SphereCastAll(", query)
