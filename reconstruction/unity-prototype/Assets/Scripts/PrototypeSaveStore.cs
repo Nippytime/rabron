@@ -31,6 +31,15 @@ namespace Rabron.Prototype
             {
                 message = "Primary save invalid; recovered previous local checkpoint.";
                 Debug.LogWarning("Recovered Rabron prototype save from " + backup);
+                try
+                {
+                    // Keep the recovered checkpoint safe before future writes.
+                    File.Copy(backup, primary, overwrite: true);
+                }
+                catch (Exception exception)
+                {
+                    Debug.LogWarning("Could not repair primary save: " + exception.Message);
+                }
                 return session;
             }
 
