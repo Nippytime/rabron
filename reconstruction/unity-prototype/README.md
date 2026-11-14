@@ -24,6 +24,11 @@ ROB RUN source or a claim of numerical/mechanical parity.
    **Tools > Rabron > Prepare Demo Scene** and open the scene.
 6. Press **Play**. The procedural world, camera, player, markers and UI
    instantiate when the scene loads. No external assets are required.
+7. To build an executable after local Editor validation, select
+   **Tools > Rabron > Build Windows Prototype**. Unity writes
+   `Builds/RabronPrototype.exe` and its data folder. Windows Build Support
+   must be installed through Unity Hub; this repository does not contain
+   a prebuilt EXE.
 
 ## Controls
 
