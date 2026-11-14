@@ -22,7 +22,7 @@ from reconstruction.tools.validate_source_inventory import validate
 
 MIN_SIZE = 1024
 MAX_SIZE = 999999
-MAX_SOURCE_SIZE = 20 * 1024 * 1024 - 1
+MAX_SOURCE_SIZE = 64 * 1024 * 1024 - 1
 SMALL_EVIDENCE = "GitHub Actions W1-F small-source inventory artifact"
 BATCH_SIZE = 20
 MAX_BATCH_SIZE = 20
