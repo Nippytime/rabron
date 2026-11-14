@@ -117,6 +117,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/small-source-batch.md for measured scope and
   explicit limitations.
 
+- W1-G source-verified ten gameplay-rich medium, original non-LFS
+  weapon and vehicle UnityFS sources across four bounded GitHub Actions
+  jobs (72,243,123 original bytes, 2,733/2,733 parsed MonoBehaviours,
+  **zero new field/depth caps or unparsed records**). The machine ledger
+  now covers **152/330** documented source passes, with **17,588**
+  parsed MonoBehaviours, **178** remaining unscanned original bundles
+  (146 medium, 12 large non-LFS and 20 LFS pointers), and **33** known
+  capped numeric records still unresolved. Combat/timing keyword matches
+  remain presentation candidates, **not source-authoritative formulas**.
+  Original extraction/run evidence:
+  https://github.com/Nippytime/rabron/actions/runs/43592228322 .
+  See reconstruction/docs/medium-weapon-vehicle-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
