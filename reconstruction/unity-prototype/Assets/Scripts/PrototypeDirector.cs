@@ -10,6 +10,7 @@ namespace Rabron.Prototype
     public sealed class PrototypeDirector : MonoBehaviour
     {
         private const float InteractionRadius = 3.8f;
+        private readonly RaycastHit[] _stationHits = new RaycastHit[24];
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
         private ThirdPersonMotor _player = null!;
@@ -91,13 +92,21 @@ namespace Rabron.Prototype
 
                 float distance = (marker.transform.position - _player.transform.position)
                     .sqrMagnitude;
-                if (distance < best)
+                if (distance < best && CanReachStation(marker))
                 {
                     nearest = marker;
                     best = distance;
                 }
             }
             return nearest;
+        }
+
+        private bool CanReachStation(InteractionMarker marker)
+        {
+            // Don't steal through warehouse walls or reach through the counter.
+            Vector3 eye = _player.transform.position + Vector3.up * 1.5f;
+            return WorldOcclusion.HasClearLine(eye, marker.transform.position,
+                                               _player.transform, _stationHits);
         }
 
         private bool Available(StationAction action)

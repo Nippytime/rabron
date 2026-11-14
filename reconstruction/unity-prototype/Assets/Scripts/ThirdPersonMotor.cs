@@ -16,6 +16,7 @@ namespace Rabron.Prototype
         private InputAction _interact = null!;
         private float _pitch = 18f;
         private float _verticalVelocity;
+        private readonly RaycastHit[] _cameraHits = new RaycastHit[24];
 
         public bool InteractPressed => _interact != null && _interact.WasPressedThisFrame();
 
@@ -113,9 +114,14 @@ namespace Rabron.Prototype
             Quaternion pitch = Quaternion.Euler(_pitch, 0f, 0f);
             Vector3 pivot = transform.position + Vector3.up * 1.6f;
             Vector3 target = pivot + yaw * pitch * new Vector3(0f, 0.9f, -5.5f);
+            target = WorldOcclusion.ClampCamera(pivot, target, transform, _cameraHits);
+
+            // Smooth only when moving away from obstacles. Moving toward a
+            // blocked wall must be immediate or the camera can clip through it.
             float damping = 1f - Mathf.Exp(-12f * Time.deltaTime);
-            _camera.transform.position = Vector3.Lerp(_camera.transform.position,
-                                                      target, damping);
+            Vector3 eased = Vector3.Lerp(_camera.transform.position, target, damping);
+            _camera.transform.position = WorldOcclusion.ClampCamera(pivot, eased,
+                                                                  transform, _cameraHits);
             _camera.transform.LookAt(pivot);
         }
 

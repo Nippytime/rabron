@@ -50,6 +50,47 @@ namespace Rabron.Prototype.Editor
                 Check(root.transform.Find("Ground") != null,
                       "No collidable ground was created");
 
+                // The heist wall must block both interaction and camera.
+                // Probe the actual generated colliders, not a mock scene.
+                Physics.SyncTransforms();
+                var hits = new RaycastHit[24];
+                Vector3 artwork = default;
+                foreach (var station in stations)
+                {
+                    if (station.Action == StationAction.Artwork)
+                        artwork = station.transform.position;
+                }
+
+                Check(!WorldOcclusion.HasClearLine(
+                          new Vector3(-3f, 1.5f, 13f), artwork, player.transform, hits),
+                      "Warehouse wall must block interactions from the street");
+                Check(WorldOcclusion.HasClearLine(
+                          new Vector3(-3f, 1.5f, 23f), artwork, player.transform, hits),
+                      "Artwork must be interactable from inside the warehouse");
+
+                Vector3 cashPickup = default;
+                foreach (var station in stations)
+                {
+                    if (station.Action == StationAction.CollectCash)
+                        cashPickup = station.transform.position;
+                }
+
+                Check(!WorldOcclusion.HasClearLine(
+                          new Vector3(-19f, 1.5f, -2f), cashPickup,
+                          player.transform, hits),
+                      "Cash counter must block collection from its front");
+                Check(WorldOcclusion.HasClearLine(
+                          new Vector3(-19f, 1.5f, 3f), cashPickup,
+                          player.transform, hits),
+                      "Cash must be reachable from behind the counter");
+
+                Vector3 pivot = new Vector3(-3f, 1.6f, 13f);
+                Vector3 wallSide = new Vector3(-3f, 1.6f, 20f);
+                Vector3 clamped = WorldOcclusion.ClampCamera(
+                    pivot, wallSide, player.transform, hits);
+                Check(clamped.z < 16.5f && clamped.z >= pivot.z,
+                      "Follow camera must remain on the near side of warehouse wall");
+
                 // Exercise the actual presenter, not a mocked visibility flag.
                 Check(cashPile != null && !cashPile.IsVisible,
                       "Counter cash must start hidden");
