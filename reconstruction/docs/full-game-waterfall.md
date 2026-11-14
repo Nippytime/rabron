@@ -275,6 +275,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-mask-12-21-batch.md.
   Texture-only client assets are not authoritative gameplay.
 
+- W1-S source-verified ten original medium character-mask
+  22–29 and 31–32 UnityFS bundles (**30,695,396** actual original
+  source bytes), **4/4** parsed MonoBehaviours, **10 Mesh** and
+  **58 Texture2D**. Nine originals have genuine zero MonoBehaviours;
+  one (mask-27) has four. No unparsed records, numeric field caps
+  or original exported media. Ledger now documents **228/330**
+  originals, **81,862** parsed MonoBehaviours; **102** original paths
+  remain unscanned (82 medium non-LFS, 20 LFS) and **42** historic
+  numeric caps persist. Verified original run: https://github.com/Nippytime/rabron/actions/runs/43636832117 .
+  See reconstruction/docs/medium-mask-22-32-batch.md.
+  Presentation assets are not authoritative gameplay.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
