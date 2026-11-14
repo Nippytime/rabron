@@ -34,6 +34,8 @@ jobs:
         with:
           python-version: "3.11"
       - name: Compute exact size-bounded unscanned inventory from Git tree
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           python -m reconstruction.tools.small_bundle_inventory plan \
             --ref HEAD --expected-tracked 330 \
