@@ -13,6 +13,7 @@ namespace Rabron.Prototype.Tests
     /// Must execute in a real Unity Play Mode process, NOT by Python/.NET CI.
     /// Does not emulate keyboard input or verify a packaged Windows player.
     /// </summary>
+    [Category("RabronPlayMode")]
     public sealed class PlayModeFlowTests
     {
         private const BindingFlags PrivateInstance =
