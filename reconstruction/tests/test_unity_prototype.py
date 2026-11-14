@@ -207,6 +207,9 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         )
         director = read("PrototypeDirector.cs")
         store = read("PrototypeSaveStore.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
         manifest = json.loads((UNITY / "Packages/manifest.json").read_text(
             encoding="utf-8"
         ))
