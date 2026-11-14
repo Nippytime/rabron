@@ -1,0 +1,33 @@
+name: Game Core build and deterministic tests
+
+on:
+  push:
+    paths:
+      - "reconstruction/game/**"
+      - ".github/workflows/gameplay-core.yml"
+  pull_request:
+    paths:
+      - "reconstruction/game/**"
+      - ".github/workflows/gameplay-core.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  game-core:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/game/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+      - name: Compile Unity-compatible .NET Standard gameplay core
+        run: dotnet build reconstruction/game/Core/Game.Core.csproj --configuration Release --nologo
+      - name: Run deterministic integration tests
+        run: dotnet run --project reconstruction/game/Tests/Game.Tests.csproj --configuration Release
