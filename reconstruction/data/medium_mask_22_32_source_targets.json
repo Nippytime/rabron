@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-S: ten original medium character-mask variants 22-29 and 31-32, exact non-LFS Git original sources",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-22_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-23_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-24_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-25_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-26_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-27_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-28_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-29_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-31_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-32_assets_all.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-22_assets_all.bundle": {
+      "size_bytes": 1852356,
+      "git_blob_sha": "b0fb3bcf27c7a151a096b012f96f10d2c6862957"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-23_assets_all.bundle": {
+      "size_bytes": 1533802,
+      "git_blob_sha": "107f316536bc320dfc2735a4a56522bef1b9b836"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-24_assets_all.bundle": {
+      "size_bytes": 4215350,
+      "git_blob_sha": "f69489cc66ded5033c54e6ed5d91787a17cac8ff"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-25_assets_all.bundle": {
+      "size_bytes": 3335032,
+      "git_blob_sha": "ae55e3bfa0b17ee843ee21fea32c5d6271055b58"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-26_assets_all.bundle": {
+      "size_bytes": 6047197,
+      "git_blob_sha": "833ed50937be83d60c4093e6b2e1823f658b45b7"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-27_assets_all.bundle": {
+      "size_bytes": 7079808,
+      "git_blob_sha": "1260be75d57e3234ba158b86a42af722bb676834"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-28_assets_all.bundle": {
+      "size_bytes": 1428716,
+      "git_blob_sha": "dae67a71ff1e6c561fc8af8bde582d79b8d89e45"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-29_assets_all.bundle": {
+      "size_bytes": 1543116,
+      "git_blob_sha": "ffe1ae4707b277ddd9070a62a7de3890591dc448"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-31_assets_all.bundle": {
+      "size_bytes": 1791881,
+      "git_blob_sha": "d36e3467e1d2b34a45d462c56076c2870eade420"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-32_assets_all.bundle": {
+      "size_bytes": 1868138,
+      "git_blob_sha": "ad2b06fa2e413197af31b7e69d6756c650101f38"
+    }
+  }
+}
