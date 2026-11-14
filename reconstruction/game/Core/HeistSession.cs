@@ -30,6 +30,7 @@ namespace Rabron.Reconstruction
         public long CleanCash { get; private set; }
         public long BankBalance { get; private set; }
         public IReadOnlyList<string> Loot => _loot.AsReadOnly();
+        public long? LaunderingReadyAt => _laundering?.FinishSeconds;
 
         public HeistSession(Zone initialZone = Zone.City, PlayerRole initialRole = PlayerRole.Civilian)
         {

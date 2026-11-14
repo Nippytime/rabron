@@ -1,0 +1,10 @@
+{
+  "name": "com.rabron.reconstruction-core",
+  "version": "0.1.0",
+  "displayName": "Reconstruction Gameplay Core",
+  "description": "Standalone gameplay behavior and finance state (original implementation; no proprietary code).",
+  "unity": "6000.3",
+  "author": {
+    "name": "Rabron Reconstruction"
+  }
+}
