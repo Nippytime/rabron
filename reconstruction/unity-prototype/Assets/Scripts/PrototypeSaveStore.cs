@@ -14,8 +14,22 @@ namespace Rabron.Prototype
     {
         private const string FileName = "rabron-prototype-v1.json";
 
-        public static string SavePath =>
-            Path.Combine(Application.persistentDataPath, FileName);
+        public static string SavePath
+        {
+            get
+            {
+#if UNITY_EDITOR
+                // Unity's batchmode Play Mode acceptance tests must never
+                // read or overwrite the developer's normal demo progress.
+                if (Array.Exists(Environment.GetCommandLineArgs(),
+                    arg => string.Equals(arg, "-runTests",
+                                         StringComparison.OrdinalIgnoreCase)))
+                    return Path.Combine(Application.temporaryCachePath,
+                                        "rabron-playmode-tests", FileName);
+#endif
+                return Path.Combine(Application.persistentDataPath, FileName);
+            }
+        }
 
         public static HeistSession Load(out string message)
         {
