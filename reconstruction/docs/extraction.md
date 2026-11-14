@@ -56,13 +56,18 @@ python reconstruction/tools/plan_bundle_scans.py \
   --output /tmp/bundle-scan-backlog.json
 ~~~
 
-The planner combines every tracked .bundle filename with **15 documented
-read-only MonoBehaviour passes** preserved in
-reconstruction/data/extraction_coverage.json. The first nine scans have
-56 reported numeric field cap occurrences. The six new scans (see
-reconstruction/docs/gameplay-bundle-batch-1.md) parsed **1,320** more
-MonoBehaviours at an 8,192-field/32-depth limit with zero reported
-truncations, without recovering any authoritative gameplay formula. A pass without a reported field cap is still
+The planner combines every tracked .bundle filename with **17 documented
+read-only source passes** preserved in
+reconstruction/data/extraction_coverage.json. The original nine scans
+reported 56 capped numeric objects; the bounded W1-C retry resolved 30
+and left 26 explicitly incomplete. Six more gameplay bundles contributed
+1,320 parsed MonoBehaviours, and W1-D recovered another **374/374** from
+the original NPC LFS bytes. The tutorial LFS source has **zero**
+MonoBehaviours but contains **113 Sprite and 113 Texture2D objects**.
+See reconstruction/docs/npc-tutorial-lfs-audit.md. None of these passes
+establishes original server or economy formulas.
+
+A pass without a reported field cap is still
 **not automatically complete**: earlier scanner versions could skip nested
 fields beyond their depth limit while reporting a false completeness flag.
 The backlog prioritizes such rescans, real LFS fetches, and uninspected

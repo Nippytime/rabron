@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "warning": "Historical, source-documented MonoBehaviour passes only. All values are client-side candidates, not verified gameplay formulas. Old depth limits can mask nested fields; every bundle remains incomplete until rescanned with depth-aware tracking and other relevant Unity object kinds.",
+  "warning": "Source-documented MonoBehaviour passes and exact LFS bytes, not complete game extraction. Historical scans remain partially numeric capped; scanned sources do not establish full scene media, IL2CPP methods or authoritative server formulas. An inventory with zero MonoBehaviours (tutorial) yields no tutorial gameplay rules.",
   "inventory_source": "git ls-tree (entire tracked repo, not checkout file presence)",
   "scans": [
     {
@@ -397,18 +397,80 @@
         "RenderSettings": 1,
         "Transform": 2494
       }
-    }
-  ],
-  "known_lfs_not_yet_scanned": [
+    },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/npc_assets_all.bundle",
-      "lfs_oid_sha256": "aacec65903186775c8b834ba89cbbc0fea1419d857f14a0d95943732f12a0d69"
+      "lfs_oid_sha256": "aacec65903186775c8b834ba89cbbc0fea1419d857f14a0d95943732f12a0d69",
+      "size_bytes": 98896651,
+      "sha256": "aacec65903186775c8b834ba89cbbc0fea1419d857f14a0d95943732f12a0d69",
+      "scan_evidence": "reconstruction/docs/npc-tutorial-lfs-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43587524219",
+      "numeric_field_limit": 1024,
+      "numeric_depth_limit": 24,
+      "numeric_field_cap_records": 0,
+      "unparsed_records": 0,
+      "monobehaviours_total": 374,
+      "monobehaviours_parsed": 374,
+      "status": "documented_lfs_bounded_scan_no_reported_field_limits",
+      "scope": "All 374 MonoBehaviours parsed at fields=1024/depth=24 with zero reported numeric truncations; other object types and authoritative NPC/gameplay logic not reconstructed",
+      "candidate_field_counts": {
+        "combat": 36,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 568
+      },
+      "objects_by_type": {
+        "AnimationClip": 88,
+        "Animator": 50,
+        "AnimatorController": 5,
+        "AnimatorOverrideController": 6,
+        "AssetBundle": 1,
+        "Avatar": 5,
+        "CapsuleCollider": 49,
+        "GameObject": 7386,
+        "LODGroup": 45,
+        "Light": 23,
+        "Material": 62,
+        "Mesh": 146,
+        "MeshFilter": 93,
+        "MeshRenderer": 95,
+        "MonoBehaviour": 374,
+        "SkinnedMeshRenderer": 311,
+        "Texture2D": 94,
+        "Transform": 7386
+      },
+      "bounded_numeric_scan_complete": true
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/tutorial_assets_all.bundle",
-      "lfs_oid_sha256": "56f1993ad49ac265c3268667557b0ec13c1c0f39fb7ada94ae4251e4328ac691"
+      "lfs_oid_sha256": "56f1993ad49ac265c3268667557b0ec13c1c0f39fb7ada94ae4251e4328ac691",
+      "size_bytes": 84166120,
+      "sha256": "56f1993ad49ac265c3268667557b0ec13c1c0f39fb7ada94ae4251e4328ac691",
+      "scan_evidence": "reconstruction/docs/npc-tutorial-lfs-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43587524219",
+      "numeric_field_limit": 1024,
+      "numeric_depth_limit": 24,
+      "numeric_field_cap_records": 0,
+      "unparsed_records": 0,
+      "monobehaviours_total": 0,
+      "monobehaviours_parsed": 0,
+      "status": "documented_no_monobehaviours_media_only",
+      "scope": "This original bundle has no MonoBehaviours; UnityFS inventory counted 113 Sprite and 113 Texture2D objects; it yields no serialized tutorial mechanics or numeric gameplay configuration",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Sprite": 113,
+        "Texture2D": 113
+      },
+      "bounded_numeric_scan_complete": null
     }
   ],
+  "known_lfs_not_yet_scanned": [],
   "blocking_missing_sources": [
     "Matching Unity IL2CPP GameAssembly.dll (not in uploaded repository)",
     "Server-authoritative gameplay configuration / runtime authority",

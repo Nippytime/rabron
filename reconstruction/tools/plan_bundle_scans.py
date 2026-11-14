@@ -51,6 +51,11 @@ def validate_ledger(ledger, paths):
             raise ValueError("Unknown/duplicate documented scan: " + path)
         if not SHA256.fullmatch(entry["sha256"]):
             raise ValueError("Invalid SHA-256 for " + path)
+        if "lfs_oid_sha256" in entry:
+            if (entry["lfs_oid_sha256"] != entry["sha256"] or
+                    type(entry.get("size_bytes")) is not int or
+                    entry["size_bytes"] <= 0):
+                raise ValueError("Scanned LFS source fingerprint/size mismatch: " + path)
         total = entry["monobehaviours_total"]
         parsed = entry["monobehaviours_parsed"]
         capped = entry["numeric_field_cap_records"]
@@ -101,7 +106,9 @@ def plan_scans(paths, ledger):
             cap = evidence["numeric_field_cap_records"]
             retry = evidence.get("targeted_rescan")
             remaining = retry["unresolved_count"] if retry else cap
-            if cap and not remaining:
+            if evidence["monobehaviours_total"] == 0:
+                status = "inspected_no_monobehaviours"
+            elif cap and not remaining:
                 status = "historic_caps_resolved_scope_partial"
             elif remaining:
                 status = "partial_field_cap"
@@ -119,6 +126,8 @@ def plan_scans(paths, ledger):
             "next_action": (
                 ("review unresolved field-limited objects with source labels"
                  if status == "partial_field_cap" else
+                 "inventory non-MonoBehaviour content references; no numeric rules"
+                 if status == "inspected_no_monobehaviours" else
                  "audit other Unity object types and confirm source semantics")
                 if evidence else
                 "fetch verified LFS bytes then inventory" if path in pending_lfs
@@ -142,6 +151,7 @@ def plan_scans(paths, ledger):
         "not_documented_scanned": 2,
         "documented_monobehaviour_pass_unverified": 3,
         "historic_caps_resolved_scope_partial": 4,
+        "inspected_no_monobehaviours": 5,
     }
     queue.sort(key=lambda item: (rank[item["priority"]],
                                  status_rank[item["status"]],

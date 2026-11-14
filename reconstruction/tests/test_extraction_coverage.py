@@ -22,19 +22,52 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 15)
+        self.assertEqual(len(LEDGER["scans"]), 17)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 9107)
+                             for entry in LEDGER["scans"]), 9481)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
                              for entry in LEDGER["scans"]), 56)
-        self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 2)
+        self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 0)
         self.assertIn("GameAssembly.dll", LEDGER["blocking_missing_sources"][0])
 
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 15)
-        self.assertEqual(len(pending), 2)
+        self.assertEqual(len(known), 17)
+        self.assertEqual(len(pending), 0)
+
+    def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
+        npc = next(e for e in LEDGER["scans"]
+                   if e["bundle"].endswith("/npc_assets_all.bundle"))
+        tutorial = next(e for e in LEDGER["scans"]
+                        if e["bundle"].endswith("/tutorial_assets_all.bundle"))
+        self.assertEqual(npc["sha256"], npc["lfs_oid_sha256"])
+        self.assertEqual(npc["size_bytes"], 98896651)
+        self.assertEqual(npc["monobehaviours_total"], 374)
+        self.assertEqual(npc["monobehaviours_parsed"], 374)
+        self.assertEqual(npc["numeric_field_cap_records"], 0)
+        self.assertEqual(npc["objects_by_type"]["AnimationClip"], 88)
+        self.assertEqual(npc["objects_by_type"]["GameObject"], 7386)
+        self.assertEqual(npc["candidate_field_counts"]["combat"], 36)
+        self.assertEqual(npc["candidate_field_counts"]["timing_and_world"], 568)
+
+        self.assertEqual(tutorial["sha256"], tutorial["lfs_oid_sha256"])
+        self.assertEqual(tutorial["size_bytes"], 84166120)
+        self.assertEqual(tutorial["monobehaviours_total"], 0)
+        self.assertEqual(tutorial["monobehaviours_parsed"], 0)
+        self.assertEqual(tutorial["numeric_field_cap_records"], 0)
+        self.assertEqual(tutorial["objects_by_type"]["Sprite"], 113)
+        self.assertEqual(tutorial["objects_by_type"]["Texture2D"], 113)
+        self.assertEqual(tutorial["status"], "documented_no_monobehaviours_media_only")
+        self.assertTrue(all(e["run_url"].endswith("/43587524219")
+                            for e in (npc, tutorial)))
+
+        paths = [e["bundle"] for e in LEDGER["scans"]]
+        plan = plan_scans(paths, LEDGER)
+        statuses = {e["bundle"]: e["status"] for e in plan["backlog"]}
+        self.assertEqual(statuses[tutorial["bundle"]],
+                         "inspected_no_monobehaviours")
+        self.assertEqual(plan["historically_documented_scan_bundles"], 17)
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]
@@ -115,8 +148,9 @@ class ExtractionCoverageTests(unittest.TestCase):
                          e["bundle"].endswith("/location-city-data_assets_all.bundle")),
                 ],
                 "known_lfs_not_yet_scanned": [
-                    next(e for e in LEDGER["known_lfs_not_yet_scanned"] if
-                         e["bundle"].endswith("/npc_assets_all.bundle")),
+                    {key: e[key] for e in LEDGER["scans"]
+                     if e["bundle"].endswith("/npc_assets_all.bundle")
+                     for key in ("bundle", "lfs_oid_sha256", "size_bytes")},
                 ],
             },
         )
@@ -141,8 +175,9 @@ class ExtractionCoverageTests(unittest.TestCase):
                          e["bundle"].endswith("/location-city-data_assets_all.bundle")),
                 ],
                 "known_lfs_not_yet_scanned": [
-                    next(e for e in LEDGER["known_lfs_not_yet_scanned"] if
-                         e["bundle"].endswith("/npc_assets_all.bundle")),
+                    {key: e[key] for e in LEDGER["scans"]
+                     if e["bundle"].endswith("/npc_assets_all.bundle")
+                     for key in ("bundle", "lfs_oid_sha256", "size_bytes")},
                 ],
             },
         ))
