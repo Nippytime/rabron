@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-V: ten exact original medium non-LFS character head UnityFS customization bundles",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_3.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_4.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_5.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_3.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_4.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_6.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_7.asset.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_2.asset.bundle": {
+      "size_bytes": 5911240,
+      "git_blob_sha": "564f15988f9098ba73955e0362d6403e5d83110e"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_3.asset.bundle": {
+      "size_bytes": 6151954,
+      "git_blob_sha": "e587922216b5ef845bb2c01ba4e584b57a75d2d0"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_4.asset.bundle": {
+      "size_bytes": 5715102,
+      "git_blob_sha": "2997af587d53dacc9f307c845b2634d0ecd1a680"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfheadsviewdescription_f_head_5.asset.bundle": {
+      "size_bytes": 5914938,
+      "git_blob_sha": "53965ca01338766e388d45114686214f501fe031"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_1.asset.bundle": {
+      "size_bytes": 3922038,
+      "git_blob_sha": "ac527881fe9effb717226ed157f88bb1fd749853"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_2.asset.bundle": {
+      "size_bytes": 5565459,
+      "git_blob_sha": "3845673d84bb906683005c29dfb3282c92a411d7"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_3.asset.bundle": {
+      "size_bytes": 3791340,
+      "git_blob_sha": "911ee52c4002496be0f3bf2fbfc4d225c6d804e1"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_4.asset.bundle": {
+      "size_bytes": 5440021,
+      "git_blob_sha": "752af98912f11bb175c9d99874589081f8ec0f7c"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_6.asset.bundle": {
+      "size_bytes": 3959023,
+      "git_blob_sha": "65c14890b97c0f58fbf3a97580ed3a6428ffba03"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_7.asset.bundle": {
+      "size_bytes": 3941683,
+      "git_blob_sha": "bb590e8487f37d952a214a6a55c5f1a560bae642"
+    }
+  }
+}

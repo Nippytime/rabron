@@ -311,6 +311,17 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   historical unresolved caps. Original run: https://github.com/Nippytime/rabron/actions/runs/43638364286 .
   See reconstruction/docs/medium-character-cosmetics-batch.md.
 
+- W1-V source-verified ten original medium female/male character-head
+  UnityFS bundles (**50,312,798** original Git bytes), **10/10**
+  parsed MonoBehaviours (one per original), **143 Mesh**, **49 Texture2D**
+  and **27 Material** objects; no unparsed records/new caps, and no
+  original copyrighted game media exported. Ledger now **258/330**
+  original bundles, **81,997** parsed MonoBehaviours, **72** remaining
+  originals (52 medium non-LFS, 20 LFS) and **42** old unresolved
+  bounded numeric caps. Real original scan: https://github.com/Nippytime/rabron/actions/runs/43639194242 .
+  See reconstruction/docs/medium-character-heads-batch.md.
+  Source asset metadata is not authoritative gameplay.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
