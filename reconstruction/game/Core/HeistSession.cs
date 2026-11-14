@@ -23,6 +23,7 @@ namespace Rabron.Reconstruction
         public PlayerRole CurrentRole { get; private set; }
         public HeistPhase Phase { get; private set; }
         public bool AlarmRaised { get; private set; }
+        public bool StaffControlled { get; private set; }
         public bool BankAccountOpened { get; private set; }
 
         public long DirtyCash { get; private set; }
@@ -64,6 +65,14 @@ namespace Rabron.Reconstruction
         {
             Require(Phase == HeistPhase.Robbing, "Alarm requires an active robbery.");
             AlarmRaised = true;
+        }
+
+        public void ControlStaff()
+        {
+            Require(Phase == HeistPhase.Robbing, "Staff can only be controlled during a robbery.");
+            Require(!StaffControlled, "Staff is already controlled.");
+            // Taking control does not retroactively cancel an existing alarm.
+            StaffControlled = true;
         }
 
         public void TakeLoot(string itemId)
@@ -182,6 +191,7 @@ namespace Rabron.Reconstruction
                     "Finish the current heist and laundering first.");
             Phase = HeistPhase.Idle;
             AlarmRaised = false;
+            StaffControlled = false;
         }
 
         private static void Require(bool condition, string reason)
