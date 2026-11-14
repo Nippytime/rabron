@@ -263,6 +263,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-mask-batch.md; presentation metadata
   is not a recovered authoritative gameplay formula.
 
+- W1-R verified ten original medium `character-mask-12`–`character-mask-21`
+  UnityFS bundles (**19,601,935** actual original source bytes).
+  All ten legitimately have **zero MonoBehaviours** with **35**
+  Texture2D objects total; no unparsed records or numeric caps,
+  and no original copyrighted media exported. The ledger documents
+  **218/330** originals with **81,858** parsed MonoBehaviours;
+  **112** originals are unscanned (92 medium non-LFS, 20 LFS),
+  and **42** historical numeric caps persist. Measured source
+  run: https://github.com/Nippytime/rabron/actions/runs/43636004658 .
+  See reconstruction/docs/medium-mask-12-21-batch.md.
+  Texture-only client assets are not authoritative gameplay.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
