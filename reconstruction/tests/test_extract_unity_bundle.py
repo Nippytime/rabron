@@ -33,6 +33,21 @@ class NumericFieldsTests(unittest.TestCase):
         self.assertTrue(truncated)
         self.assertEqual(items, [{"path": "$.a", "value": 1}])
 
+    def test_explicit_field_and_depth_truncation_reasons(self):
+        fields, reasons = numeric_fields({"outer": {"inner": 42}, "top": 7},
+                                         max_fields=1, max_depth=1,
+                                         return_reasons=True)
+        self.assertEqual(fields, [{"path": "$.top", "value": 7}])
+        self.assertEqual(reasons, ["depth_limit"])
+
+        fields, reasons = numeric_fields({"first": 1, "second": 2},
+                                         max_fields=1, return_reasons=True)
+        self.assertEqual(fields, [{"path": "$.first", "value": 1}])
+        self.assertEqual(reasons, ["field_limit"])
+        fields, reasons = numeric_fields({"safe": 1},
+                                         return_reasons=True)
+        self.assertEqual(reasons, [])
+
     def test_skips_non_finite_values(self):
         items, truncated = numeric_fields([math.nan, math.inf, -2.5])
         self.assertFalse(truncated)
