@@ -4,7 +4,8 @@
   "references": [
     "Rabron.Prototype",
     "Rabron.GameCore",
-    "Unity.InputSystem"
+    "Unity.InputSystem",
+    "UnityEngine.TestRunner"
   ],
   "includePlatforms": [],
   "excludePlatforms": [],
