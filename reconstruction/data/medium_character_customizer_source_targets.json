@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-X: ten original unscanned medium character body, prison, head and customizer UnityFS bundles",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_31_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_31_type_2_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_33_type_2_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_5_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_prisonbody_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_42_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_prisonbody_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_8.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_5.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_customizercontent_characterkeychainsviewdescription.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_31_type_1_paint_1.asset.bundle": {
+      "size_bytes": 9253417,
+      "git_blob_sha": "66c19252863d3f67e85a5b1bd22920c4143a6e59"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_31_type_2_paint_1.asset.bundle": {
+      "size_bytes": 9375154,
+      "git_blob_sha": "59f7a66fa483bae7fc4b0efb8727d94b9e447267"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_33_type_2_paint_1.asset.bundle": {
+      "size_bytes": 8593508,
+      "git_blob_sha": "10736bcc3d2bea25fe7d70237ce24bd70d587647"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_5_type_1_paint_1.asset.bundle": {
+      "size_bytes": 9503711,
+      "git_blob_sha": "dde3f610c3f4ece16eb3ef9f49a5274732a1d7c5"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_prisonbody_2.asset.bundle": {
+      "size_bytes": 9036056,
+      "git_blob_sha": "5fa24d94e798efacec78fa9ec53393546192c569"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_42_type_1_paint_1.asset.bundle": {
+      "size_bytes": 8407186,
+      "git_blob_sha": "f1dd437f0e1eee5dce826c7e174589fac9b41b1e"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_prisonbody_2.asset.bundle": {
+      "size_bytes": 8632179,
+      "git_blob_sha": "99b34638d4f1756008b96c67c2433c87128a44b3"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_8.asset.bundle": {
+      "size_bytes": 5731794,
+      "git_blob_sha": "b08588f0b9b28154b6c089b172ae94642f7a1688"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterheadsviewdescription_head_5.asset.bundle": {
+      "size_bytes": 3949400,
+      "git_blob_sha": "99be8777d19b9ad7d82dfb58a00e131208ca8635"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_customizercontent_characterkeychainsviewdescription.bundle": {
+      "size_bytes": 1644416,
+      "git_blob_sha": "dfdc71aa9dd2b8864d1243d7f4fc8d82f7dc636f"
+    }
+  }
+}
