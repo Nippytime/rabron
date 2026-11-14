@@ -83,9 +83,15 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   ballistics, damage, or police formula has been validated**.
 - Matching GameAssembly.dll and full server code/data are absent. Metadata
   alone does not reconstruct IL2CPP method bodies or server authority.
-- Four previously referenced large bundles need actual Git LFS bytes; two
-  (shared-global and settlement) were retrieved and parsed in prior runs;
-  NPC/tutorial remain an evidence acquisition priority.
+- W1-D verified both original NPC/tutorial LFS pointers, downloaded the
+  full binaries and checked exact size and SHA-256 before read-only scan.
+  NPC: **374/374** MonoBehaviours parsed at 1,024 fields/depth24 with
+  no reported field limits. Tutorial: **0 MonoBehaviours**, 113 sprites,
+  113 textures. Across **17/330** documented source bundle passes,
+  **9,481** MonoBehaviours have been parsed; the previously identified
+  **26** field-capped records remain unresolved. See
+  reconstruction/docs/npc-tutorial-lfs-audit.md. This does NOT recover
+  tutorial gameplay logic, NPC AI formulas, server data or media rights.
 
 ### Exhaustive extraction checklist (the recovery gate)
 
