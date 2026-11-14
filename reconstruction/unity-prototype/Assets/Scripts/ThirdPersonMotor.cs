@@ -23,6 +23,11 @@ namespace Rabron.Prototype
         private void Awake()
         {
             _character = GetComponent<CharacterController>();
+            // Editor smoke tests instantiate the procedural world outside Play Mode.
+            // Do not spawn an unparented camera or capture the cursor in edit mode.
+            if (!Application.isPlaying)
+                return;
+
             _move = new InputAction("Move", InputActionType.Value);
             _move.AddCompositeBinding("2DVector")
                 .With("Up", "<Keyboard>/w").With("Down", "<Keyboard>/s")
@@ -74,8 +79,11 @@ namespace Rabron.Prototype
             _interact?.Dispose();
             if (_camera != null)
                 Destroy(_camera.gameObject);
-            Cursor.lockState = CursorLockMode.None;
-            Cursor.visible = true;
+            if (Application.isPlaying)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+            }
         }
 
         private void Update()
