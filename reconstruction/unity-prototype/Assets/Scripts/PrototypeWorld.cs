@@ -98,7 +98,7 @@ namespace Rabron.Prototype
             Station(parent, stations, StationAction.Fence, "Sell loot at fence",
                     new Vector3(-19, 0.65f, -2.3f), "#D6BB83");
             Station(parent, stations, StationAction.CollectCash, "Collect cash on counter",
-                    new Vector3(-19, 0.65f, 1.65f), "#E0DB7B");
+                    new Vector3(-19, 0f, 1.65f), "#E0DB7B");
             Station(parent, stations, StationAction.Launder, "Start laundering",
                     new Vector3(20, 0, 3.5f), "#80C9B9");
             Station(parent, stations, StationAction.OpenBank, "Open bank account",
