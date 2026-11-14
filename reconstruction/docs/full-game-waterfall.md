@@ -183,6 +183,21 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   These are bounded client serialized metadata, **not proven
   original gameplay/server formulas**.
 
+- W1-L source-verified the **last three large non-LFS** original
+  UI sprite atlas and global Wwise UnityFS bundles
+  (**78,857,251 verified original bytes**). The two UI sources
+  had zero MonoBehaviours but verified sprite/texture object
+  counts; Wwise had 1/1 parsed MonoBehaviour with **one
+  numeric-capped/partial record**. Source ledger now records
+  **170/330** documented UnityFS originals and **81,824**
+  parsed MonoBehaviours. **160** originals remain unscanned
+  (140 medium non-LFS, 20 LFS pointers), **zero** other large
+  non-LFS, and **38 unresolved numeric caps**. Original
+  source-run: https://github.com/Nippytime/rabron/actions/runs/43630843839 .
+  Details: reconstruction/docs/final-large-media-batch.md.
+  This is bounded Unity client metadata, **not evidence of
+  authoritative server formulas or rights to source media**.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
