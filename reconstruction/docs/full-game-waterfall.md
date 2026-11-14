@@ -143,6 +143,21 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/world-environment-batch.md. These are
   bounded client metadata inventories, **not authoritative formulas**.
 
+- W1-I verified three large original non-LFS world, settlement scene
+  and weapon UnityFS sources (87,418,232 actual original bytes),
+  **1,151/1,151** parsed MonoBehaviours and **0** unparsed typetrees.
+  One settlement additive-scene record remains numeric field-limited.
+  The global scene required serialized-file-scoped Unity path IDs
+  (110 repeated local ID groups across five serialized files); no
+  object was dropped or silently considered globally unique.
+  Coverage is now **161/330** tracked original bundles and **79,934**
+  parsed MonoBehaviours. **169** original bundles remain unscanned
+  (140 medium, 9 large, 20 LFS) and **35** numeric field-capped
+  records remain unresolved. Source-verified run:
+  https://github.com/Nippytime/rabron/actions/runs/43628460048 .
+  Details: reconstruction/docs/large-world-scene-batch.md. These
+  are bounded client metadata, **not authoritative game formulas**.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
