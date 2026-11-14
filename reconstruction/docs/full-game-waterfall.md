@@ -373,6 +373,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   Actual source run: https://github.com/Nippytime/rabron/actions/runs/43646936811 .
   See reconstruction/docs/medium-original-tattoo-bags-batch.md.
 
+- W1-AA source-verified ten original medium character bag and body/car
+  sprite-atlas UnityFS sources (**17,121,689** original source bytes),
+  **3/3** parsed MonoBehaviours (three character bags), **7 SpriteAtlas,
+  23 Texture2D, 3 Material, 5 Mesh**, zero unparsed/new numeric caps.
+  Seven original sprite-atlas bundles had genuine zero MonoBehaviours.
+  All candidate numeric keyword fields zero; client presentation is
+  not authoritative gameplay. Ledger now **308/330** original sources
+  and **82,133** parsed MonoBehaviours; **22** original bundles remain
+  unscanned (2 medium non-LFS, 20 LFS), plus **42** older numeric caps.
+  Verified original source Actions: https://github.com/Nippytime/rabron/actions/runs/43647615982 .
+  See reconstruction/docs/medium-original-cosmetic-atlases-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
