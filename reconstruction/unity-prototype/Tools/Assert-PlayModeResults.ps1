@@ -41,10 +41,11 @@ if ($UnityExitCode -ne 0 -or $status -ne 'Passed' -or
     $total -lt $expected.Count -or $passed -ne $total -or $failed -ne 0 -or
     $cases.Count -ne $total -or $missing.Count -gt 0 -or
     $duplicates.Count -gt 0 -or $failedCases.Count -gt 0) {
-    throw "Unity Play Mode acceptance FAILED: exit=$UnityExitCode " +
+    $reason = "Unity Play Mode acceptance FAILED: exit=$UnityExitCode " +
           "result=$status total=$total passed=$passed failed=$failed " +
           "cases=$($cases.Count) missing=$($missing -join ', ') " +
           "duplicate=$($duplicates.Count) failedCases=$($failedCases.Count)."
+    throw $reason
 }
 
 Write-Host "Unity Play Mode NUnit results PASSED ($passed/$total)."
