@@ -406,6 +406,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   **18** unscanned original LFS sources, **42** older numeric caps.
   See reconstruction/docs/weapon-lfs-source-batch.md.
 
+- W1-AD source-verified two original Git LFS equipment VFX and
+  realm-scene UnityFS bundles (**128,686,756** actual original
+  bytes), **109/109** parsed MonoBehaviours, **731 ParticleSystem**,
+  **171 Mesh**, **201 Texture2D**, zero unparsed or new numeric caps.
+  **444** timing/world-related keyword fields represent client
+  configuration candidates, not authoritative game formulas.
+  Original-byte source run: https://github.com/Nippytime/rabron/actions/runs/43650079085 .
+  The ledger now documents **314/330** original sources and
+  **82,377** parsed MonoBehaviours; **16** LFS originals remain
+  unscanned and **42** old numeric field caps remain unresolved.
+  See reconstruction/docs/equipment-realm-lfs-source-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
