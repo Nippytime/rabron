@@ -21,6 +21,7 @@ namespace Rabron.Prototype
         {
             string primary = SavePath;
             string backup = primary + ".bak";
+            Debug.Log("Rabron demo save path: " + primary);
 
             if (TryRead(primary, out HeistSession session))
             {
