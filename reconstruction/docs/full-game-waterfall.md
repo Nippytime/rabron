@@ -192,7 +192,7 @@ Unity blockout / C# rule simulation, not a finished system.
   road handling, physics damage and modular upgrade progression [O/B].
 - Player plot rental, construction snap, crafting benches, storage, power,
   manufacturing, defensive layouts, doors, safes, fuse/decoder raids [O/B].
-- Settlment residents/owners, plots, tier-dependent permissions,
+- Settlement residents/owners, plots, tier-dependent permissions,
   rent, collectible taxes, owner treasury, territory boundaries [O].
 - District owners and the top-level governance slot, territory defense,
   domination/transfer rules and fair ownership cooldowns [O/B/P].
