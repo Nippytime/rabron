@@ -19,6 +19,11 @@ namespace Rabron.Prototype.Editor
         [MenuItem("Tools/Rabron/Verify Unity Prototype")]
         public static void ValidateProject()
         {
+#if !ENABLE_INPUT_SYSTEM
+            throw new InvalidOperationException(
+                "Unity Input System backend is disabled. Enable 'Input System Package (New)' " +
+                "under Project Settings > Player > Active Input Handling and restart Unity.");
+#else
             PrototypeSceneInstaller.EnsureScene();
 
             var root = new GameObject("Temporary prototype verification");
@@ -129,6 +134,7 @@ namespace Rabron.Prototype.Editor
             }
 
             Debug.Log(PassToken + ": procedural scene, stations, colliders, and heist core verified");
+#endif
         }
 
         /// <summary>
@@ -140,9 +146,11 @@ namespace Rabron.Prototype.Editor
             ValidateProject();
             PrototypeSceneInstaller.BuildWindows();
 
-            string executable = Path.GetFullPath("Builds/RabronPrototype.exe");
+            string outputDirectory = Path.GetFullPath(
+                Path.Combine(Application.dataPath, "..", "Builds"));
+            string executable = Path.Combine(outputDirectory, "RabronPrototype.exe");
             Check(File.Exists(executable), "Build succeeded but executable is missing: " + executable);
-            Check(Directory.Exists(Path.GetFullPath("Builds/RabronPrototype_Data")),
+            Check(Directory.Exists(Path.Combine(outputDirectory, "RabronPrototype_Data")),
                   "Windows build data folder is missing");
             Debug.Log(BuildToken + ": " + executable);
         }
