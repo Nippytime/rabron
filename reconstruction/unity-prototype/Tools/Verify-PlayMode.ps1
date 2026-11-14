@@ -52,31 +52,8 @@ if (-not (Test-Path -LiteralPath $results -PathType Leaf)) {
 }
 
 try {
-    [xml]$xml = Get-Content -LiteralPath $results -Raw
-    $run = $xml.SelectSingleNode('/test-run')
-    if ($null -eq $run) {
-        throw 'NUnit <test-run> result element missing.'
-    }
-    $total = [int]$run.GetAttribute('total')
-    $passed = [int]$run.GetAttribute('passed')
-    $failed = [int]$run.GetAttribute('failed')
-    $status = $run.GetAttribute('result')
-    $cases = $xml.SelectNodes('//test-case')
-
-    $names = @($cases | ForEach-Object { $_.GetAttribute('fullname') })
-    $required = @(
-        'Rabron.Prototype.Tests.PlayModeFlowTests.SceneBootCreatesRuntimePlayerCameraHudAndStations',
-        'Rabron.Prototype.Tests.PlayModeFlowTests.HeistMarkersDriveFullLoopAndPhysicalCounterMoney'
-    )
-    $missing = @($required | Where-Object { $_ -notin $names })
-
-    if ($exitCode -ne 0 -or $status -ne 'Passed' -or
-        $total -lt 2 -or $passed -lt 2 -or $failed -ne 0 -or
-        $cases.Count -lt 2 -or $missing.Count -gt 0) {
-        throw "Unity Play Mode tests failed: exit=$exitCode result=$status total=$total passed=$passed failed=$failed missing=$($missing -join ', ')"
-    }
-
-    Write-Host "Unity Play Mode PASSED ($passed/$total)."
+    & (Join-Path $PSScriptRoot 'Assert-PlayModeResults.ps1') `
+        -ResultsPath $results -UnityExitCode $exitCode
     Write-Host "NUnit XML: $results"
     Write-Host "Editor log: $log"
 }
