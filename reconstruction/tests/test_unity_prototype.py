@@ -255,6 +255,12 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         runner = (UNITY / "Tools/Verify-PlayMode.ps1").read_text(
             encoding="utf-8"
         )
+        validator = (UNITY / "Tools/Assert-PlayModeResults.ps1").read_text(
+            encoding="utf-8"
+        )
+        validator_tests = (UNITY / "Tools/Test-PlayModeResults.ps1").read_text(
+            encoding="utf-8"
+        )
         save = read("PrototypeSaveStore.cs")
 
         self.assertEqual(manifest["com.unity.test-framework"], "1.6.0")
@@ -262,6 +268,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Rabron.Prototype", asmdef["references"])
         self.assertIn("Rabron.GameCore", asmdef["references"])
         self.assertIn("UnityEngine.TestRunner", asmdef["references"])
+        self.assertIn("UnityEditor.TestRunner", asmdef["references"])
+        self.assertEqual(asmdef["includePlatforms"], ["Editor"])
         self.assertIn("nunit.framework.dll", asmdef["precompiledReferences"])
         self.assertIn("TestAssemblies", asmdef["optionalUnityReferences"])
 
@@ -281,11 +289,19 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("'-testPlatform', 'PlayMode'", runner)
         self.assertIn("'-testCategory', 'RabronPlayMode'", runner)
         self.assertIn("'-testResults', $results", runner)
-        self.assertIn("SelectSingleNode('/test-run')", runner)
-        self.assertIn("$total -lt 2", runner)
-        self.assertIn("$failed -ne 0", runner)
-        self.assertIn("$missing.Count -gt 0", runner)
-        self.assertIn("$exitCode -ne 0", runner)
+        self.assertIn("Assert-PlayModeResults.ps1", runner)
+        self.assertIn("-ResultsPath $results -UnityExitCode $exitCode", runner)
+        self.assertIn("SelectSingleNode('/test-run')", validator)
+        self.assertIn("$total -lt $expected.Count", validator)
+        self.assertIn("$failed -ne 0", validator)
+        self.assertIn("$missing.Count -gt 0", validator)
+        self.assertIn("$duplicates.Count -gt 0", validator)
+        self.assertIn("$UnityExitCode -ne 0", validator)
+        self.assertIn("Assert-Accepted", validator_tests)
+        self.assertIn("Assert-Rejected", validator_tests)
+        self.assertIn("zero-test run", validator_tests)
+        self.assertIn("duplicate expected case", validator_tests)
+        self.assertIn("malformed NUnit XML", validator_tests)
         self.assertNotIn("'-quit'", runner)
         self.assertIn('arg, "-runTests"', save)
         self.assertIn("Application.temporaryCachePath", save)
