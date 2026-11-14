@@ -6773,6 +6773,288 @@
       "size_bytes": 1868138,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-33_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "47335e9ebf300b3a1f54abc6329a7815b7976ddf",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "2851ee220daa73569e9c8deacf74682d0064c8b792ebe2b1c8a9302dbaff610e",
+      "size_bytes": 1385457,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-34_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b08abcb80f370a6c10998be6723b77d471bae0da",
+      "monobehaviours_parsed": 2,
+      "monobehaviours_total": 2,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 2,
+        "Mesh": 10,
+        "MonoBehaviour": 2,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "6c520039021bfbe58eb18d5799ce0f0af5b7e1e32f09a8caa9b7d68901fd3b23",
+      "size_bytes": 1952792,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-36_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b7837194013245d2786abc31609a2afeaffa53f4",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 5
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "16dccc374aeb848a7c5ca1ca76a4bdbdf246b85c5d51199f17d798c2ac2cc6e2",
+      "size_bytes": 2223752,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-37_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "0e8bbde4ed1dc91b39d929f2ad0031c784b92ba2",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "2ad70355e7f34c09e15f253629b65f75c08a0fda84751196148b38d19885d4c6",
+      "size_bytes": 1674936,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-38_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "19a27216bbe5af2199e9eb521d091c0093579ecc",
+      "monobehaviours_parsed": 4,
+      "monobehaviours_total": 4,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 6,
+        "Mesh": 10,
+        "MonoBehaviour": 4,
+        "Texture2D": 5
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "4ef9b9f86e2981482a5c8fe424240aca270f4fe9a1ba4b5d3597f59a05a2db20",
+      "size_bytes": 3385948,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-39_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "5b981ad2edda54766c7ba196d7abb9452df99b9a",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 6
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "7e30dd1291ecc8d571adbfc29be11dfaaa1879e656f9ff43181f9032ce754198",
+      "size_bytes": 3518919,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-41_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "76cdf78724de4b5bfae72ff143e1e7158aa36c14",
+      "monobehaviours_parsed": 2,
+      "monobehaviours_total": 2,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "Mesh": 10,
+        "MonoBehaviour": 2,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "51dc1ce217cf364bd54e8ce4ec90596a365967df02c61fe5606866549718d8f3",
+      "size_bytes": 2330689,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-42_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "db63e59bf71f3f641c56addc91a867b5bdc74d0d",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 4
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "d4356859671540b3f7b1bc98a4d42aa9d0f5d2d79168d43f03d16d92c92749d2",
+      "size_bytes": 2103509,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-43_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "21af5c17054bdd3f34900be97f326635b75ca1e7",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Texture2D": 6
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "52c923145d6aed37ff6305015c6dadfd981ae5217ede2dcaf1b286646ca89fa0",
+      "size_bytes": 3407846,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-mask-44_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "ca95f52e7c15f4817aaa7ccf214019455eb364ba",
+      "monobehaviours_parsed": 6,
+      "monobehaviours_total": 6,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 3,
+        "Mesh": 10,
+        "MonoBehaviour": 6,
+        "Texture2D": 9
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43637568828",
+      "scan_evidence": "GitHub Actions W1-T medium-mask-33-44 source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "305a51ce72bddcfe0203ab0f44afc86d962ea67c9ef50d33fea6a7c89adcf785",
+      "size_bytes": 4329612,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],
