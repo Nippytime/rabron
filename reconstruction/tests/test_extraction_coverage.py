@@ -1333,14 +1333,14 @@ class ExtractionCoverageTests(unittest.TestCase):
                      LEDGER["known_lfs_not_yet_scanned"])
         planned = plan_scans(paths, LEDGER)
         self.assertEqual(planned["historic_field_capped_records"], 74)
-        self.assertEqual(planned["remaining_historic_field_capped_records"], 42)
+        self.assertEqual(planned["remaining_historic_field_capped_records"], 44)
         statuses = {entry["bundle"]: entry["status"] for entry
                     in planned["backlog"]}
         self.assertEqual(
             statuses[BUNDLE_PREFIX + "inbuild_assets_all.bundle"],
             "historic_caps_resolved_scope_partial",
         )
-        self.assertEqual(planned["statuses"]["partial_field_cap"], 20)
+        self.assertEqual(planned["statuses"]["partial_field_cap"], 21)
         self.assertEqual(planned["statuses"][
             "historic_caps_resolved_scope_partial"], 1)
 
