@@ -103,26 +103,10 @@ namespace Rabron.Prototype
 
         private bool CanReachStation(InteractionMarker marker)
         {
-            // Proximity alone would let the player steal loot through the
-            // warehouse wall or pick up cash through the fence counter.
+            // Don't steal through warehouse walls or reach through the counter.
             Vector3 eye = _player.transform.position + Vector3.up * 1.5f;
-            Vector3 delta = marker.transform.position - eye;
-            float length = delta.magnitude;
-            if (length < 0.001f)
-                return true;
-
-            int hits = Physics.RaycastNonAlloc(eye, delta / length, _stationHits,
-                                              length, ~0, QueryTriggerInteraction.Ignore);
-            if (hits == _stationHits.Length)
-                return false; // Never grant interaction from an incomplete scan.
-
-            for (int i = 0; i < hits; i++)
-            {
-                var collider = _stationHits[i].collider;
-                if (collider != null && !collider.transform.IsChildOf(_player.transform))
-                    return false;
-            }
-            return true;
+            return WorldOcclusion.HasClearLine(eye, marker.transform.position,
+                                               _player.transform, _stationHits);
         }
 
         private bool Available(StationAction action)
