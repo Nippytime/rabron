@@ -8,7 +8,28 @@ asset from missing, truncated, or unparsed MonoBehaviour records.
 import argparse
 import hashlib
 import json
+import re
+from collections import Counter
 from pathlib import Path
+
+
+def validate_object_identities(records, *, id_field="path_id"):
+    """Never collapse same-file duplicates or unscoped cross-file path IDs."""
+    ids = [record.get(id_field) for record in records]
+    if any(not isinstance(value, str) or
+           re.fullmatch(r"-?[0-9]+", value) is None for value in ids):
+        raise ValueError("Missing or invalid Unity path ID")
+    duplicates = {key for key, count in Counter(ids).items() if count > 1}
+    for record in records:
+        scope = record.get("serialized_file")
+        if scope is not None and (not isinstance(scope, str) or not scope.strip()):
+            raise ValueError("Invalid serialized file identity")
+        if record[id_field] in duplicates and scope is None:
+            raise ValueError("Duplicate Unity path IDs lack serialized-file scope")
+    identities = [(record.get("serialized_file"), record[id_field])
+                  for record in records]
+    if len(set(identities)) != len(identities):
+        raise ValueError("Duplicate Unity object ID within serialized file")
 
 
 def validate(manifest, summary, *, source, expected_size, max_fields, max_depth):
@@ -48,8 +69,7 @@ def validate(manifest, summary, *, source, expected_size, max_fields, max_depth)
             not 0 <= parsed <= attempted == total == len(records) or
             object_types.get("MonoBehaviour", 0) != total):
         raise ValueError("MonoBehaviour counts do not reconcile")
-    if len({record.get("path_id") for record in records}) != len(records):
-        raise ValueError("Duplicate Unity path IDs in scan")
+    validate_object_identities(records)
     if any(record.get("status") not in ("parsed", "unparsed") for record in records):
         raise ValueError("Unrecognized MonoBehaviour parsing status")
     success = sum(record["status"] == "parsed" for record in records)

@@ -101,6 +101,34 @@ class SourceInventoryValidationTests(unittest.TestCase):
         self.assertEqual(result["unparsed"], 1)
         self.assertFalse(result["bounded_mono_numeric_complete"])
 
+    def test_distinct_serialized_files_can_share_path_id_without_losing_identity(self):
+        manifest = copy.deepcopy(self.manifest)
+        summary = copy.deepcopy(self.summary)
+        first = manifest["records"][0]
+        first["serialized_file"] = "level0"
+        second = copy.deepcopy(first)
+        second["serialized_file"] = "sharedassets0.assets"
+        manifest["records"] = [first, second]
+        manifest["monobehaviours_total"] = 2
+        manifest["monobehaviours_attempted"] = 2
+        manifest["monobehaviours_parsed"] = 2
+        manifest["objects_by_type"]["MonoBehaviour"] = 2
+        summary["object_counts"] = manifest["objects_by_type"]
+        summary["monobehaviours_total"] = 2
+        summary["monobehaviours_attempted"] = 2
+        summary["monobehaviours_parsed"] = 2
+        result = self.check(manifest, summary)
+        self.assertEqual(result["parsed"], 2)
+        self.assertTrue(result["bounded_mono_numeric_complete"])
+        # Duplicate within one serialized file remains a validation failure.
+        manifest["records"][1]["serialized_file"] = "level0"
+        with self.assertRaisesRegex(ValueError, "Duplicate"):
+            self.check(manifest, summary)
+        # Cannot pass if a repeated path ID loses its serialized-file scope.
+        del manifest["records"][1]["serialized_file"]
+        with self.assertRaisesRegex(ValueError, "Duplicate"):
+            self.check(manifest, summary)
+
     def test_missing_or_mutated_source_is_rejected(self):
         with self.assertRaisesRegex(ValueError, "byte size"):
             self.check(expected_size=self.size + 1)

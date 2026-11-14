@@ -106,6 +106,11 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
             continue
 
         entry = {"path_id": str(reader.path_id), "class": kind}
+        # Unity path IDs are unique within a serialized file, not across
+        # distinct serialized files stored in one AssetBundle.
+        serialized_file = getattr(getattr(reader, "assets_file", None), "name", None)
+        if isinstance(serialized_file, str) and serialized_file:
+            entry["serialized_file"] = serialized_file
         try:
             parsed = reader.parse_as_dict()
             entry["name"] = str(parsed.get("m_Name", ""))

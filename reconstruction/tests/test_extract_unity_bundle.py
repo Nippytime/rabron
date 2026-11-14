@@ -105,6 +105,7 @@ class BundleFormatTests(unittest.TestCase):
                 def __init__(self, path_id, values):
                     self.type = types.SimpleNamespace(name="MonoBehaviour")
                     self.path_id = path_id
+                    self.assets_file = types.SimpleNamespace(name="level0")
                     self.values = values
 
                 def parse_as_dict(self):
@@ -130,6 +131,7 @@ class BundleFormatTests(unittest.TestCase):
                 self.assertEqual(report["selected_path_ids"], ["200"])
                 self.assertEqual(report["missing_path_ids"], [])
                 self.assertEqual(report["records"][0]["path_id"], "200")
+                self.assertEqual(report["records"][0]["serialized_file"], "level0")
                 self.assertEqual(report["records"][0][
                     "numeric_truncation_reasons"], ["depth_limit"])
                 self.assertFalse(report["selected_numeric_extraction_complete"])

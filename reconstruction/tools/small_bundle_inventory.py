@@ -18,11 +18,13 @@ from reconstruction.tools.plan_bundle_scans import (
     BUNDLE_PREFIX, DEFAULT_LEDGER, validate_ledger,
 )
 from reconstruction.tools.summarize_numeric_evidence import summarize
-from reconstruction.tools.validate_source_inventory import validate
+from reconstruction.tools.validate_source_inventory import (
+    validate, validate_object_identities,
+)
 
 MIN_SIZE = 1024
 MAX_SIZE = 999999
-MAX_SOURCE_SIZE = 20 * 1024 * 1024 - 1
+MAX_SOURCE_SIZE = 64 * 1024 * 1024 - 1
 SMALL_EVIDENCE = "GitHub Actions W1-F small-source inventory artifact"
 BATCH_SIZE = 20
 MAX_BATCH_SIZE = 20
@@ -267,6 +269,8 @@ def inspect_source(entry):
             validated["bounded_mono_numeric_complete"],
         "path_ids": [
             {"id": record["path_id"], "status": record["status"],
+             **({"serialized_file": record["serialized_file"]}
+                if "serialized_file" in record else {}),
              "truncation": record.get("numeric_truncation_reasons", []),
              **({"error_type": record["error_type"]}
                 if "error_type" in record else {})}
@@ -338,6 +342,7 @@ def consolidate(plan, evidence_dir, ledger, *, run_url):
         if e["source_status"] == "unparseable":
             incomplete.append({"bundle": path, "error": e["parse_error_type"]})
             continue
+        validate_object_identities(e["path_ids"], id_field="id")
         if (e["source_status"] not in
                 ("bounded_mono_numeric_complete", "partial_mono_numeric") or
                 e["monobehaviours_total"] != len(e["path_ids"]) or
