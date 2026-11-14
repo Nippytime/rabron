@@ -82,7 +82,7 @@ class SourceVerificationTests(unittest.TestCase):
                 verify_source(path, evidence, phase="pointer")
 
             path.write_bytes(data)
-            with self.assertRaisesRegex(ValueError, "Expected original"):
+            with self.assertRaisesRegex(ValueError, "Invalid original Git LFS pointer"):
                 verify_source(path, evidence, phase="pointer")
 
     def test_downloaded_unityfs_bytes_are_exactly_sha_and_size_checked(self):
