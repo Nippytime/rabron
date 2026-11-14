@@ -251,6 +251,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/civilian-body-remaining-batch.md.
   No authoritative gameplay formula is inferred from this data.
 
+- W1-Q source-verified ten original medium character-mask UnityFS
+  bundles (**46,515,488** original bytes), **4/4** parsed
+  MonoBehaviours, **8 Mesh** and **97 Texture2D** objects. Nine
+  originals legitimately have **zero** MonoBehaviours, one has four.
+  No unparsed records, numeric caps or original exported media.
+  Ledger now covers **208/330** original bundles with **81,858**
+  parsed MonoBehaviours; **122** unscanned originals remain
+  (102 medium non-LFS, 20 LFS) and **42** unresolved numeric caps.
+  Source evidence: https://github.com/Nippytime/rabron/actions/runs/43635238378 .
+  See reconstruction/docs/medium-mask-batch.md; presentation metadata
+  is not a recovered authoritative gameplay formula.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
