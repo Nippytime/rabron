@@ -18,10 +18,12 @@ from reconstruction.tools.verify_priority_lfs import verify_source
 PREFIX = "StreamingAssets/aa/StandaloneWindows64/"
 EVIDENCE = "GitHub Actions W1-AC original weapon LFS source inventory artifact"
 AD_EVIDENCE = "GitHub Actions W1-AD original equipment-realm LFS source inventory artifact"
+AE_EVIDENCE = "GitHub Actions W1-AE original RC556-TAG12K LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
 AD_NAMES = {"equipement_assets_vfx.bundle", "space-realm_scenes_all.bundle"}
+AE_NAMES = {"weapon-rc556_assets_all.bundle", "weapon-tag12k_assets_all.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -31,7 +33,7 @@ def load_targets(path):
     if data.get("schema_version") != 1 or len(data.get("sources", [])) != 2:
         raise ValueError("Exactly two versioned LFS source targets required")
     sources = data["sources"]
-    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES):
+    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES):
         raise ValueError("Unexpected original LFS source scope")
     for e in sources:
         if (set(e) != {"bundle", "git_blob_sha", "lfs_oid_sha256", "size_bytes"}
@@ -187,9 +189,13 @@ def main():
     parser.add_argument("--run-url")
     args = parser.parse_args()
     targets = load_targets(args.manifest)
-    is_ad = {e["bundle"].removeprefix(PREFIX) for e in targets} == AD_NAMES
-    evidence = AD_EVIDENCE if is_ad else EVIDENCE
-    log_prefix = "W1AD" if is_ad else "W1AC"
+    names = {e["bundle"].removeprefix(PREFIX) for e in targets}
+    if names == AD_NAMES:
+        evidence, log_prefix = AD_EVIDENCE, "W1AD"
+    elif names == AE_NAMES:
+        evidence, log_prefix = AE_EVIDENCE, "W1AE"
+    else:
+        evidence, log_prefix = EVIDENCE, "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
     if args.command in ("pointer", "bytes"):
         item = next((e for e in targets if e["bundle"] == args.bundle), None)
