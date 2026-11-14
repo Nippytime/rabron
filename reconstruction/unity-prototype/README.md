@@ -73,8 +73,9 @@ require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
 The Editor smoke checks generated procedural geometry, all 14 station
-types and trigger colliders, the 0.65m step offset needed to climb the
-fence platform, and the heist-to-bank behavior contract. The optional
+types and trigger colliders, solid-wall interaction occlusion, near-wall
+camera placement, the 0.65m step offset needed to climb the fence platform,
+and the heist-to-bank behavior contract. The optional
 build requires Windows Build Support and produces
 Builds/RabronPrototype.exe inside the Unity project.
 
@@ -121,6 +122,20 @@ around the city.
    heist phase and retains account balances.
 
 The prototype currently has no NPCs; alarm escalation is not simulated.
+
+### Physical access and camera
+
+Nearby pillars now require a clear ray from the player's eye: a solid
+warehouse wall or fence counter prevents interaction from its opposite side.
+Trigger colliders do not obstruct the ray. The third-person follow camera
+moves in front of solid walls rather than clipping through them. Both systems
+reuse preallocated physics-hit buffers instead of allocating on every frame.
+
+The Editor smoke test probes the generated warehouse wall to verify that
+loot cannot be accessed from the street, can be accessed from the inside,
+and that the camera is clamped before that wall. These are **source-backed
+test cases**, not proof of a tested Unity player until the real Editor
+validation is run.
 
 The physical cash bundle display is a **generic presentation placeholder**,
 not a reproduction of ROB RUN cash denomination meshes or the extracted
