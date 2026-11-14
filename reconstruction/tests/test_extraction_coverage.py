@@ -95,7 +95,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         statuses = {entry["bundle"]: entry["status"] for entry
                     in planned["backlog"]}
         self.assertEqual(
-            statuses[bundle("inbuild_assets_all")],
+            statuses[BUNDLE_PREFIX + "inbuild_assets_all.bundle"],
             "historic_caps_resolved_scope_partial",
         )
         self.assertEqual(planned["statuses"]["partial_field_cap"], 6)
