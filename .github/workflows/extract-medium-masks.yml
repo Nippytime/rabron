@@ -3,7 +3,7 @@ name: W1-Q verify ten original medium character-mask UnityFS sources
 on:
   pull_request:
     paths:
-      - ".github/workflows/extract-medium-mask.yml"
+      - ".github/workflows/extract-medium-masks.yml"
       - "reconstruction/data/medium_mask_source_targets.json"
       - "reconstruction/data/extraction_coverage.json"
       - "reconstruction/tools/small_bundle_inventory.py"
@@ -85,7 +85,7 @@ jobs:
       fail-fast: false
       max-parallel: 2
       matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
-    name: Medium civilian body inventory / batch ${{ matrix.id }}
+    name: Medium character-mask inventory / batch ${{ matrix.id }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -101,7 +101,7 @@ jobs:
         with:
           name: medium-mask-source-plan
           path: ${{ runner.temp }}
-      - name: Sparse checkout only original civilian body sources
+      - name: Sparse checkout only original mask sources
         env:
           BATCH_ID: ${{ matrix.id }}
         run: |
