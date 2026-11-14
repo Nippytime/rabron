@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AD two original Git LFS equipment-VFX and space-realm UnityFS sources; original pointer identities only",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/equipement_assets_vfx.bundle",
+      "git_blob_sha": "1c3379334c23a5ea0828592a8df7bdeb21e59bee",
+      "lfs_oid_sha256": "396f23f4945428b72bb49ebe0cfdc1526ecbe178a2329c2afe7a4eb7022f0b82",
+      "size_bytes": 55350015
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/space-realm_scenes_all.bundle",
+      "git_blob_sha": "43cd1ead5561f348b38e331320ecb8be2e41dc95",
+      "lfs_oid_sha256": "3b93cf7b33ef488ec4956f301fdbac7dfb170ceb7838e2ecc2ab235208a4320b",
+      "size_bytes": 73336741
+    }
+  ]
+}

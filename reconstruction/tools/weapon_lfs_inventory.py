@@ -17,9 +17,11 @@ from reconstruction.tools.verify_priority_lfs import verify_source
 
 PREFIX = "StreamingAssets/aa/StandaloneWindows64/"
 EVIDENCE = "GitHub Actions W1-AC original weapon LFS source inventory artifact"
+AD_EVIDENCE = "GitHub Actions W1-AD original equipment-realm LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
+AD_NAMES = {"equipement_assets_vfx.bundle", "space-realm_scenes_all.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -29,7 +31,7 @@ def load_targets(path):
     if data.get("schema_version") != 1 or len(data.get("sources", [])) != 2:
         raise ValueError("Exactly two versioned LFS source targets required")
     sources = data["sources"]
-    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} != NAMES:
+    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES):
         raise ValueError("Unexpected original LFS source scope")
     for e in sources:
         if (set(e) != {"bundle", "git_blob_sha", "lfs_oid_sha256", "size_bytes"}
@@ -53,7 +55,8 @@ def verify_pointer(entry):
     return verified
 
 
-def source_plan(sources, ledger, entries, *, expected_tracked=330):
+def source_plan(sources, ledger, entries, *, expected_tracked=330,
+                scan_evidence=EVIDENCE):
     if len(entries) != expected_tracked:
         raise ValueError("Tracked original Git bundle count changed")
     scanned, pending = validate_ledger(ledger, sorted(entries))
@@ -71,7 +74,7 @@ def source_plan(sources, ledger, entries, *, expected_tracked=330):
                 old.get("sha256") != e["lfs_oid_sha256"] or
                 old.get("size_bytes") != e["size_bytes"] or
                 old.get("git_blob_sha") != e["git_blob_sha"] or
-                old.get("scan_evidence") != EVIDENCE):
+                old.get("scan_evidence") != scan_evidence):
             raise ValueError("Previously documented source evidence drift")
         modes.append("recheck" if old else "new")
     if len(set(modes)) != 1:
@@ -81,7 +84,7 @@ def source_plan(sources, ledger, entries, *, expected_tracked=330):
             "documented_before": len(ledger["scans"])}
 
 
-def scan(entry, run_url):
+def scan(entry, run_url, *, scan_evidence=EVIDENCE):
     path = Path(entry["bundle"])
     verified = verify_source(path, entry, phase="bytes")
     raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
@@ -95,7 +98,7 @@ def scan(entry, run_url):
         "size_bytes": entry["size_bytes"],
         "git_blob_sha": entry["git_blob_sha"],
         "lfs_oid_sha256": entry["lfs_oid_sha256"],
-        "scan_evidence": EVIDENCE, "run_url": run_url,
+        "scan_evidence": scan_evidence, "run_url": run_url,
         "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
         "status": "documented_scan_not_fully_verified",
         "monobehaviours_total": checked["monobehaviours_total"],
@@ -112,7 +115,8 @@ def scan(entry, run_url):
     }
 
 
-def reconcile(plan, records, ledger, run_url, tracked):
+def reconcile(plan, records, ledger, run_url, tracked, *,
+              scan_evidence=EVIDENCE):
     if (plan["tracked_bundles"] != len(tracked) or
             plan["documented_before"] != len(ledger["scans"]) or
             len(records) != 2 or
@@ -128,7 +132,7 @@ def reconcile(plan, records, ledger, run_url, tracked):
                 record.get("lfs_oid_sha256") != e["lfs_oid_sha256"] or
                 record.get("sha256") != e["lfs_oid_sha256"] or
                 record.get("size_bytes") != e["size_bytes"] or
-                record.get("scan_evidence") != EVIDENCE or
+                record.get("scan_evidence") != scan_evidence or
                 record.get("run_url") != run_url or
                 record.get("numeric_field_limit") != FIELDS or
                 record.get("numeric_depth_limit") != DEPTH or
@@ -183,6 +187,9 @@ def main():
     parser.add_argument("--run-url")
     args = parser.parse_args()
     targets = load_targets(args.manifest)
+    is_ad = {e["bundle"].removeprefix(PREFIX) for e in targets} == AD_NAMES
+    evidence = AD_EVIDENCE if is_ad else EVIDENCE
+    log_prefix = "W1AD" if is_ad else "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
     if args.command in ("pointer", "bytes"):
         item = next((e for e in targets if e["bundle"] == args.bundle), None)
@@ -195,14 +202,15 @@ def main():
         item = next((e for e in targets if e["bundle"] == args.bundle), None)
         if item is None or not args.run_url or args.output is None:
             raise ValueError("Exact scan source/run/output required")
-        record = scan(item, args.run_url)
+        record = scan(item, args.run_url, scan_evidence=evidence)
         args.output.write_text(json.dumps(record, indent=2, sort_keys=True) + "\n")
         print(json.dumps({"source": record["bundle"], "objects": sum(
             record["objects_by_type"].values())}, sort_keys=True))
     else:
         entries = tree_entries()
         if args.command == "plan":
-            plan = source_plan(targets, ledger, entries)
+            plan = source_plan(targets, ledger, entries,
+                               scan_evidence=evidence)
             for item in targets:
                 verify_pointer(item)
             if args.output is None or args.matrix is None:
@@ -220,15 +228,20 @@ def main():
             records = [json.loads((args.evidence_dir / (
                 entry["bundle"].removeprefix(PREFIX) + ".json")).read_text())
                        for entry in plan["sources"]]
-            report, proposed = reconcile(plan, records, ledger, args.run_url, entries)
+            if [e["bundle"] for e in plan.get("sources", [])] != [
+                    e["bundle"] for e in targets]:
+                raise ValueError("Reconciliation plan differs from source manifest")
+            report, proposed = reconcile(
+                plan, records, ledger, args.run_url, entries,
+                scan_evidence=evidence)
             args.output.write_text(json.dumps({
                 "report": report, "proposed_ledger": proposed
             }, indent=2, sort_keys=True) + "\n")
-            print("W1AC_SUMMARY=" + json.dumps(report, separators=(",", ":"), sort_keys=True))
+            print(log_prefix + "_SUMMARY=" + json.dumps(report, separators=(",", ":"), sort_keys=True))
             new = proposed["scans"][len(ledger["scans"]):]
             encoded = json.dumps(new, separators=(",", ":"), sort_keys=True)
             for index in range(0, len(encoded), 4000):
-                print(f"W1AC_CHUNK_{index // 4000:03d}={encoded[index:index + 4000]}")
+                print(f"{log_prefix}_CHUNK_{index // 4000:03d}={encoded[index:index + 4000]}")
 
 
 if __name__ == "__main__":
