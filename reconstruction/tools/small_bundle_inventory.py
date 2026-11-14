@@ -25,7 +25,7 @@ MAX_BATCH_SIZE = 20
 MAX_FIELDS = 2048
 MAX_DEPTH = 32
 SAFE_BUNDLE = re.compile(
-    r"^StreamingAssets/aa/StandaloneWindows64/[A-Za-z0-9_.-]+\.bundle$"
+    r"^StreamingAssets/aa/StandaloneWindows64/[A-Za-z0-9_().-]+\.bundle$"
 )
 SHA1 = re.compile(r"^[a-f0-9]{40}$")
 
