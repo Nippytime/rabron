@@ -361,6 +361,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-original-ui-shaders-atlas-batch.md.
   Client shader/UI source metadata does not prove live game formulas.
 
+- W1-Z source-verified ten original tattoo/makeup materials and character-bag
+  UnityFS sources (**35,694,961** source bytes), **5/5** parsed
+  MonoBehaviours in five bag bundles, with **41 Texture2D, 7 Material,
+  9 Mesh**, zero unparsed and no new caps. Five tattoo/makeup bundles
+  had zero MonoBehaviours but measurable typed objects. All keyword
+  candidate fields zero; these are client presentation assets, not
+  authoritative gameplay formulas. Ledger now **298/330** original
+  bundles, **82,130** parsed MonoBehaviours; **32** unscanned
+  (12 medium non-LFS, 20 LFS), **42** historical unresolved numeric caps.
+  Actual source run: https://github.com/Nippytime/rabron/actions/runs/43646936811 .
+  See reconstruction/docs/medium-original-tattoo-bags-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
