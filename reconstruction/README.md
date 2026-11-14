@@ -45,13 +45,17 @@ but it is **not** sufficient for a full-binary inventory of the parent repo.
 ## Evidence-first extraction queue
 
 The full original build inventory includes **330 tracked Unity bundles**.
-Fifteen MonoBehaviour bundle passes are now source-documented, including
-six **real new extraction runs** at GitHub Actions run 43584959275. They cover
-9,107 parsed objects in total; the older nine passes include 56 reported
-numeric field-limit truncations. The newer six report no caps under 8,192
-fields/depth 32, but this only establishes numeric MonoBehaviour scope,
-**not** server formulas or complete recovery of all Unity object types.
- See reconstruction/docs/gameplay-bundle-batch-1.md for measured results.
+Seventeen bundle passes are now documented, including six gameplay-source
+scans and the newly verified NPC/tutorial LFS bundles. Across the
+**17/330** inventoried sources, **9,481** MonoBehaviours have been parsed.
+The older source audits had 56 capped records; W1-C resolved 30 and keeps
+26 incomplete. The NPC source contributed 374 parsed MonoBehaviours
+without reported field/depth caps. The tutorial source contains 113
+sprites and 113 textures but **zero** MonoBehaviours; its gameplay
+implementation has not been recovered. These are client asset findings,
+not original economy, AI or server authority. See
+reconstruction/docs/gameplay-bundle-batch-1.md and
+reconstruction/docs/npc-tutorial-lfs-audit.md.
 
 **W1-C targeted overflow follow-up:** The seven verified UnityFS jobs reproduced
 all **56** older numeric field caps by SHA-256 and Unity path ID, resolved
