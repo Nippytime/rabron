@@ -16,7 +16,7 @@
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/location-settlement-data_assets_all.bundle",
-      "sha256": "43018ce5ec95c4dfdd433b71d1460ada17cf4dbd79d8abbbffab8ebd70c2bf00b5c83534",
+      "sha256": "43018ce5ec95c4dfdd433b71d1460ada17cf4dbd79d8abbd70c2bf00b5c83534",
       "monobehaviours_total": 3220,
       "monobehaviours_parsed": 3220,
       "numeric_field_cap_records": 12,
