@@ -334,6 +334,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-female-bodies-batch.md.
   Serialized client metadata is not authoritative gameplay.
 
+- W1-X source-verified ten medium original character body/head/prison
+  and keychain customization UnityFS bundles (**74,126,821** original
+  source bytes), **24/24** parsed MonoBehaviours, **107 Mesh**,
+  **74 Texture2D**, **29 Material**, zero unparsed records/new
+  caps and no original media exported. Keychains contributed 15
+  parsed MonoBehaviours; nine other originals one each. Evidence
+  ledger now **278/330**, **82,031** parsed MonoBehaviours, **52**
+  unscanned originals (32 medium non-LFS, 20 LFS), **42** old
+  unresolved numeric caps. Original source run: https://github.com/Nippytime/rabron/actions/runs/43641144643 .
+  See reconstruction/docs/medium-character-customizer-batch.md.
+  Client assets do not establish original gameplay authority.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
