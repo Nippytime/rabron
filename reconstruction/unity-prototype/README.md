@@ -93,6 +93,37 @@ need a graphical session to activate the Input System.
 Unity Editor or built a Windows player. Passing Python, .NET, and
 PowerShell syntax checks cannot establish Unity runtime success.
 
+## Local progress saving
+
+The local **demo** now retains the authoritative gameplay session between
+Play Mode sessions and Windows executable launches. On startup it loads a
+versioned checkpoint from Unity's \`Application.persistentDataPath\`.
+Successful interactions, guard alarms, completed laundering, application
+pause and quit trigger saves. You can stop during a heist, with uncollected
+fence money, or while a laundering timer is running, then resume without
+minting extra currency. A timer that expired while the app was closed
+completes on the next gameplay update.
+
+The file is \`rabron-prototype-v1.json\` with a \`.bak\` previous checkpoint.
+The app saves via a temporary file and replacement, preserving the earlier
+version on each completed write. It validates restored roles, stages, loot,
+balances, and any pending laundering payout/deadline; corrupt or unsupported
+checkpoints are rejected, with a previous valid backup used if available.
+No game binaries or personal account credentials are stored.
+
+To start a clean demo, **close Play Mode/the game**, then remove both
+\`rabron-prototype-v1.json\` and \`rabron-prototype-v1.json.bak\`
+inside Unity's persistent data directory. This is a **local-only prototype
+checkpoint**, not the original game's server save, multiplayer account,
+seven-day wipe, or protected bank ledger. Only gameplay state is saved;
+the character respawns at the city start (or the desert return marker
+when outside the city), not at the previous exact coordinate.
+
+The Unity Editor smoke test additionally exercises real \`JsonUtility\`
+roundtrips for collectible counter cash and an in-progress laundering
+job. As with every Editor test, it **must actually run inside Unity** before
+its result can be claimed as verified.
+
 ## Controls
 
 | Action | Keyboard / mouse | Gamepad |
@@ -182,7 +213,8 @@ No hard-coded economic rates live in the portable \`HeistSession\` core.
 - \`PrototypeWorld.cs\`: asset-free scene blockout and interaction targets.
 - \`GuardSensor.cs\`: stationary guard sight cone with provisional demo tuning.
 - \`ThirdPersonMotor.cs\`: input, collision, movement and follow camera.
-- \`PrototypeDirector.cs\`: calls portable game core APIs on interaction.
+- \`PrototypeDirector.cs\`: connects interactions and save/load to the gameplay core.
+- \`PrototypeSaveStore.cs\`: Unity-only JSON/file adapter for local checkpoints.
 - \`PrototypeHud.cs\`: runtime UI Toolkit status, objective and prompts.
 - \`PrototypeBalance.cs\`: explicitly non-source demo quotes and timing.
 - \`../../game/Core/HeistSession.cs\`: **single** gameplay state implementation
@@ -191,6 +223,7 @@ No hard-coded economic rates live in the portable \`HeistSession\` core.
 ## Validation and limitations
 
 GitHub Actions checks the referenced local package, all 15 interaction targets,
+versioned save adapters and invariant validation,
 Unity project manifest, demo bootstrapping and code separation. The original
 .NET console tests compile and exercise money conservation and phase gating.
 **Neither test substitutes for opening the actual project in Unity Editor.**

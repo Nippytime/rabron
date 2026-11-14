@@ -17,6 +17,11 @@ internal static class Program
             ResetsOnlyTheHeistCycle,
             ControlledStaffPreventsFutureAlarmWithoutRewritingThePast,
             StaffControlMustOccurDuringHeist,
+            SnapshotRestoresInFlightLootAndGuardState,
+            SnapshotPreservesPhysicalCounterCash,
+            SnapshotPreservesLaunderingDeadline,
+            SnapshotPreservesBankAcrossHeists,
+            SnapshotRejectsInvalidOrTamperedState,
         };
 
         foreach (Action test in tests)
@@ -198,6 +203,145 @@ internal static class Program
         True(session.StaffControlled);
         session.Escape();
         Throws<InvalidOperationException>(() => session.ControlStaff());
+    }
+
+    private static void SnapshotRestoresInFlightLootAndGuardState()
+    {
+        var game = StartHeistWithOneItem();
+        game.ControlStaff();
+        game.RaiseAlarm();
+
+        HeistSessionSnapshot data = game.ExportSnapshot();
+        Eq(HeistSessionSnapshot.CurrentVersion, data.Version);
+        Eq(1, data.LootIds.Length);
+
+        // Exporting cannot let a caller mutate the live inventory.
+        data.LootIds[0] = "external-modification";
+        Eq("camera", game.Loot[0]);
+
+        var restored = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Eq(HeistPhase.Robbing, restored.Phase);
+        Eq(PlayerRole.Criminal, restored.CurrentRole);
+        True(restored.AlarmRaised);
+        True(restored.StaffControlled);
+        Eq("camera", restored.Loot[0]);
+        restored.TakeLoot("watch");
+        Eq(2, restored.Loot.Count);
+        Eq(1, game.Loot.Count);
+    }
+
+    private static void SnapshotPreservesPhysicalCounterCash()
+    {
+        var game = StartHeistWithOneItem();
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 75 });
+
+        var restored = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Eq(HeistPhase.CashOnCounter, restored.Phase);
+        Eq(75L, restored.CounterCash);
+        Eq(0L, restored.DirtyCash);
+        restored.CollectCounterCash();
+        Eq(0L, restored.CounterCash);
+        Eq(75L, restored.DirtyCash);
+    }
+
+    private static void SnapshotPreservesLaunderingDeadline()
+    {
+        var game = StartHeistWithOneItem();
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 50 });
+        game.CollectCounterCash();
+        game.StartLaundering(50, 40, nowSeconds: 1000, durationSeconds: 20);
+
+        var restored = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Eq(HeistPhase.Laundering, restored.Phase);
+        Eq(1020L, restored.LaunderingReadyAt!.Value);
+        Eq(0L, restored.CleanCash);
+        Throws<InvalidOperationException>(() => restored.CompleteLaundering(1019));
+        restored.CompleteLaundering(1020);
+        Eq(40L, restored.CleanCash);
+        Eq(0L, restored.DirtyCash);
+        Eq(null, restored.LaunderingReadyAt);
+    }
+
+    private static void SnapshotPreservesBankAcrossHeists()
+    {
+        var game = StartHeistWithOneItem();
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 100 });
+        game.CollectCounterCash();
+        game.StartLaundering(100, 80, 100, 10);
+        game.CompleteLaundering(110);
+        game.LeaveCity();
+        game.EnterCity();
+        game.OpenBankAccount();
+        game.DepositCleanCash(80);
+        game.BeginAnotherHeist();
+        var restored = HeistSession.FromSnapshot(game.ExportSnapshot());
+
+        Eq(HeistPhase.Idle, restored.Phase);
+        Eq(80L, restored.BankBalance);
+        Eq(PlayerRole.Civilian, restored.CurrentRole);
+        True(restored.BankAccountOpened);
+        restored.Scout();
+        restored.PutOnMask();
+        restored.StartHeist();
+        Eq(80L, restored.BankBalance);
+    }
+
+    private static void SnapshotRejectsInvalidOrTamperedState()
+    {
+        var game = StartHeistWithOneItem();
+        var unsupported = game.ExportSnapshot();
+        unsupported.Version = 99;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(unsupported));
+
+        var invalidEnum = game.ExportSnapshot();
+        invalidEnum.Phase = (HeistPhase)999;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(invalidEnum));
+
+        var duplicate = game.ExportSnapshot();
+        duplicate.LootIds = new[] { "camera", "camera" };
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(duplicate));
+
+        var blank = game.ExportSnapshot();
+        blank.LootIds = new[] { " " };
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(blank));
+
+        var negative = game.ExportSnapshot();
+        negative.BankBalance = -1;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(negative));
+
+        var withoutAccount = game.ExportSnapshot();
+        withoutAccount.BankBalance = 20;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(withoutAccount));
+
+        var fakeCounter = game.ExportSnapshot();
+        fakeCounter.CounterCash = 200;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeCounter));
+
+        var impossibleEarlyAlarm = new HeistSession().ExportSnapshot();
+        impossibleEarlyAlarm.AlarmRaised = true;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(impossibleEarlyAlarm));
+
+        var impossibleEarlyGuard = new HeistSession().ExportSnapshot();
+        impossibleEarlyGuard.StaffControlled = true;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(impossibleEarlyGuard));
+
+        var invalidJob = game.ExportSnapshot();
+        invalidJob.Phase = HeistPhase.Laundering;
+        invalidJob.LootIds = Array.Empty<string>();
+        invalidJob.LaunderingInput = 10;
+        invalidJob.LaunderingPayout = 11;
+        invalidJob.LaunderingReadyAt = 1000;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(invalidJob));
+
+        var missingJob = game.ExportSnapshot();
+        missingJob.Phase = HeistPhase.Laundering;
+        missingJob.LootIds = Array.Empty<string>();
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(missingJob));
+
+        Throws<ArgumentNullException>(() => HeistSession.FromSnapshot(null!));
     }
 
     private static HeistSession StartHeistWithOneItem()

@@ -31,7 +31,7 @@ namespace Rabron.Prototype
                 _ownsBalance = true;
             }
 
-            _session = new HeistSession();
+            _session = PrototypeSaveStore.Load(out string startupMessage);
             _stations = PrototypeWorld.Create(transform, out _player, out _cashPile,
                                               out _guard);
 
@@ -39,7 +39,10 @@ namespace Rabron.Prototype
             hudObject.transform.SetParent(transform, false);
             _hud = hudObject.AddComponent<PrototypeHud>();
             _hud.Initialize();
-            Notice("Demo: follow the objective and approach a colored pillar.");
+            if (_session.CurrentZone == Zone.Desert)
+                _player.WarpTo(new Vector3(0f, 0.12f, -45f));
+            _cashPile.SetAmount(_session.CounterCash);
+            Notice(startupMessage);
         }
 
         private void Update()
@@ -49,6 +52,7 @@ namespace Rabron.Prototype
                 _session.LaunderingReadyAt <= now)
             {
                 _session.CompleteLaundering(now);
+                SaveProgress();
                 Notice("Laundering complete. Leave the city to clear criminal status.");
             }
 
@@ -57,6 +61,7 @@ namespace Rabron.Prototype
                 _guard.CanSee(_player.transform))
             {
                 _session.RaiseAlarm();
+                SaveProgress();
                 Notice("ALARM RAISED! The guard spotted you. Escape with any loot.");
             }
 
@@ -71,6 +76,7 @@ namespace Rabron.Prototype
                     {
                         Perform(focused, now);
                         Notice("Completed: " + focused.Label);
+                        SaveProgress();
                     }
                     catch (Exception error) when (error is InvalidOperationException ||
                                                   error is ArgumentException ||
@@ -255,6 +261,24 @@ namespace Rabron.Prototype
         {
             _notice = message;
             _noticeUntil = Time.unscaledTime + 4.5f;
+        }
+
+        private void SaveProgress()
+        {
+            if (!PrototypeSaveStore.TrySave(_session, out string error))
+                Notice("Progress could not be saved: " + error);
+        }
+
+        private void OnApplicationPause(bool paused)
+        {
+            if (paused && _session != null)
+                SaveProgress();
+        }
+
+        private void OnApplicationQuit()
+        {
+            if (_session != null)
+                SaveProgress();
         }
 
         private void OnDestroy()

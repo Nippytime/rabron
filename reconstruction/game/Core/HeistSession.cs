@@ -194,6 +194,106 @@ namespace Rabron.Reconstruction
             StaffControlled = false;
         }
 
+        /// <summary>Copy all authoritative state into a data-only checkpoint.</summary>
+        public HeistSessionSnapshot ExportSnapshot()
+        {
+            return new HeistSessionSnapshot
+            {
+                Version = HeistSessionSnapshot.CurrentVersion,
+                Zone = CurrentZone,
+                Role = CurrentRole,
+                Phase = Phase,
+                AlarmRaised = AlarmRaised,
+                StaffControlled = StaffControlled,
+                BankAccountOpened = BankAccountOpened,
+                CounterCash = CounterCash,
+                DirtyCash = DirtyCash,
+                CleanCash = CleanCash,
+                BankBalance = BankBalance,
+                LootIds = _loot.ToArray(),
+                LaunderingInput = _laundering?.DirtyInput ?? 0,
+                LaunderingPayout = _laundering?.CleanPayout ?? 0,
+                LaunderingReadyAt = _laundering?.FinishSeconds ?? 0,
+            };
+        }
+
+        /// <summary>
+        /// Restore a saved checkpoint only after validating all fields.
+        /// Import never generates extra currency or silently repairs corruption.
+        /// </summary>
+        public static HeistSession FromSnapshot(HeistSessionSnapshot snapshot)
+        {
+            if (snapshot == null)
+                throw new ArgumentNullException(nameof(snapshot));
+
+            bool supported = snapshot.Version == HeistSessionSnapshot.CurrentVersion &&
+                Enum.IsDefined(typeof(Zone), snapshot.Zone) &&
+                Enum.IsDefined(typeof(PlayerRole), snapshot.Role) &&
+                Enum.IsDefined(typeof(HeistPhase), snapshot.Phase);
+            if (!supported)
+                throw new ArgumentException("Unsupported or invalid session save.", nameof(snapshot));
+
+            if (snapshot.CounterCash < 0 || snapshot.DirtyCash < 0 ||
+                snapshot.CleanCash < 0 || snapshot.BankBalance < 0 ||
+                (snapshot.BankBalance > 0 && !snapshot.BankAccountOpened))
+                throw new ArgumentException("Save contains invalid money balances.", nameof(snapshot));
+
+            string[] loot = snapshot.LootIds ?? Array.Empty<string>();
+            var unique = new HashSet<string>(StringComparer.Ordinal);
+            foreach (string item in loot)
+            {
+                if (string.IsNullOrWhiteSpace(item) || !unique.Add(item))
+                    throw new ArgumentException("Save contains invalid or duplicate loot.", nameof(snapshot));
+            }
+
+            bool isLaundering = snapshot.Phase == HeistPhase.Laundering;
+            bool validJob = isLaundering
+                ? snapshot.LaunderingInput > 0 &&
+                  snapshot.LaunderingPayout >= 0 &&
+                  snapshot.LaunderingPayout <= snapshot.LaunderingInput &&
+                  snapshot.LaunderingReadyAt > 0
+                : snapshot.LaunderingInput == 0 &&
+                  snapshot.LaunderingPayout == 0 &&
+                  snapshot.LaunderingReadyAt == 0;
+
+            // In the actual state transitions, beginning another heist
+            // clears the previous alarm and guard-control flags.
+            bool beforeHeist = snapshot.Phase == HeistPhase.Idle ||
+                               snapshot.Phase == HeistPhase.Scouted;
+            bool validAlertStage = !beforeHeist ||
+                                   (!snapshot.AlarmRaised && !snapshot.StaffControlled);
+
+            bool lootPhase = snapshot.Phase == HeistPhase.Robbing ||
+                             snapshot.Phase == HeistPhase.Escaped;
+            bool counterPhase = snapshot.Phase == HeistPhase.CashOnCounter;
+            bool validMoneyStage = (lootPhase || loot.Length == 0) &&
+                (counterPhase ? snapshot.CounterCash > 0 : snapshot.CounterCash == 0) &&
+                (snapshot.Phase != HeistPhase.DirtyCashCollected || snapshot.DirtyCash > 0);
+
+            if (!validJob || !validMoneyStage || !validAlertStage)
+                throw new ArgumentException("Save contains inconsistent heist state.", nameof(snapshot));
+
+            var session = new HeistSession(snapshot.Zone, snapshot.Role)
+            {
+                Phase = snapshot.Phase,
+                AlarmRaised = snapshot.AlarmRaised,
+                StaffControlled = snapshot.StaffControlled,
+                BankAccountOpened = snapshot.BankAccountOpened,
+                CounterCash = snapshot.CounterCash,
+                DirtyCash = snapshot.DirtyCash,
+                CleanCash = snapshot.CleanCash,
+                BankBalance = snapshot.BankBalance,
+            };
+            session._loot.AddRange(loot);
+            if (isLaundering)
+            {
+                session._laundering = new LaunderingJob(snapshot.LaunderingInput,
+                                                       snapshot.LaunderingPayout,
+                                                       snapshot.LaunderingReadyAt);
+            }
+            return session;
+        }
+
         private static void Require(bool condition, string reason)
         {
             if (!condition)

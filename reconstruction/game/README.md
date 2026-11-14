@@ -22,6 +22,21 @@ A pure C# 8 / .NET Standard 2.1 gameplay state machine covering this sequence:
 This implements a working rules **simulation**, with no 3D camera, UI,
 animation or multiplayer networking yet.
 
+## Local demo checkpoint contract
+
+\`HeistSession.ExportSnapshot()\` and \`HeistSession.FromSnapshot()\` transfer
+the full heist phase, role, loot IDs, collectible fence cash, guard/alarm
+flags, dirty/clean money, bank balance and running laundering job. Restores
+validate the save version, IDs, financial amounts, phase consistency and
+timer/payout integrity before using any saved values.
+
+\`Core/HeistSessionSnapshot.cs\` is a pure C# serializable data carrier.
+The core never touches JSON, Unity APIs or file storage. The Unity
+prototype owns \`JsonUtility\` and local file operations in
+\`../unity-prototype/Assets/Scripts/PrototypeSaveStore.cs\`. This file
+format is an independently authored **local demo**, not original ROB RUN
+account or server persistence.
+
 ## Build and run
 
 The game logic uses only .NET Standard 2.1 framework APIs (no Unity types),
@@ -60,9 +75,8 @@ amount is an original ROB RUN payout, reward, fee, or duration.
 
 ## Next engineering steps
 
-- Create a fresh Unity 6000 project with original or appropriately licensed
-  world art; connect inputs and third-person character controller to
-  \`HeistSession\` through a thin Unity adapter.
+- Validate the existing `reconstruction/unity-prototype/` using a real
+  Unity 6000.3 Editor smoke test, full Play Mode heist and Windows build.
 - Implement scene markers for scouting, loot nodes, physical counter pick-up,
   police/surrender and house laundering.
 - Store economy coefficients as data with explicit source provenance and

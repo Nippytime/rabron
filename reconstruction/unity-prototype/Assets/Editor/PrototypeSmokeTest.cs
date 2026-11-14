@@ -174,10 +174,19 @@ namespace Rabron.Prototype.Editor
             Check(session.CounterCash == 20 && session.DirtyCash == 0,
                   "Fencing skipped collectible counter cash");
 
+            // Exercise Unity's actual JSON serializer, not merely the
+            // portable snapshot transfer object tested by .NET Actions.
+            session = HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                JsonUtility.ToJson(session.ExportSnapshot())));
+            Check(session.CounterCash == 20 && session.DirtyCash == 0,
+                  "JSON roundtrip incorrectly collected money from the fence");
+
             session.CollectCounterCash();
             session.StartLaundering(20, 15, 100, 5);
+            session = HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                JsonUtility.ToJson(session.ExportSnapshot())));
             Check(session.LaunderingReadyAt == 105,
-                  "Laundering deadline is incorrect");
+                  "Laundering deadline was not preserved by Unity JSON");
             session.CompleteLaundering(105);
             session.LeaveCity();
             session.EnterCity();
