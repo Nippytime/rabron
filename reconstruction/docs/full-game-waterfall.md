@@ -170,6 +170,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   https://github.com/Nippytime/rabron/actions/runs/43629339564 .
   Details: reconstruction/docs/large-weapon-batch.md.
 
+- W1-K verified three large original non-LFS settlement2, JP7 and
+  SRReaper UnityFS bundles (**134,099,202 source bytes**), yielding
+  **1,643/1,643 parsed MonoBehaviours**, zero unparsed typetrees and
+  **two numeric-capped settlement2 records**. Original-source ledger
+  is now **167/330 documented bundles** and **81,823** parsed
+  MonoBehaviours, with **163 unscanned** original bundles (140
+  medium non-LFS, 3 large non-LFS, 20 pending LFS sources) and
+  **37 unresolved numeric field-cap records**. Source run:
+  https://github.com/Nippytime/rabron/actions/runs/43630060068 .
+  Details: reconstruction/docs/large-settlement-weapon-batch.md.
+  These are bounded client serialized metadata, **not proven
+  original gameplay/server formulas**.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
