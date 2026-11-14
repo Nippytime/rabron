@@ -402,11 +402,13 @@
   "known_lfs_not_yet_scanned": [
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/npc_assets_all.bundle",
-      "lfs_oid_sha256": "aacec65903186775c8b834ba89cbbc0fea1419d857f14a0d95943732f12a0d69"
+      "lfs_oid_sha256": "aacec65903186775c8b834ba89cbbc0fea1419d857f14a0d95943732f12a0d69",
+      "size_bytes": 98896651
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/tutorial_assets_all.bundle",
-      "lfs_oid_sha256": "56f1993ad49ac265c3268667557b0ec13c1c0f39fb7ada94ae4251e4328ac691"
+      "lfs_oid_sha256": "56f1993ad49ac265c3268667557b0ec13c1c0f39fb7ada94ae4251e4328ac691",
+      "size_bytes": 84166120
     }
   ],
   "blocking_missing_sources": [
