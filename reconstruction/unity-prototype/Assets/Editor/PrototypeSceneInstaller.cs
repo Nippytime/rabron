@@ -30,9 +30,10 @@ namespace Rabron.Prototype.Editor
                 return;
             }
 
-            if (!File.Exists(ScenePath))
+            if (AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath) == null)
             {
-                Directory.CreateDirectory("Assets/Scenes");
+                if (!AssetDatabase.IsValidFolder("Assets/Scenes"))
+                    AssetDatabase.CreateFolder("Assets", "Scenes");
                 var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene,
                                                         NewSceneMode.Single);
                 EditorSceneManager.SaveScene(scene, ScenePath);
@@ -58,8 +59,9 @@ namespace Rabron.Prototype.Editor
         public static void BuildWindows()
         {
             EnsureScene();
-            const string output = "Builds/RabronPrototype.exe";
-            Directory.CreateDirectory("Builds");
+            string output = Path.GetFullPath(Path.Combine(
+                Application.dataPath, "..", "Builds", "RabronPrototype.exe"));
+            Directory.CreateDirectory(Path.GetDirectoryName(output));
 
             var result = BuildPipeline.BuildPlayer(new BuildPlayerOptions
             {
@@ -74,7 +76,7 @@ namespace Rabron.Prototype.Editor
                     "Unity could not build the prototype. Install Windows Build Support " +
                     "for this Editor and inspect the Console. Details: " + result.summary.result);
 
-            Debug.Log("Windows prototype built at " + Path.GetFullPath(output));
+            Debug.Log("Windows prototype built at " + output);
         }
     }
 }
