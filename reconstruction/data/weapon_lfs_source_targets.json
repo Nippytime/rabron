@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AC selected original Git LFS weapon source inventory; source hashes pinned to original pointer bytes",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/weapon-mc10_assets_all.bundle",
+      "git_blob_sha": "c078847d96cda60cd256b76c4401937468c5a979",
+      "lfs_oid_sha256": "945c1dcb401470df2e12ee5da672631b54e43a82b5ccd339daf17f12186f6b38",
+      "size_bytes": 54256657
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/weapon-pdw90_assets_all.bundle",
+      "git_blob_sha": "c62a30312eafc028b2b432053200f67175dc5b72",
+      "lfs_oid_sha256": "e47b0953477de5dab01f9ff73a36a5a8fccf28ceb0926a9aef1b310d252d33d8",
+      "size_bytes": 55401905
+    }
+  ]
+}
