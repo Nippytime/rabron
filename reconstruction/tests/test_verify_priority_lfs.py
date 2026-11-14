@@ -27,7 +27,9 @@ EXPECTED = {
 
 class PriorityLfsRegistryTests(unittest.TestCase):
     def test_registry_is_exactly_two_original_tracked_sources(self):
-        self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 2)
+        entries = [*LEDGER["known_lfs_not_yet_scanned"],
+                   *(e for e in LEDGER["scans"] if "lfs_oid_sha256" in e)]
+        self.assertEqual(len(entries), 2)
         for name, (digest, size) in EXPECTED.items():
             item = source_entry(LEDGER, PREFIX + name)
             self.assertEqual(item["lfs_oid_sha256"], digest)
@@ -40,23 +42,38 @@ class PriorityLfsRegistryTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "Unrecognized"):
             source_entry(LEDGER, "../../other.bundle")
 
-        item = LEDGER["known_lfs_not_yet_scanned"][0]
-        copy = {**LEDGER, "known_lfs_not_yet_scanned": [item, item]}
+        item = source_entry(LEDGER, PREFIX + "npc_assets_all.bundle")
+        copy = {**LEDGER, "known_lfs_not_yet_scanned": [
+            item, item], "scans": [
+                e for e in LEDGER["scans"] if e["bundle"] != item["bundle"]
+            ]}
         with self.assertRaisesRegex(ValueError, "exactly one"):
             source_entry(copy, item["bundle"])
 
     def test_registry_still_valid_after_successful_source_scan(self):
-        item = LEDGER["known_lfs_not_yet_scanned"][0]
-        scanned = {**item, "sha256": item["lfs_oid_sha256"]}
+        item = source_entry(LEDGER, PREFIX + "npc_assets_all.bundle")
+        pending = {**item}
+        # Before scan, the original source is registered as pending.
         copy = {**LEDGER,
-                "known_lfs_not_yet_scanned": LEDGER[
-                    "known_lfs_not_yet_scanned"][1:],
-                "scans": [*LEDGER["scans"], scanned]}
-        self.assertEqual(
-            source_entry(copy, item["bundle"])["lfs_oid_sha256"],
-            item["lfs_oid_sha256"],
-        )
-        scanned["sha256"] = "0" * 64
+                "known_lfs_not_yet_scanned": [
+                    *LEDGER["known_lfs_not_yet_scanned"], pending,
+                ],
+                "scans": [
+                    entry for entry in LEDGER["scans"]
+                    if entry["bundle"] != item["bundle"]
+                ]}
+        self.assertEqual(source_entry(copy, item["bundle"]), item)
+
+        # After scan, the source retains the same LFS fingerprint.
+        promoted = {**pending, "sha256": item["lfs_oid_sha256"]}
+        copy = {**copy,
+                "known_lfs_not_yet_scanned": [
+                    e for e in copy["known_lfs_not_yet_scanned"]
+                    if e["bundle"] != item["bundle"]
+                ],
+                "scans": [*copy["scans"], promoted]}
+        self.assertEqual(source_entry(copy, item["bundle"]), item)
+        promoted["sha256"] = "0" * 64
         with self.assertRaisesRegex(ValueError, "differs"):
             source_entry(copy, item["bundle"])
 
