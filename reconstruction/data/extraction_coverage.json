@@ -9108,6 +9108,62 @@
       "size_bytes": 1714688,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_fbodiesspriteatlas_hd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "275cd99505d2793c9f850cb6bb7322c83159be85",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43648244327",
+      "scan_evidence": "GitHub Actions W1-AB medium-original-final-sprite-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "dbca2593631fcc0c70cbcefb374b642af25d83581e22bd2686a822a3c7f1031e",
+      "size_bytes": 1709914,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_fbodiesspriteatlas_qhd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "c9ddf49e3ad1bfeb891e7c153460d44e15f1a4b9",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43648244327",
+      "scan_evidence": "GitHub Actions W1-AB medium-original-final-sprite-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "a15a98b3b4f5e1d747fca6ba9735f5222e2851c05eee092f29fa71fa87615e3e",
+      "size_bytes": 1709914,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],

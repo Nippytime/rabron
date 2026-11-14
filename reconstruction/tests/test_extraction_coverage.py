@@ -22,7 +22,7 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 308)
+        self.assertEqual(len(LEDGER["scans"]), 310)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
                              for entry in LEDGER["scans"]), 82133)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
@@ -33,7 +33,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 308)
+        self.assertEqual(len(known), 310)
         self.assertEqual(len(pending), 0)
 
     def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
@@ -67,7 +67,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         statuses = {e["bundle"]: e["status"] for e in plan["backlog"]}
         self.assertEqual(statuses[tutorial["bundle"]],
                          "inspected_no_monobehaviours")
-        self.assertEqual(plan["historically_documented_scan_bundles"], 308)
+        self.assertEqual(plan["historically_documented_scan_bundles"], 310)
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]
@@ -1127,6 +1127,29 @@ class ExtractionCoverageTests(unittest.TestCase):
             and e["objects_by_type"]["Texture2D"] == 2
             for e in atlas
         ))
+
+    def test_w1ab_two_original_sprite_atlases_measured(self):
+        run = "https://github.com/Nippytime/rabron/actions/runs/43648244327"
+        manifest = json.loads((ROOT / "data/medium_original_final_sprite_atlases_source_targets.json").read_text(encoding="utf-8"))
+        scans = [x for x in LEDGER["scans"] if x.get("run_url") == run]
+        self.assertEqual(len(scans), 2)
+        self.assertEqual({x["bundle"] for x in scans}, set(manifest["bundles"]))
+        self.assertEqual(sum(x["size_bytes"] for x in scans), 3419828)
+        for x in scans:
+            pin = manifest["expected_git_blobs"][x["bundle"]]
+            self.assertEqual(x["git_blob_sha"], pin["git_blob_sha"])
+            self.assertEqual(x["size_bytes"], pin["size_bytes"])
+            self.assertEqual(len(x["sha256"]), 64)
+            self.assertEqual(x["objects_by_type"], {"AssetBundle": 1, "SpriteAtlas": 1, "Texture2D": 2})
+            self.assertEqual(x["monobehaviours_total"], 0)
+            self.assertEqual(x["monobehaviours_parsed"], 0)
+            self.assertEqual(x["numeric_field_cap_records"], 0)
+            self.assertEqual(x["unparsed_records"], 0)
+            self.assertIs(x["bounded_numeric_scan_complete"], True)
+            self.assertEqual(x["numeric_field_limit"], 2048)
+            self.assertEqual(x["numeric_depth_limit"], 32)
+            self.assertTrue(all(value == 0 for value in x["candidate_field_counts"].values()))
+            self.assertEqual(x["scan_evidence"], "GitHub Actions W1-AB medium-original-final-sprite-atlases source inventory artifact")
 
     def test_verified_selected_path_ids_and_remaining_caps(self):
         recovery = json.loads((ROOT / "data/targeted_numeric_recovery.json").read_text(
