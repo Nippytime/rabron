@@ -68,7 +68,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         installer = (UNITY / "Assets/Editor/PrototypeSceneInstaller.cs").read_text(
             encoding="utf-8"
         )
-        self.assertIn("RuntimeInitializeOnLoadType.AfterSceneLoad", boot)
+        self.assertIn("RuntimeInitializeLoadType.AfterSceneLoad", boot)
         self.assertIn("AddComponent<PrototypeDirector>()", boot)
         self.assertIn("EditorSceneManager.SaveScene", installer)
         self.assertIn("EditorBuildSettingsScene", installer)
