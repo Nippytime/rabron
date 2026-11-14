@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-U: ten exact original medium hair, beard, mask and shared-character UnityFS sources",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-beards_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-fhair-bob_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-fhair-pixie_long_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-fhair-wolfcut_short_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-balding_comb_over_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-classic_slick_back_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-mop_top_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-slicked_back_middle_part_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-45_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character__sharedsources.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-beards_assets_all.bundle": {
+      "size_bytes": 9635722,
+      "git_blob_sha": "4ace2b72a0fd71a47750b95a409180edfcf04c52"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-fhair-bob_assets_all.bundle": {
+      "size_bytes": 1554717,
+      "git_blob_sha": "b9a5670e19e5cf2b597b186ed89fd941f31c4c2c"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-fhair-pixie_long_assets_all.bundle": {
+      "size_bytes": 1693016,
+      "git_blob_sha": "15eae29dcee85b56e26616b4eb3f07d3db9695b9"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-fhair-wolfcut_short_assets_all.bundle": {
+      "size_bytes": 1444807,
+      "git_blob_sha": "b11e124fe2a2eee0b99f2f53a66d9cd00355a4df"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-balding_comb_over_assets_all.bundle": {
+      "size_bytes": 1623093,
+      "git_blob_sha": "bd1f2769846402414d5773dec86b2428a4f3eee8"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-classic_slick_back_assets_all.bundle": {
+      "size_bytes": 1779929,
+      "git_blob_sha": "b0734fb0801090af82ac9b8afdbe9d0f8cd55137"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-mop_top_assets_all.bundle": {
+      "size_bytes": 2518336,
+      "git_blob_sha": "cd5b8acef613bd84406e1a8327be3f947883d7fe"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-hair-slicked_back_middle_part_assets_all.bundle": {
+      "size_bytes": 1808340,
+      "git_blob_sha": "52c4adfe56d940f1770c2ae305505bfcacca5d18"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-mask-45_assets_all.bundle": {
+      "size_bytes": 1490493,
+      "git_blob_sha": "edbf1c0f257b9daf284e05b27b8481d20fc90871"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_content_character__sharedsources.bundle": {
+      "size_bytes": 1791505,
+      "git_blob_sha": "5782363abd11137decdd7f5c3cea8cd2d3f1ee3f"
+    }
+  }
+}

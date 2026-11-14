@@ -299,6 +299,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-mask-33-44-batch.md; client media
   inventory cannot establish server-authoritative gameplay logic.
 
+- W1-U source-verified ten original medium beard/hair/mask/shared-character
+  UnityFS bundles (**25,339,958** original Git bytes), **111/111**
+  parsed MonoBehaviours, **282 Mesh** and **13 Texture2D** objects.
+  Beard: 55 MonoBehaviours and 184 Mesh; seven hair originals: 8
+  MonoBehaviours each; mask-45 and shared character sources have
+  genuine zero MonoBehaviours. No unparsed records, new numeric caps,
+  original copyrighted media exports or original authority formulas.
+  Ledger now **248/330** originals, **81,987** parsed MonoBehaviours,
+  **82** unscanned originals (62 medium non-LFS, 20 LFS), **42**
+  historical unresolved caps. Original run: https://github.com/Nippytime/rabron/actions/runs/43638364286 .
+  See reconstruction/docs/medium-character-cosmetics-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
