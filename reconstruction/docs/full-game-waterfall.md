@@ -130,6 +130,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   https://github.com/Nippytime/rabron/actions/runs/43592228322 .
   See reconstruction/docs/medium-weapon-vehicle-batch.md.
 
+- W1-H inspected six more verified original world, environment, city
+  and battle medium UnityFS sources (54,306,812 original bytes),
+  **61,195/61,195** parsed MonoBehaviours and **0** unparsed typetrees.
+  The shared-city source legitimately held zero MonoBehaviours;
+  one space-realm record was numeric **field-limit-capped** and
+  remains partial. Coverage is now **158/330 documented sources**
+  and **78,783** parsed MonoBehaviours; **172** originals remain
+  unscanned (140 medium, 12 large, 20 LFS), and **34 numeric
+  field-capped records** remain unresolved. Source-verified CI:
+  https://github.com/Nippytime/rabron/actions/runs/43627300176 .
+  See reconstruction/docs/world-environment-batch.md. These are
+  bounded client metadata inventories, **not authoritative formulas**.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
