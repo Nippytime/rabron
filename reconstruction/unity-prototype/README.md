@@ -93,6 +93,49 @@ need a graphical session to activate the Input System.
 Unity Editor or built a Windows player. Passing Python, .NET, and
 PowerShell syntax checks cannot establish Unity runtime success.
 
+## Real Unity Play Mode acceptance (Windows)
+
+The prototype now includes two Unity Test Framework Play Mode acceptance
+tests. These run **inside Unity** and are not simulated by the Python/.NET
+CI pipelines:
+
+- Runtime bootstrap: live director, player controller, camera, UI Toolkit
+  HUD, guard, cash presenter and 15 station markers
+- Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
+  escape, sell, physical counter pickup, laundering, city exit and return,
+  bank deposit and next-heist reset
+
+The heist test calls the production dispatcher directly via reflection,
+not synthetic keyboard input. Manual WASD/gamepad controls, live physics
+reachability, visual presentation and the packaged Windows EXE still
+require a human playthrough.
+
+Close the graphical Unity Editor first, then run from repository root:
+
+~~~powershell
+.\reconstruction\unity-prototype\Tools\Verify-PlayMode.ps1
+
+# With a custom Editor location
+.\reconstruction\unity-prototype\Tools\Verify-PlayMode.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe'
+~~~
+
+The runner uses Unity's -runTests -testPlatform PlayMode commands WITHOUT
+-quit, which Unity does not support during tests. The selected test category
+is RabronPlayMode. It writes Logs/playmode-results.xml (NUnit) and
+Logs/playmode-tests.log. It removes stale results and requires a successful
+process exit, passing NUnit result, at least two passed cases, zero failed
+cases, and both named acceptance methods. Zero-test runs fail.
+
+During batchmode Unity test runs, demo checkpoints use an isolated
+Application.temporaryCachePath/rabron-playmode-tests/ directory rather
+than the developer's real save. Source-level CI only syntax-lints the
+PowerShell runner and checks structural test coverage; it **does not**
+execute Unity. A real NUnit report is needed before reporting an actual
+Play Mode pass.
+
+Unity reference:
+https://docs.unity.com/en-us/engine/6000.3/manual/programming-environment/test-framework-introduction/running-tests/run-tests-from-command-line
+
 ## Local progress saving
 
 The local **demo** now retains the authoritative gameplay session between
