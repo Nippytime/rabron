@@ -1,0 +1,97 @@
+name: Recover previously capped numeric objects
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/rescan-capped-numerics.yml"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/rescan_capped_fields.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/data/extraction_coverage.json"
+      - "reconstruction/tests/test_rescan_capped_fields.py"
+
+permissions:
+  contents: read
+
+jobs:
+  targeted-rescan:
+    name: rescan / ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        include:
+          - label: scriptableobjects
+            bundle: scriptableobjects_assets_all.bundle
+            lfs: false
+          - label: settlement-lfs
+            bundle: location-settlement-data_assets_all.bundle
+            lfs: true
+          - label: city
+            bundle: location-city-data_assets_all.bundle
+            lfs: false
+          - label: hub
+            bundle: location-hub-data_assets_all.bundle
+            lfs: false
+          - label: sector-center
+            bundle: location-sectorcenter-data_assets_all.bundle
+            lfs: false
+          - label: settlement-two
+            bundle: location-settlement2-data_assets_all.bundle
+            lfs: false
+          - label: inbuild
+            bundle: inbuild_assets_all.bundle
+            lfs: false
+    steps:
+      - name: Checkout only authored scanner, ledger, selected source
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
+          sparse-checkout-cone-mode: false
+      - name: Fetch only selected LFS object when required
+        if: matrix.lfs
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}"
+          git lfs install --local
+          git lfs pull --include="$asset" --exclude=""
+          git lfs checkout "$asset"
+          if [ "$(head -c 7 "$asset")" != "UnityFS" ]; then
+            echo "::error::LFS bytes unavailable or not UnityFS: $asset"
+            exit 1
+          fi
+      - name: Setup pinned Python and parser
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: Reproduce historical caps and rescan only affected path IDs
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.rescan_capped_fields \
+            "StreamingAssets/aa/StandaloneWindows64/$BUNDLE" \
+            --ledger reconstruction/data/extraction_coverage.json \
+            --output "$OUTPUT/$BUNDLE.selected.json" \
+            --summary "$OUTPUT/$BUNDLE.summary.json"
+      - name: Preserve source-verified targeted evidence (including partial)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capped-numeric-evidence-${{ matrix.label }}
+          path: |
+            ${{ runner.temp }}/${{ matrix.bundle }}.selected.json
+            ${{ runner.temp }}/${{ matrix.bundle }}.summary.json
+          if-no-files-found: warn
+          retention-days: 30
