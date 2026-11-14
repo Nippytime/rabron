@@ -8824,6 +8824,290 @@
       "size_bytes": 5369524,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_32_type_1_paint_1.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "e131546fca5abbb1418326663e9893adeefd4c9d",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "Mesh": 5,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "4603d45510dcdfd6964b80961f6278d84d5e10141a17020db72b6784d3295160",
+      "size_bytes": 2247600,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_2.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "efe2ce73a42a8c5e58a383bbfb19814d2b342cc3",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "d5a4810e3165aead08d9f9b82854f1791bfa8c9176d1010798d2bb34089d3e96",
+      "size_bytes": 1725473,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_3.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "94e525690d68a790f4503109b14ff878b3ebca7a",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "959fb962c0327f234b05f4da75791cb658c6563c1fc5bdd7c594eeb140d64e30",
+      "size_bytes": 1874120,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets__fullspriteatlas.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "5beb594cd53572e62b5bee64789e0bf6f12996e0",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "52125bfd3518624589eaaf722d0ebfefd0887039474bf4f91856571750621ffb",
+      "size_bytes": 1185990,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_4k.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b6dd0d8387843873d965254500b66a83d6636bfa",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "c6151c17098f0c91b7ff623d036cf645a8e9817e80e6bccd63a802fbba2a34a4",
+      "size_bytes": 1867567,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_hd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "ac13ba86c4bf7c8c2bccf14f79ed1a062b6099c0",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "5b05a7dd45f636113f8478cef17ad44b8f945022218cdafdcf4f66ce0c340a60",
+      "size_bytes": 1856566,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_qhd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "7a8949fdb47d67027d2cacebf7c3cd69ba125134",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "d23827c2cb4166a8a6340bc8127bbea1be5cd7f7c42a05b1325bf464fa8b5956",
+      "size_bytes": 1856434,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_hd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "cb87a04eacc8359e360ab583a6267549b794d3e0",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "b6f7a30cd65ad09bee26c5de4a6ca20ff7f2e1b1f8f18e78aba6e33cebb8d823",
+      "size_bytes": 1396625,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_qhd.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "ae411035f6c79f6d992e4f2e5233d92a31857367",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "78d6012576d08e2bbf9032748d6a72e9999a063df298a7786a15e45133557078",
+      "size_bytes": 1396626,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_fbodiesspriteatlas_4k.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "0715c71a922f1d0f2b5413fdccff1f9a59425a85",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "SpriteAtlas": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43647615982",
+      "scan_evidence": "GitHub Actions W1-AA medium-original-cosmetic-atlases source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "c4c3df74bf60c6cbc3bc5957aa5e222878f6d84eca72db2f708dd19d82489e65",
+      "size_bytes": 1714688,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],
