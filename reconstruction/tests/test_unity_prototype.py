@@ -27,6 +27,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         ))
         packages = project["dependencies"]
         self.assertEqual(packages["com.unity.inputsystem"], "1.20.1")
+        # These are opt-in built-in modules; the procedural world uses all three.
+        for builtin in ("audio", "physics", "uielements"):
+            self.assertEqual(
+                packages[f"com.unity.modules.{builtin}"], "1.0.0"
+            )
         relative = packages["com.rabron.reconstruction-core"]
         self.assertTrue(relative.startswith("file:"))
         core = (UNITY / "Packages" / relative[5:]).resolve()
@@ -74,6 +79,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("EditorBuildSettingsScene", installer)
         self.assertIn("BuildPipeline.BuildPlayer", installer)
         self.assertIn("BuildTarget.StandaloneWindows64", installer)
+        self.assertIn("AssetDatabase.LoadAssetAtPath<SceneAsset>(ScenePath)", installer)
+        self.assertIn('AssetDatabase.CreateFolder("Assets", "Scenes")', installer)
+        self.assertIn('Application.dataPath, "..", "Builds"', installer)
+        self.assertNotIn('Directory.CreateDirectory("Assets/Scenes")', installer)
+        self.assertNotIn('const string output = "Builds/', installer)
 
     def test_original_game_assets_are_not_embedded(self):
         artifacts = tuple(p for p in UNITY.rglob("*") if p.is_file()
@@ -97,7 +107,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("PrototypeSceneInstaller.BuildWindows()", editor)
         self.assertIn("RABRON_UNITY_EDITOR_SMOKE_PASS", editor)
         self.assertIn("RABRON_UNITY_WINDOWS_BUILD_PASS", editor)
-        self.assertIn("Builds/RabronPrototype.exe", editor)
+        self.assertIn("RabronPrototype.exe", editor)
+        self.assertIn("#if !ENABLE_INPUT_SYSTEM", editor)
+        self.assertIn("Input System backend is disabled", editor)
+        self.assertIn('Application.dataPath, "..", "Builds"', editor)
+        self.assertNotIn('Path.GetFullPath("Builds/', editor)
         self.assertIn("UnityEngine.Object.DestroyImmediate(root)", editor)
         self.assertIn("controller.stepOffset = 0.65f", world)
         self.assertIn("Object.DestroyImmediate(bodyCollider)", world)
