@@ -22,9 +22,9 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 17)
+        self.assertEqual(len(LEDGER["scans"]), 25)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 9481)
+                             for entry in LEDGER["scans"]), 10583)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
                              for entry in LEDGER["scans"]), 56)
         self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 0)
@@ -33,7 +33,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 17)
+        self.assertEqual(len(known), 25)
         self.assertEqual(len(pending), 0)
 
     def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
@@ -71,7 +71,7 @@ class ExtractionCoverageTests(unittest.TestCase):
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]
-                  if entry.get("status") == "documented_bounded_scan_no_reported_field_limits"]
+                  if entry.get("scan_evidence") == "reconstruction/docs/gameplay-bundle-batch-1.md"]
         self.assertEqual(len(recent), 6)
         self.assertEqual(sum(e["monobehaviours_parsed"] for e in recent), 1320)
         self.assertTrue(all(e["numeric_field_cap_records"] == 0 for e in recent))
@@ -84,6 +84,52 @@ class ExtractionCoverageTests(unittest.TestCase):
         self.assertTrue(all(e["scan_evidence"] ==
                             "reconstruction/docs/gameplay-bundle-batch-1.md"
                             for e in recent))
+
+    def test_eight_real_weapon_vehicle_prison_scans_are_source_anchored(self):
+        recent = [
+            e for e in LEDGER["scans"]
+            if e.get("scan_evidence") ==
+            "reconstruction/docs/weapon-vehicle-prison-batch.md"
+        ]
+        self.assertEqual(len(recent), 8)
+        expected = {
+            "weapons_assets_assets_content_equipment_weapons__sharedsources.bundle": 71,
+            "weapons_assets_assets_content_equipment_weapons__modules.bundle": 128,
+            "weapon-lmg_assets_all.bundle": 19,
+            "weapon-lbr44_assets_all.bundle": 80,
+            "vehicle-car-longhorn_guard_assets_all.bundle": 50,
+            "vehicle-car-longhorn_van_assets_all.bundle": 456,
+            "vehicle-car-longhorn_outrider_assets_all.bundle": 50,
+            "location-prison-standalone_scenes_all.bundle": 248,
+        }
+        self.assertEqual(
+            {e["bundle"].split("/")[-1]: e["monobehaviours_parsed"]
+             for e in recent}, expected,
+        )
+        self.assertEqual(sum(e["monobehaviours_parsed"] for e in recent), 1102)
+        self.assertTrue(all(e["run_url"].endswith("/43588642907")
+                            for e in recent))
+        self.assertTrue(all(e["monobehaviours_parsed"] ==
+                            e["monobehaviours_total"] for e in recent))
+        self.assertTrue(all(e["unparsed_records"] == 0 and
+                            e["numeric_field_cap_records"] == 0 and
+                            e["bounded_numeric_scan_complete"] is True
+                            for e in recent))
+        self.assertTrue(all(e["numeric_field_limit"] == 2048 and
+                            e["numeric_depth_limit"] == 32 and
+                            e["size_bytes"] > 0 for e in recent))
+        self.assertTrue(all(len(e["sha256"]) == 64 for e in recent))
+        self.assertEqual(
+            sum(e["candidate_field_counts"]["combat"] for e in recent), 264
+        )
+        self.assertEqual(
+            sum(e["candidate_field_counts"]["timing_and_world"]
+                for e in recent), 828,
+        )
+        prison = next(e for e in recent if e["bundle"].endswith(
+            "/location-prison-standalone_scenes_all.bundle"))
+        self.assertEqual(prison["objects_by_type"]["GameObject"], 3622)
+        self.assertEqual(prison["objects_by_type"]["MeshCollider"], 257)
 
     def test_verified_selected_path_ids_and_remaining_caps(self):
         recovery = json.loads((ROOT / "data/targeted_numeric_recovery.json").read_text(
