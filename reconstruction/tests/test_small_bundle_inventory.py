@@ -8,7 +8,7 @@ from unittest.mock import patch
 
 from reconstruction.tools.small_bundle_inventory import (
     BUNDLE_PREFIX, MAX_SIZE, MIN_SIZE, consolidate, inspect_source,
-    make_plan, parse_git_tree, run_batch, selected_batch, verify_bytes,
+    make_plan, parse_tree_response, run_batch, selected_batch, verify_bytes,
 )
 
 
@@ -26,25 +26,40 @@ class SmallBundleInventoryTests(unittest.TestCase):
         self.ledger = {"schema_version": 1, "scans": [],
                        "known_lfs_not_yet_scanned": []}
 
-    def test_git_tree_parsing_rejects_unsafe_and_duplicate_paths(self):
-        row = lambda p: (
-            b"100644 blob " + b"a" * 40 + b" 2048\t" + p.encode() + b"\0"
-        )
-        listed = parse_git_tree(row(path("location-test")) +
-                                row(BUNDLE_PREFIX + "catalog_1.bin") +
-                                row(BUNDLE_PREFIX + "catalog_1.hash"))
+    def test_git_api_tree_ignores_catalog_and_rejects_unsafe_truncated_data(self):
+        sha = "b" * 40
+
+        def item(p, *, size=2048):
+            return {"path": p, "mode": "100644", "type": "blob",
+                    "sha": "a" * 40, "size": size}
+
+        def parse(items, **overrides):
+            payload = {"sha": sha, "truncated": False, "tree": items}
+            payload.update(overrides)
+            return parse_tree_response(payload, expected_sha=sha)
+
+        listed = parse([
+            item(path("location-test")),
+            item(BUNDLE_PREFIX + "catalog_1.bin"),
+            item(BUNDLE_PREFIX + "catalog_1.hash"),
+        ])
         self.assertEqual(listed[path("location-test")]["git_blob_size"], 2048)
         self.assertEqual(len(listed), 1)
-        # Original tree legitimately contains parenthesized locale names.
         self.assertIn(path("localization-english(en-us)"),
-                      parse_git_tree(row(path("localization-english(en-us)"))))
+                      parse([item(path("localization-english(en-us)"))]))
         for invalid in (path("../escape"), path("invalid name")):
             with self.subTest(invalid=invalid), self.assertRaises(ValueError):
-                parse_git_tree(row(invalid))
+                parse([item(invalid)])
         with self.assertRaisesRegex(ValueError, "Duplicate"):
-            parse_git_tree(row(path("same")) * 2)
-        with self.assertRaisesRegex(ValueError, "Malformed"):
-            parse_git_tree(b"broken\0")
+            parse([item(path("same")), item(path("same"))])
+        for bad in (
+            {"truncated": True}, {"sha": "c" * 40},
+            {"tree": None}, {"tree": [item(path("x"), size=-1)]},
+            {"tree": [item(path("x"), size=True)]},
+            {"tree": [{"path": None}]},
+        ):
+            with self.subTest(bad=bad), self.assertRaises(ValueError):
+                parse([item(path("safe"))], **bad)
 
     def test_dynamic_selection_reconciles_scans_sizes_lfs_and_batches(self):
         existing = entry("already-scanned", 2048)
