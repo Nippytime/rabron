@@ -40,9 +40,23 @@ class NumericFieldsTests(unittest.TestCase):
 
     def test_depth_limit_is_explicit(self):
         values = {"outer": {"inner": 3}}
-        self.assertEqual(numeric_fields(values, max_depth=0), ([], False))
+        # A depth cutoff hid an entire nested subtree in the old scanner.
+        # The returned fields may be empty but the scan is NOT complete.
+        self.assertEqual(numeric_fields(values, max_depth=0), ([], True))
+        self.assertEqual(numeric_fields(values, max_depth=1), ([], True))
         self.assertEqual(numeric_fields(values, max_depth=2),
                          ([{"path": "$.outer.inner", "value": 3}], False))
+        self.assertEqual(numeric_fields({"empty": {}}, max_depth=1),
+                         ([], False))
+        self.assertEqual(numeric_fields([], max_depth=0), ([], False))
+        self.assertEqual(numeric_fields([{"a": 1}], max_depth=0),
+                         ([], True))
+
+    def test_depth_limit_does_not_drop_visible_siblings(self):
+        values = {"inside": {"nested": {"v": 4}}, "outside": 7}
+        fields, truncated = numeric_fields(values, max_depth=1)
+        self.assertTrue(truncated)
+        self.assertEqual(fields, [{"path": "$.outside", "value": 7}])
 
     def test_rejects_invalid_limits(self):
         with self.assertRaises(ValueError):

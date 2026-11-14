@@ -44,6 +44,45 @@ Its GitHub Actions workflow uses a sparse checkout to include only the
 scriptableobjects bundle and authored scanner. JSON output is uploaded as a
 short-lived artifact; no extracted game asset files are committed.
 
+## Exhaustive inventory and depth-aware rescans (W1)
+
+Every tracked Unity bundle should be inventoried **before** implementing
+speculative missing systems. To generate a deterministic queue from the
+Git tree (works even with sparse-checkout and Git LFS pointers):
+
+~~~bash
+python reconstruction/tools/plan_bundle_scans.py \
+  --ref HEAD --min-tracked 330 \
+  --output /tmp/bundle-scan-backlog.json
+~~~
+
+The planner combines every tracked .bundle filename with **nine historical
+read-only MonoBehaviour passes** preserved in
+reconstruction/data/extraction_coverage.json. Historical field caps total
+56 records across these passes. A pass without a reported field cap is still
+**not automatically complete**: earlier scanner versions could skip nested
+fields beyond their depth limit while reporting a false completeness flag.
+The backlog prioritizes such rescans, real LFS fetches, and uninspected
+bundle families. It never downloads binaries or labels extracted client
+coefficients as server economics.
+
+The scanner now marks records partial on **either** a per-record numeric
+field cap **or** a nonempty nested subtree blocked by --max-depth. Both
+limits are included in its output manifest. When selectively revisiting
+relevant bundles, control the limits explicitly:
+
+~~~bash
+python reconstruction/tools/extract_unity_bundle.py \
+  StreamingAssets/aa/StandaloneWindows64/scriptableobjects_assets_all.bundle \
+  --max-fields 8192 --max-depth 32 \
+  --output /tmp/scriptableobjects-deep-pass.json
+~~~
+
+This command is an example, not a claim that a new deep pass was executed.
+Use a bounded amount of memory and CPU, retain checksums, and mark any
+still-truncated fields as unknown. Keep authored code and research metadata
+separate from the original proprietary files.
+
 ## Dependencies and limitations
 
 - UnityPy 1.25.4 docs: https://pypi.org/project/UnityPy/

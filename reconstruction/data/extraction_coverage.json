@@ -1,0 +1,121 @@
+{
+  "schema_version": 1,
+  "warning": "Historical, source-documented MonoBehaviour passes only. All values are client-side candidates, not verified gameplay formulas. Old depth limits can mask nested fields; every bundle remains incomplete until rescanned with depth-aware tracking and other relevant Unity object kinds.",
+  "inventory_source": "git ls-tree (entire tracked repo, not checkout file presence)",
+  "scans": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/scriptableobjects_assets_all.bundle",
+      "sha256": "239f015bc6f351dc315ac403a2758efacfb167cab05188e05082e76ee021b4fd",
+      "monobehaviours_total": 3925,
+      "monobehaviours_parsed": 3925,
+      "numeric_field_cap_records": 25,
+      "scan_evidence": "reconstruction/docs/scriptableobjects-full-pass.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43533207312",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-settlement-data_assets_all.bundle",
+      "sha256": "43018ce5ec95c4dfdd433b71d1460ada17cf4dbd79d8abbd70c2bf00b5c83534",
+      "monobehaviours_total": 3220,
+      "monobehaviours_parsed": 3220,
+      "numeric_field_cap_records": 12,
+      "scan_evidence": "reconstruction/docs/lfs-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534837573",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-global_assets_all.bundle",
+      "sha256": "2852ce0712e962a4d8995ebd4e80c2cd03381c56ac0b6c08a5587e3b869c77a9",
+      "monobehaviours_total": 5,
+      "monobehaviours_parsed": 5,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/lfs-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534837573",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-city-data_assets_all.bundle",
+      "sha256": "2ca8ae45348fff1c9c3359a0e82afa39f7fe9df41fcadbbffab9df1b11b73e56",
+      "monobehaviours_total": 31,
+      "monobehaviours_parsed": 31,
+      "numeric_field_cap_records": 2,
+      "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-hub-data_assets_all.bundle",
+      "sha256": "6fd2d0d3c6f65724cb77b10191b053a795ded2bab0259e7b6f94cee815bef537",
+      "monobehaviours_total": 248,
+      "monobehaviours_parsed": 248,
+      "numeric_field_cap_records": 5,
+      "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-prison-data_assets_all.bundle",
+      "sha256": "c7f6971cbfce40b9942de8774226a2ba9d717269dbc130df5a17d3b566b42e09",
+      "monobehaviours_total": 181,
+      "monobehaviours_parsed": 181,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-sectorcenter-data_assets_all.bundle",
+      "sha256": "864c3b64feeebd62784515af9595a5fe1169213acaddbddfb39823e66529928a",
+      "monobehaviours_total": 26,
+      "monobehaviours_parsed": 26,
+      "numeric_field_cap_records": 1,
+      "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-settlement2-data_assets_all.bundle",
+      "sha256": "2a951aa3587d0999334dd6ea878ed47cc65f480ea4320c41776b473c23df13c2",
+      "monobehaviours_total": 1,
+      "monobehaviours_parsed": 1,
+      "numeric_field_cap_records": 1,
+      "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/inbuild_assets_all.bundle",
+      "sha256": "d4bff10e5f31e8e10b3bbf979aa6ee872bed5daff59765b1837fe1d733747531",
+      "monobehaviours_total": 150,
+      "monobehaviours_parsed": 150,
+      "numeric_field_cap_records": 10,
+      "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
+      "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
+      "status": "documented_scan_not_fully_verified"
+    }
+  ],
+  "known_lfs_not_yet_scanned": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/npc_assets_all.bundle",
+      "lfs_oid_sha256": "aacec65903186775c8b834ba89cbbc0fea1419d857f14a0d95943732f12a0d69"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/tutorial_assets_all.bundle",
+      "lfs_oid_sha256": "56f1993ad49ac265c3268667557b0ec13c1c0f39fb7ada94ae4251e4328ac691"
+    }
+  ],
+  "blocking_missing_sources": [
+    "Matching Unity IL2CPP GameAssembly.dll (not in uploaded repository)",
+    "Server-authoritative gameplay configuration / runtime authority",
+    "Original art/audio redistribution rights not established"
+  ]
+}
