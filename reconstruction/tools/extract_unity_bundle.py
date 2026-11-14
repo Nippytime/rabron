@@ -41,6 +41,14 @@ def numeric_fields(data, *, max_fields=512, max_depth=16):
 
 
 def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512):
+    # A successful git checkout can still contain a small Git LFS pointer
+    # instead of the requested Unity binary when the LFS object was not fetched.
+    with path.open("rb") as source:
+        signature = source.read(128)
+    if signature.startswith(b"version https://git-lfs.github.com/spec/v1"):
+        raise ValueError(f"Not a Unity bundle: {path} is a Git LFS pointer")
+    if not signature.startswith(b"UnityFS"):
+        raise ValueError(f"Not a UnityFS bundle: {path}")
     try:
         import UnityPy
         from UnityPy.helpers import TypeTreeHelper
