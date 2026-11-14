@@ -27,7 +27,7 @@ class GameplayBundleBatchTests(unittest.TestCase):
         self.assertIn("filter: blob:none", source)
         self.assertIn("lfs: false", source)
         self.assertIn("StreamingAssets/aa/StandaloneWindows64/$" +
-                      "{ matrix.bundle }}", source)
+                      "{{ matrix.bundle }}", source)
         self.assertIn("UnityPy==1.25.4", source)
         self.assertIn("--max-fields 8192 --max-depth 32", source)
         self.assertIn("extract_unity_bundle.py", source)
