@@ -49,7 +49,7 @@ def numeric_fields(data, *, max_fields=512, max_depth=16,
                 stack.extend((f"{path}[{index}]", value, depth + 1)
                              for index, value in reversed(list(enumerate(node))))
             elif node:
-                depth_skipped = True
+                reasons.add("depth_limit")
     # The presence of nested structures behind the depth limit makes
     # extraction incomplete, even when no visible numeric fields were found.
     result = sorted(found, key=lambda item: item["path"])
