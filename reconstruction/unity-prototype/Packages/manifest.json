@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "com.unity.inputsystem": "1.20.1",
+    "com.rabron.reconstruction-core": "file:../../game/Core"
+  }
+}

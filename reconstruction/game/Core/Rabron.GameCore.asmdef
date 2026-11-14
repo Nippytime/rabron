@@ -1,0 +1,14 @@
+{
+  "name": "Rabron.GameCore",
+  "rootNamespace": "Rabron.Reconstruction",
+  "references": [],
+  "includePlatforms": [],
+  "excludePlatforms": [],
+  "allowUnsafeCode": false,
+  "overrideReferences": false,
+  "precompiledReferences": [],
+  "autoReferenced": true,
+  "defineConstraints": [],
+  "versionDefines": [],
+  "noEngineReferences": true
+}
