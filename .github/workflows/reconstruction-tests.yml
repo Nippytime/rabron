@@ -31,6 +31,18 @@ jobs:
           python-version: "3.13"
       - name: Test evidence tools and gameplay rules
         run: python -m unittest discover -s reconstruction/tests -v
+      - name: Inventory all tracked reference bundles without downloading them
+        run: |
+          python reconstruction/tools/plan_bundle_scans.py \
+            --ref HEAD --min-tracked 330 \
+            --output "$RUNNER_TEMP/bundle-scan-backlog.json"
+      - name: Preserve extraction gap backlog (not proprietary game assets)
+        uses: actions/upload-artifact@v4
+        with:
+          name: bundle-scan-backlog
+          path: ${{ runner.temp }}/bundle-scan-backlog.json
+          if-no-files-found: error
+          retention-days: 30
       - name: Lint Unity Editor and Play Mode runners (does not run Unity)
         shell: pwsh
         run: |
