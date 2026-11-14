@@ -320,6 +320,14 @@ internal static class Program
         fakeCounter.CounterCash = 200;
         Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeCounter));
 
+        var impossibleEarlyAlarm = new HeistSession().ExportSnapshot();
+        impossibleEarlyAlarm.AlarmRaised = true;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(impossibleEarlyAlarm));
+
+        var impossibleEarlyGuard = new HeistSession().ExportSnapshot();
+        impossibleEarlyGuard.StaffControlled = true;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(impossibleEarlyGuard));
+
         var invalidJob = game.ExportSnapshot();
         invalidJob.Phase = HeistPhase.Laundering;
         invalidJob.LootIds = Array.Empty<string>();
