@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""W1-F: bounded Git-tree-driven inventory of small original UnityFS sources.
+"""Bounded Git-tree-driven inventory of selected original UnityFS sources.
 
 The planner never downloads game media. Workers verify Git blob bytes and
 perform read-only UnityPy scans. Evidence artifacts contain metadata only.
@@ -22,6 +22,8 @@ from reconstruction.tools.validate_source_inventory import validate
 
 MIN_SIZE = 1024
 MAX_SIZE = 999999
+MAX_SOURCE_SIZE = 20 * 1024 * 1024 - 1
+SMALL_EVIDENCE = "GitHub Actions W1-F small-source inventory artifact"
 BATCH_SIZE = 20
 MAX_BATCH_SIZE = 20
 MAX_FIELDS = 2048
@@ -82,25 +84,49 @@ def tree_entries(ref="HEAD"):
         payload = json.load(response)
     return parse_tree_response(payload, expected_sha=tree_sha)
 
-def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330):
-    if not 1 <= batch_size <= MAX_BATCH_SIZE:
-        raise ValueError("Batch size must be between 1 and 20")
+def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330,
+              targets=None, min_size=MIN_SIZE, max_size=MAX_SIZE,
+              scan_evidence=SMALL_EVIDENCE):
+    """Select only eligible unscanned originals, or recheck exactly recorded ones."""
+    if (type(batch_size) is not int or not 1 <= batch_size <= MAX_BATCH_SIZE or
+            type(min_size) is not int or type(max_size) is not int or
+            not MIN_SIZE <= min_size <= max_size <= MAX_SOURCE_SIZE or
+            not isinstance(scan_evidence, str) or not scan_evidence.strip()):
+        raise ValueError("Invalid inventory limits, batch size or evidence label")
     if len(entries) != expected_tracked:
         raise ValueError("Tracked original bundle count changed; review inventory")
     scanned, pending_lfs = validate_ledger(ledger, sorted(entries))
+
+    if targets is not None:
+        if (not isinstance(targets, list) or not targets or
+                len(set(targets)) != len(targets) or
+                any(not isinstance(p, str) or not SAFE_BUNDLE.fullmatch(p)
+                    for p in targets)):
+            raise ValueError("Target list must contain unique safe bundle paths")
+        missing = sorted(set(targets) - set(entries))
+        if missing:
+            raise ValueError("Selected original targets missing from Git tree: " +
+                             ", ".join(missing))
+        paths = sorted(targets)
+        if any(not min_size <= entries[p]["git_blob_size"] <= max_size or
+               p in pending_lfs for p in paths):
+            raise ValueError("Selected source size or LFS type is out of scope")
+    else:
+        paths = sorted(entries)
+
     eligible = [
-        entry for path, entry in sorted(entries.items())
+        entries[path] for path in paths
         if path not in scanned and path not in pending_lfs
-        and MIN_SIZE <= entry["git_blob_size"] <= MAX_SIZE
+        and min_size <= entries[path]["git_blob_size"] <= max_size
     ]
-    # Once the measured W1-F entries are committed, keep exercising the same
-    # binary provenance gate instead of generating an empty matrix.
+    if targets is not None and len(eligible) not in (0, len(targets)):
+        raise ValueError("Target set partly documented; review before scanning")
     recheck = []
     if not eligible:
         recheck = [
-            entry for path, entry in sorted(entries.items())
+            entries[path] for path in paths
             if path in scanned and scanned[path].get("scan_evidence") ==
-            "GitHub Actions W1-F small-source inventory artifact"
+            scan_evidence
         ]
         for entry in recheck:
             documented = scanned[entry["bundle"]]
@@ -108,18 +134,19 @@ def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330):
                     documented.get("size_bytes") != entry["git_blob_size"]):
                 raise ValueError("Previously documented Git source changed: " +
                                  entry["bundle"])
-    # Size comes from the pinned Git tree, not checkout or LFS pointer bytes.
+    if targets is not None and not eligible and len(recheck) != len(targets):
+        raise ValueError("Target set lacks complete matching source evidence")
     selected = eligible or recheck
+    if not selected:
+        raise ValueError("No source selected; an empty matrix is not green")
+
     batches = [
         {"id": index // batch_size, "sources": selected[index:index + batch_size]}
         for index in range(0, len(selected), batch_size)
     ]
-    selected_paths = [e["bundle"] for group in batches
-                      for e in group["sources"]]
+    selected_paths = [e["bundle"] for group in batches for e in group["sources"]]
     if len(set(selected_paths)) != len(selected_paths):
         raise ValueError("Duplicate planned source")
-    if len(scanned) + (len(entries) - len(scanned)) != expected_tracked:
-        raise ValueError("Source conservation failed")
     return {
         "schema_version": 1, "tracked_bundles": len(entries),
         "documented_scans_before": len(scanned),
@@ -129,10 +156,13 @@ def make_plan(entries, ledger, *, batch_size=BATCH_SIZE, expected_tracked=330):
         "selected_small_sources": len(selected),
         "mode": "recheck" if recheck else "new",
         "excluded_pending_lfs": len(pending_lfs),
-        "batch_size": batch_size, "batches": batches,
+        "batch_size": batch_size,
+        "min_size": min_size, "max_size": max_size,
+        "scan_evidence": scan_evidence,
+        "target_paths": paths if targets is not None else None,
+        "batches": batches,
         "warning": "Git blob inventory only; no binary extraction completed at planning.",
     }
-
 
 def selected_batch(plan, batch_id):
     if plan.get("schema_version") != 1:
@@ -147,7 +177,14 @@ def selected_batch(plan, batch_id):
     if len(matches) != 1:
         raise ValueError("Batch not present in plan")
     sources = matches[0]["sources"]
-    if not 1 <= len(sources) <= MAX_BATCH_SIZE:
+    batch_size = plan.get("batch_size", BATCH_SIZE)
+    min_size = plan.get("min_size", MIN_SIZE)
+    max_size = plan.get("max_size", MAX_SIZE)
+    if (type(batch_size) is not int or
+            not 1 <= batch_size <= MAX_BATCH_SIZE or
+            type(min_size) is not int or type(max_size) is not int or
+            not MIN_SIZE <= min_size <= max_size <= MAX_SOURCE_SIZE or
+            not 1 <= len(sources) <= batch_size):
         raise ValueError("Unbounded batch")
     if len({x["bundle"] for x in sources}) != len(sources):
         raise ValueError("Duplicate batch path")
@@ -155,8 +192,16 @@ def selected_batch(plan, batch_id):
         if (not SAFE_BUNDLE.fullmatch(source["bundle"]) or
                 not SHA1.fullmatch(source["git_blob_sha"]) or
                 type(source["git_blob_size"]) is not int or
-                not MIN_SIZE <= source["git_blob_size"] <= MAX_SIZE):
+                not min_size <= source["git_blob_size"] <= max_size):
             raise ValueError("Unsafe batch input")
+    target_paths = plan.get("target_paths")
+    if target_paths is not None:
+        all_paths = [entry["bundle"] for group in groups
+                     for entry in group["sources"]]
+        if (not isinstance(target_paths, list) or
+                len(set(target_paths)) != len(target_paths) or
+                sorted(all_paths) != sorted(target_paths)):
+            raise ValueError("Target batch paths drifted")
     return sources
 
 
@@ -305,7 +350,7 @@ def consolidate(plan, evidence_dir, ledger, *, run_url):
             "bundle": path, "sha256": e["sha256"],
             "size_bytes": e["git_blob_size"],
             "git_blob_sha": e["git_blob_sha"],
-            "scan_evidence": "GitHub Actions W1-F small-source inventory artifact",
+            "scan_evidence": plan.get("scan_evidence", SMALL_EVIDENCE),
             "run_url": run_url,
             "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
             "status": "documented_scan_not_fully_verified",
@@ -380,6 +425,11 @@ def main():
     p.add_argument("--output", type=Path, required=True)
     p.add_argument("--matrix", type=Path, required=True)
     p.add_argument("--expected-tracked", type=int, default=330)
+    p.add_argument("--targets-file", type=Path)
+    p.add_argument("--min-size", type=int, default=MIN_SIZE)
+    p.add_argument("--max-size", type=int, default=MAX_SIZE)
+    p.add_argument("--batch-size", type=int, default=BATCH_SIZE)
+    p.add_argument("--scan-evidence", default=SMALL_EVIDENCE)
     for mode in ("checkout", "scan"):
         p = modes.add_parser(mode)
         p.add_argument("--plan", required=True, type=Path)
@@ -396,7 +446,20 @@ def main():
     if args.command == "plan":
         entries = tree_entries(args.ref)
         ledger = json.loads(DEFAULT_LEDGER.read_text(encoding="utf-8"))
-        plan = make_plan(entries, ledger, expected_tracked=args.expected_tracked)
+        targets = None
+        if args.targets_file is not None:
+            target_manifest = json.loads(args.targets_file.read_text(encoding="utf-8"))
+            if (not isinstance(target_manifest, dict) or
+                    target_manifest.get("schema_version") != 1 or
+                    not isinstance(target_manifest.get("bundles"), list)):
+                raise ValueError("Invalid target manifest")
+            targets = target_manifest["bundles"]
+        plan = make_plan(
+            entries, ledger, expected_tracked=args.expected_tracked,
+            batch_size=args.batch_size, targets=targets,
+            min_size=args.min_size, max_size=args.max_size,
+            scan_evidence=args.scan_evidence,
+        )
         args.output.write_text(json.dumps(plan, indent=2, sort_keys=True) + "\n")
         args.matrix.write_text(json.dumps({
             "include": [{"id": group["id"]} for group in plan["batches"]]

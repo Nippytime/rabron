@@ -1,0 +1,171 @@
+name: W1-G verify ten medium weapon and vehicle UnityFS sources
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/extract-medium-sources.yml"
+      - "reconstruction/data/medium_source_targets.json"
+      - "reconstruction/data/extraction_coverage.json"
+      - "reconstruction/tools/small_bundle_inventory.py"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/plan_bundle_scans.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tools/validate_source_inventory.py"
+      - "reconstruction/tests/test_small_bundle_inventory.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify original Git tree and exact ten medium target paths
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory plan \
+            --ref HEAD --expected-tracked 330 \
+            --targets-file reconstruction/data/medium_source_targets.json \
+            --min-size 1048576 --max-size 20971519 --batch-size 3 \
+            --scan-evidence "GitHub Actions W1-G medium-source inventory artifact" \
+            --output "$RUNNER_TEMP/medium-plan.json" \
+            --matrix "$RUNNER_TEMP/matrix.json"
+      - id: matrix
+        shell: bash
+        run: echo "value=$(cat "$RUNNER_TEMP/matrix.json")" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: medium-source-plan
+          path: ${{ runner.temp }}/medium-plan.json
+          if-no-files-found: error
+          retention-days: 30
+
+  inspect:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: Medium source inventory / batch ${{ matrix.id }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          name: medium-source-plan
+          path: ${{ runner.temp }}
+      - name: Sparse checkout only selected 1-3 original tracked sources
+        env:
+          BATCH_ID: ${{ matrix.id }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory checkout \
+            --plan "$RUNNER_TEMP/medium-plan.json" --batch-id "$BATCH_ID"
+      - name: Install pinned read-only UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: Scan byte-verified sources with explicitly bounded numeric depth
+        shell: bash
+        env:
+          BATCH_ID: ${{ matrix.id }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory scan \
+            --plan "$RUNNER_TEMP/medium-plan.json" --batch-id "$BATCH_ID" \
+            --output "$(printf "$RUNNER_TEMP/batch-%02d.json" "$BATCH_ID")"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: medium-batch-${{ matrix.id }}
+          path: ${{ runner.temp }}/batch-*.json
+          if-no-files-found: error
+          retention-days: 30
+
+  reconcile:
+    needs: [plan, inspect]
+    if: ${{ needs.plan.result == 'success' && needs.inspect.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          name: medium-source-plan
+          path: ${{ runner.temp }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: medium-batch-*
+          path: ${{ runner.temp }}/evidence
+          merge-multiple: true
+      - name: Verify exact source count and ledger conservation
+        env:
+          SOURCE_RUN: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory consolidate \
+            --plan "$RUNNER_TEMP/medium-plan.json" \
+            --evidence-dir "$RUNNER_TEMP/evidence" \
+            --run-url "$SOURCE_RUN" \
+            --output "$RUNNER_TEMP/w1g-report.json" \
+            --proposed-ledger "$RUNNER_TEMP/w1g-proposed-ledger.json"
+      - name: Publish metadata-only records for inspected, not-yet-committed sources
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          temp = Path(os.environ["RUNNER_TEMP"])
+          proposed = json.loads((temp / "w1g-proposed-ledger.json").read_text())
+          baseline = json.loads(Path("reconstruction/data/extraction_coverage.json").read_text())
+          report = json.loads((temp / "w1g-report.json").read_text())
+          if (report["new_documented"] + report["source_reverified"] +
+                  len(report["unparseable_attempts"]) != 10):
+              raise ValueError("W1-G must account for all ten sources")
+          if report["new_documented"] and report["source_reverified"]:
+              raise ValueError("Mixed new and rechecked source evidence")
+          new = proposed["scans"][len(baseline["scans"]):]
+          encoded = json.dumps(new, separators=(",", ":"), sort_keys=True)
+          print("W1G_SUMMARY=" + json.dumps(report, separators=(",", ":"), sort_keys=True))
+          for offset in range(0, len(encoded), 4000):
+              print(f"W1G_CHUNK_{offset // 4000:03d}={encoded[offset:offset + 4000]}")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: medium-source-measured-ledger
+          path: |
+            ${{ runner.temp }}/w1g-report.json
+            ${{ runner.temp }}/w1g-proposed-ledger.json
+          if-no-files-found: error
+          retention-days: 30
