@@ -117,11 +117,27 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Capture process memory and cgroup OOM signals while the original
+          # full-source scan runs. The scan must still complete successfully;
+          # diagnostics never substitute for evidence or swallow a nonzero exit.
           python -m reconstruction.tools.weapon_lfs_inventory scan \
             --manifest reconstruction/data/shared_props_wwise_lfs_source_targets.json \
             --ledger reconstruction/data/extraction_coverage.json \
             --bundle "StreamingAssets/aa/StandaloneWindows64/$BUNDLE" \
-            --run-url "$SOURCE_RUN" --output "$RUNNER_TEMP/$BUNDLE.json"
+            --run-url "$SOURCE_RUN" --output "$RUNNER_TEMP/$BUNDLE.json" &
+          scan_pid=$!
+          trap 'kill "$scan_pid" 2>/dev/null || true' EXIT
+          while kill -0 "$scan_pid" 2>/dev/null; do
+            echo "SOURCE_SCAN_DIAGNOSTICS bundle=$BUNDLE utc=$(date -u +%FT%TZ)"
+            if [[ -r "/proc/$scan_pid/status" ]]; then
+              grep -E '^(VmRSS|VmHWM|VmPeak):' "/proc/$scan_pid/status" || true
+            fi
+            if [[ -r /sys/fs/cgroup/memory.events ]]; then
+              grep -E '^(oom|oom_kill|oom_group_kill) ' /sys/fs/cgroup/memory.events || true
+            fi
+            sleep 10
+          done
+          wait "$scan_pid"
       - uses: actions/upload-artifact@v4
         if: always()
         with:
