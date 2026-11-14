@@ -56,16 +56,22 @@ python reconstruction/tools/plan_bundle_scans.py \
   --output /tmp/bundle-scan-backlog.json
 ~~~
 
-The planner combines every tracked .bundle filename with **17 documented
-read-only source passes** preserved in
-reconstruction/data/extraction_coverage.json. The original nine scans
-reported 56 capped numeric objects; the bounded W1-C retry resolved 30
-and left 26 explicitly incomplete. Six more gameplay bundles contributed
-1,320 parsed MonoBehaviours, and W1-D recovered another **374/374** from
-the original NPC LFS bytes. The tutorial LFS source has **zero**
-MonoBehaviours but contains **113 Sprite and 113 Texture2D objects**.
-See reconstruction/docs/npc-tutorial-lfs-audit.md. None of these passes
-establishes original server or economy formulas.
+The planner now accounts for **25 of 330** tracked UnityFS bundles
+and **10,583 parsed MonoBehaviours**. The original nine scans reported
+56 numeric-field caps; the W1-C bounded targeted retry resolved 30 and
+left **26** explicitly incomplete. Subsequent W1-B and W1-D source
+audits covered six gameplay bundles plus the original NPC and tutorial
+LFS sources; the latter had zero MonoBehaviours but 113 Sprite and
+113 Texture2D objects.
+
+W1-E inspected eight further original weapon, vehicle and prison
+bundles, adding **1,102/1,102** parsed MonoBehaviours at numeric max
+2,048 fields and depth 32, with zero reported parse failures or
+numeric truncations. See
+reconstruction/docs/weapon-vehicle-prison-batch.md. The remaining
+**305** bundle paths are uninspected in this ledger. No client field
+is automatically validated as an authoritative original combat,
+vehicle, prison, economy, police or server formula.
 
 A pass without a reported field cap is still
 **not automatically complete**: earlier scanner versions could skip nested

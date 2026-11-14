@@ -1,0 +1,110 @@
+name: Inspect original weapons, vehicles and prison UnityFS sources
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/extract-weapon-vehicle-prison.yml"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tools/validate_source_inventory.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  inspect:
+    name: inventory / ${{ matrix.bundle }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        include:
+          - bundle: weapons_assets_assets_content_equipment_weapons__sharedsources.bundle
+            expected_size: 38904
+          - bundle: weapons_assets_assets_content_equipment_weapons__modules.bundle
+            expected_size: 22964491
+          - bundle: weapon-lmg_assets_all.bundle
+            expected_size: 8174384
+          - bundle: weapon-lbr44_assets_all.bundle
+            expected_size: 8605621
+          - bundle: vehicle-car-longhorn_guard_assets_all.bundle
+            expected_size: 2641259
+          - bundle: vehicle-car-longhorn_van_assets_all.bundle
+            expected_size: 7301643
+          - bundle: vehicle-car-longhorn_outrider_assets_all.bundle
+            expected_size: 2956041
+          - bundle: location-prison-standalone_scenes_all.bundle
+            expected_size: 41145162
+    steps:
+      - name: Sparse checkout of one actual UnityFS bundle and authored tools
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
+          sparse-checkout-cone-mode: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned read-only UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: Check exact tracked source byte size and UnityFS magic
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          EXPECTED_SIZE: ${{ matrix.expected_size }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          source="StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+          test "$(stat -c%s "$source")" = "$EXPECTED_SIZE"
+          test "$(head -c 7 "$source")" = "UnityFS"
+      - name: Read-only inventory of serializable MonoBehaviour fields
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT_DIR: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python reconstruction/tools/extract_unity_bundle.py \
+            "StreamingAssets/aa/StandaloneWindows64/$BUNDLE" \
+            --max-fields 2048 --max-depth 32 \
+            --output "$OUTPUT_DIR/$BUNDLE.raw.json"
+      - name: Summarize numeric candidate fields, never assume server authority
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT_DIR: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python reconstruction/tools/summarize_numeric_evidence.py \
+            "$OUTPUT_DIR/$BUNDLE.raw.json" --samples-per-category 15 \
+            --output "$OUTPUT_DIR/$BUNDLE.summary.json"
+      - name: Validate observed source and counts including zero-object sources
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          EXPECTED_SIZE: ${{ matrix.expected_size }}
+          OUTPUT_DIR: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.validate_source_inventory \
+            "$OUTPUT_DIR/$BUNDLE.raw.json" \
+            "$OUTPUT_DIR/$BUNDLE.summary.json" \
+            --source "StreamingAssets/aa/StandaloneWindows64/$BUNDLE" \
+            --expected-size "$EXPECTED_SIZE" --max-fields 2048 --max-depth 32
+      - name: Retain numeric-only evidence, not proprietary game media
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidence-${{ matrix.bundle }}
+          path: |
+            ${{ runner.temp }}/${{ matrix.bundle }}.raw.json
+            ${{ runner.temp }}/${{ matrix.bundle }}.summary.json
+          if-no-files-found: warn
+          retention-days: 30

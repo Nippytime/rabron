@@ -45,17 +45,19 @@ but it is **not** sufficient for a full-binary inventory of the parent repo.
 ## Evidence-first extraction queue
 
 The full original build inventory includes **330 tracked Unity bundles**.
-Seventeen bundle passes are now documented, including six gameplay-source
-scans and the newly verified NPC/tutorial LFS bundles. Across the
-**17/330** inventoried sources, **9,481** MonoBehaviours have been parsed.
-The older source audits had 56 capped records; W1-C resolved 30 and keeps
-26 incomplete. The NPC source contributed 374 parsed MonoBehaviours
-without reported field/depth caps. The tutorial source contains 113
-sprites and 113 textures but **zero** MonoBehaviours; its gameplay
-implementation has not been recovered. These are client asset findings,
-not original economy, AI or server authority. See
-reconstruction/docs/gameplay-bundle-batch-1.md and
-reconstruction/docs/npc-tutorial-lfs-audit.md.
+The source inventory now documents **25 of 330** UnityFS bundle scans.
+Across those bundles, **10,583** MonoBehaviours were successfully parsed.
+The W1-E weapon, vehicle and prison batch added **1,102** parsed records
+across eight additional original sources with zero reported parse errors
+or field/depth truncations at 2,048 fields/depth32. The earlier W1-D
+NPC bundle added 374/374, while the tutorial bundle contained sprites
+and textures but no MonoBehaviours. **305** other tracked bundles remain
+uninspected. These are client-side source observations, not verified
+original formulas or redistributable game assets.
+
+See reconstruction/docs/weapon-vehicle-prison-batch.md for source
+fingerprints and findings, and
+reconstruction/docs/npc-tutorial-lfs-audit.md for prior LFS scans.
 
 **W1-C targeted overflow follow-up:** The seven verified UnityFS jobs reproduced
 all **56** older numeric field caps by SHA-256 and Unity path ID, resolved
