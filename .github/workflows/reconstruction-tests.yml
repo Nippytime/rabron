@@ -31,17 +31,24 @@ jobs:
           python-version: "3.13"
       - name: Test evidence tools and gameplay rules
         run: python -m unittest discover -s reconstruction/tests -v
-      - name: Lint Unity Editor verification runner (does not run Unity)
+      - name: Lint Unity Editor and Play Mode runners (does not run Unity)
         shell: pwsh
         run: |
           $tokens = $null
           $parseErrors = $null
-          [System.Management.Automation.Language.Parser]::ParseFile(
+          foreach ($script in @(
             "reconstruction/unity-prototype/Tools/Verify-Unity.ps1",
-            [ref]$tokens,
-            [ref]$parseErrors
-          ) | Out-Null
-          if ($parseErrors.Count -gt 0) {
-            $parseErrors | ForEach-Object { Write-Error $_.Message }
-            exit 1
+            "reconstruction/unity-prototype/Tools/Verify-PlayMode.ps1"
+          )) {
+            $tokens = $null
+            $parseErrors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile(
+              $script,
+              [ref]$tokens,
+              [ref]$parseErrors
+            ) | Out-Null
+            if ($parseErrors.Count -gt 0) {
+              $parseErrors | ForEach-Object { Write-Error "$script : $($_.Message)" }
+              exit 1
+            }
           }

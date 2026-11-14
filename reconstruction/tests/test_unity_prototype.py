@@ -241,6 +241,56 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("UnityEngine", core)
         self.assertNotIn("BankBalance =", store)
 
+    def test_real_playmode_suite_requires_nunit_results_not_source_only(self):
+        manifest = json.loads((UNITY / "Packages/manifest.json").read_text(
+            encoding="utf-8"
+        ))["dependencies"]
+        asmdef = json.loads((UNITY / "Assets/Tests/PlayMode/"
+                             "Rabron.Prototype.PlayModeTests.asmdef").read_text(
+                                 encoding="utf-8"
+                             ))
+        tests = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        runner = (UNITY / "Tools/Verify-PlayMode.ps1").read_text(
+            encoding="utf-8"
+        )
+        save = read("PrototypeSaveStore.cs")
+
+        self.assertEqual(manifest["com.unity.test-framework"], "1.6.0")
+        self.assertEqual(asmdef["name"], "Rabron.Prototype.PlayModeTests")
+        self.assertIn("Rabron.Prototype", asmdef["references"])
+        self.assertIn("Rabron.GameCore", asmdef["references"])
+        self.assertIn("UnityEngine.TestRunner", asmdef["references"])
+        self.assertIn("nunit.framework.dll", asmdef["precompiledReferences"])
+        self.assertIn("TestAssemblies", asmdef["optionalUnityReferences"])
+
+        self.assertIn('[Category("RabronPlayMode")]', tests)
+        self.assertEqual(tests.count("[UnityTest]"), 2)
+        self.assertIn("SceneBootCreatesRuntimePlayerCameraHudAndStations", tests)
+        self.assertIn("HeistMarkersDriveFullLoopAndPhysicalCounterMoney", tests)
+        self.assertIn("FindFirstObjectByType<PrototypeDirector>()", tests)
+        self.assertIn("Perform", tests)
+        self.assertIn("StationAction.CollectCash", tests)
+        self.assertIn("StationAction.Deposit", tests)
+        self.assertIn("Is.EqualTo(HeistPhase.Idle)", tests)
+        self.assertIn("field.SetValue(director, original)", tests)
+        self.assertIn("Is.EqualTo(15)", tests)
+
+        self.assertIn("'-runTests'", runner)
+        self.assertIn("'-testPlatform', 'PlayMode'", runner)
+        self.assertIn("'-testCategory', 'RabronPlayMode'", runner)
+        self.assertIn("'-testResults', $results", runner)
+        self.assertIn("SelectSingleNode('/test-run')", runner)
+        self.assertIn("$total -lt 2", runner)
+        self.assertIn("$failed -ne 0", runner)
+        self.assertIn("$missing.Count -gt 0", runner)
+        self.assertIn("$exitCode -ne 0", runner)
+        self.assertNotIn("'-quit'", runner)
+        self.assertIn('arg, "-runTests"', save)
+        self.assertIn("Application.temporaryCachePath", save)
+        self.assertIn("Application.persistentDataPath", save)
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")
