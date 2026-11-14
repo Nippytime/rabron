@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "classification": "client_presentation_not_authoritative_economy",
+  "source": "StreamingAssets/aa/StandaloneWindows64/location-settlement-data_assets_all.bundle",
+  "source_sha256": "43018ce5ec95c4dfdd433b71d1460ada17cf4dbd79d8abbd70c2bf00b5c83534",
+  "scan_run": "https://github.com/Nippytime/rabron/actions/runs/43534837573",
+  "description": "Exact numeric MoneyWorkbenchCashPileSizeIntervals fields from three unnamed MonoBehaviours. Selection algorithm and workbench variant mapping not recovered.",
+  "units": "unknown; visual cash-pile thresholds, not a laundering exchange rate",
+  "records": [
+    {
+      "path_id": "-3521504050020868324",
+      "thresholds": [
+        0,
+        1,
+        1000,
+        5000,
+        10000,
+        25000,
+        50000,
+        100000,
+        250000,
+        500000,
+        1000000,
+        2000000,
+        5000000,
+        15000000,
+        30000000,
+        50000000
+      ],
+      "field": "$.<MoneyWorkbenchCashPileSizeIntervals>k__BackingField"
+    },
+    {
+      "path_id": "1509660387188884686",
+      "thresholds": [
+        0,
+        1,
+        1000,
+        5000,
+        10000,
+        25000,
+        50000,
+        100000,
+        250000,
+        500000,
+        1000000
+      ],
+      "field": "$.<MoneyWorkbenchCashPileSizeIntervals>k__BackingField"
+    },
+    {
+      "path_id": "5308116492309360796",
+      "thresholds": [
+        0,
+        1,
+        1000,
+        5000,
+        10000,
+        25000,
+        50000,
+        100000,
+        250000,
+        500000,
+        1000000,
+        2000000,
+        5000000,
+        15000000
+      ],
+      "field": "$.<MoneyWorkbenchCashPileSizeIntervals>k__BackingField"
+    }
+  ]
+}
