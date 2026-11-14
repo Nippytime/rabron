@@ -72,7 +72,7 @@ a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
-The Editor smoke checks generated procedural geometry, all 14 station
+The Editor smoke checks generated procedural geometry, all 15 station
 types and trigger colliders, solid-wall interaction occlusion, near-wall
 camera placement, the 0.65m step offset needed to climb the fence platform,
 and the heist-to-bank behavior contract. The optional
@@ -107,7 +107,11 @@ around the city.
 1. Walk **north** to the cyan *Scout* pillar outside the warehouse.
 2. Put on the **red mask** at the neighboring pillar.
 3. Use the amber entrance pillar to **begin the heist**.
-4. Walk through the 4 m opening and collect one or both loot objects.
+4. Walk through the 4 m opening. A stationary red guard faces the warehouse
+   entrance. Stay outside his **demo-only** forward vision cone and
+   approach the pink **Control guard** pillar from the side to prevent
+   future alarms. You can also risk being seen, which raises the alarm.
+   Collect one or both loot objects.
 5. Leave the building; use the **Escape** pillar on the road.
 6. Go **west** to the fence counter. Selling now reveals four original
    green cash-bundle meshes **on top of the counter**; they are visual only,
@@ -121,7 +125,13 @@ around the city.
    and deposit clean cash. A nearby new-heist station resets just the
    heist phase and retains account balances.
 
-The prototype currently has no NPCs; alarm escalation is not simulated.
+The prototype has one stationary guard **placeholder** whose line-of-sight
+sensor raises the existing heist alarm if the player is seen. Controlling
+the guard prevents subsequent detection but cannot erase an existing alarm.
+This implements a small prototype of the official "keep staff controlled
+to prevent alarms" behavior, not the original NPC AI, detection distance,
+police dispatch, arrest or wanted-level rules. Patrol movement and police
+response are not implemented.
 
 ### Physical access and camera
 
@@ -164,6 +174,7 @@ No hard-coded economic rates live in the portable \`HeistSession\` core.
 - \`Assets/Editor/PrototypeSceneInstaller.cs\`: create default empty scene and
   build settings, one time when the Editor opens the project.
 - \`PrototypeWorld.cs\`: asset-free scene blockout and interaction targets.
+- \`GuardSensor.cs\`: stationary guard sight cone with provisional demo tuning.
 - \`ThirdPersonMotor.cs\`: input, collision, movement and follow camera.
 - \`PrototypeDirector.cs\`: calls portable game core APIs on interaction.
 - \`PrototypeHud.cs\`: runtime UI Toolkit status, objective and prompts.
@@ -173,13 +184,13 @@ No hard-coded economic rates live in the portable \`HeistSession\` core.
 
 ## Validation and limitations
 
-GitHub Actions checks the referenced local package, all 14 interaction targets,
+GitHub Actions checks the referenced local package, all 15 interaction targets,
 Unity project manifest, demo bootstrapping and code separation. The original
 .NET console tests compile and exercise money conservation and phase gating.
 **Neither test substitutes for opening the actual project in Unity Editor.**
 
 Still missing: a real Unity Editor scene/build smoke test; exported Windows EXE;
-police AI, dynamic alarms, human multiplayer, base building, vehicles, cargo,
+police dispatch, mobile guard AI, human multiplayer, base building, vehicles, cargo,
 clans, prison, persistent server state, realistic art or animations; measured
 matching heist payouts, loot tables, laundering ratios and timers. The logic
 uses provisional restrictions and is **not claimed to match ROB RUN exactly**.
