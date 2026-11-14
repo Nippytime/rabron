@@ -1,0 +1,135 @@
+name: Recover NPC and tutorial LFS source metadata
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/extract-npc-tutorial-lfs.yml"
+      - "reconstruction/tools/verify_priority_lfs.py"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/data/extraction_coverage.json"
+      - "reconstruction/tests/test_verify_priority_lfs.py"
+
+permissions:
+  contents: read
+
+jobs:
+  verify-and-scan:
+    name: lfs / ${{ matrix.bundle }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        bundle:
+          - npc_assets_all.bundle
+          - tutorial_assets_all.bundle
+    steps:
+      - name: Sparse checkout of exactly one source and authored scanner
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
+          sparse-checkout-cone-mode: false
+      - name: Setup Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Validate recorded source metadata and pointer before download
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+          python -m reconstruction.tools.verify_priority_lfs "$asset" \
+            --phase pointer --ledger reconstruction/data/extraction_coverage.json
+          python -m unittest discover -s reconstruction/tests \
+            -p test_verify_priority_lfs.py -v
+      - name: Fetch only this one registered Git LFS binary
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+          git lfs install --local
+          git lfs pull --include="$asset" --exclude=""
+          git lfs checkout "$asset"
+      - name: Verify exact UnityFS size and original SHA-256
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+          python -m reconstruction.tools.verify_priority_lfs "$asset" \
+            --phase bytes --ledger reconstruction/data/extraction_coverage.json \
+            --output "$OUTPUT/$BUNDLE.source.json"
+      - name: Install pinned, read-only UnityPy parser
+        run: python -m pip install UnityPy==1.25.4
+      - name: Parse serialized MonoBehaviour numerics with explicit caps
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+          expected_sha=$(python -c "import json,sys;print(json.load(open(sys.argv[1]))['sha256'])" "$OUTPUT/$BUNDLE.source.json")
+          python reconstruction/tools/extract_unity_bundle.py "$asset" \
+            --max-fields 1024 --max-depth 24 \
+            --expect-sha256 "$expected_sha" \
+            --output "$OUTPUT/$BUNDLE.raw.json"
+      - name: Summarize only source-backed scalar candidates, not original rules
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python reconstruction/tools/summarize_numeric_evidence.py \
+            "$OUTPUT/$BUNDLE.raw.json" --samples-per-category 20 \
+            --output "$OUTPUT/$BUNDLE.summary.json"
+      - name: Fail if numeric evidence is missing or source counts disagree
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT: ${{ runner.temp }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python - <<'PY'
+          import json, os
+          from pathlib import Path
+          directory = Path(os.environ['OUTPUT'])
+          name = os.environ['BUNDLE']
+          verified = json.loads((directory / (name + '.source.json')).read_text())
+          raw = json.loads((directory / (name + '.raw.json')).read_text())
+          summary = json.loads((directory / (name + '.summary.json')).read_text())
+          assert verified['verified'] and verified['phase'] == 'bytes'
+          assert raw['sha256'] == summary['source_sha256'] == verified['sha256']
+          assert raw['size_bytes'] == verified['size_bytes']
+          assert raw['monobehaviours_total'] == raw['monobehaviours_attempted'] == len(raw['records'])
+          assert not raw['limit_reached']
+          assert raw['monobehaviours_parsed'] == sum(
+              record['status'] == 'parsed' for record in raw['records']
+          )
+          assert summary['monobehaviours_parsed'] == raw['monobehaviours_parsed']
+          print('Verified bundle source and complete per-object accounting; partial numeric records remain flagged.')
+          PY
+      - name: Retain short-lived numeric-only source evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: npc-tutorial-source-evidence-${{ matrix.bundle }}
+          path: |
+            ${{ runner.temp }}/${{ matrix.bundle }}.source.json
+            ${{ runner.temp }}/${{ matrix.bundle }}.raw.json
+            ${{ runner.temp }}/${{ matrix.bundle }}.summary.json
+          if-no-files-found: warn
+          retention-days: 30
