@@ -45,10 +45,13 @@ but it is **not** sufficient for a full-binary inventory of the parent repo.
 ## Evidence-first extraction queue
 
 The full original build inventory includes **330 tracked Unity bundles**.
-Only nine prior MonoBehaviour bundle passes are source-documented; their
-combined 7,787 parsed objects still include 56 historic per-object numeric
-field-limit truncations. Even zero cap counts do not establish server formulas
-or full nested-field coverage.
+Fifteen MonoBehaviour bundle passes are now source-documented, including
+six **real new extraction runs** at GitHub Actions run 43584959275. They cover
+9,107 parsed objects in total; the older nine passes include 56 reported
+numeric field-limit truncations. The newer six report no caps under 8,192
+fields/depth 32, but this only establishes numeric MonoBehaviour scope,
+**not** server formulas or complete recovery of all Unity object types.
+See reconstruction/docs/gameplay-bundle-batch-1.md for measured results.
 
 List all tracked bundles without downloading binaries, cross-check known
 SHA-256 evidence and produce a prioritized, explicitly incomplete backlog:

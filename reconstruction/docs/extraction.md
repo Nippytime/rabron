@@ -56,10 +56,13 @@ python reconstruction/tools/plan_bundle_scans.py \
   --output /tmp/bundle-scan-backlog.json
 ~~~
 
-The planner combines every tracked .bundle filename with **nine historical
+The planner combines every tracked .bundle filename with **15 documented
 read-only MonoBehaviour passes** preserved in
-reconstruction/data/extraction_coverage.json. Historical field caps total
-56 records across these passes. A pass without a reported field cap is still
+reconstruction/data/extraction_coverage.json. The first nine scans have
+56 reported numeric field cap occurrences. The six new scans (see
+reconstruction/docs/gameplay-bundle-batch-1.md) parsed **1,320** more
+MonoBehaviours at an 8,192-field/32-depth limit with zero reported
+truncations, without recovering any authoritative gameplay formula. A pass without a reported field cap is still
 **not automatically complete**: earlier scanner versions could skip nested
 fields beyond their depth limit while reporting a false completeness flag.
 The backlog prioritizes such rescans, real LFS fetches, and uninspected

@@ -60,6 +60,16 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   Some other location bundle passes have limits too; see machine ledger.
 - Shared-global: 5/5 parsed with no *reported* cap, but that does not
   recover non-MonoBehaviour data, source code or server logic.
+- W1-B first new batch: six previously unscanned vehicle, equipment, plot,
+  weapon and settlement scene bundles yielded **1,320/1,320** parsed
+  MonoBehaviours under max-fields 8,192 / max-depth 32 with no reported
+  field caps. Run:
+  https://github.com/Nippytime/rabron/actions/runs/43584959275 .
+  Coverage is now **15 of 330** tracked bundle paths with documented
+  MonoBehaviour passes, **9,107** total parsed objects. This does not
+  establish full original data or authoritative mechanics. Detailed
+  checksums and category observations:
+  reconstruction/docs/gameplay-bundle-batch-1.md .
 - A few source-backed weapon HUD spread offsets and cash-pile visual size
   thresholds are known. **No original loot payout, laundering, tax, recoil
   ballistics, damage, or police formula has been validated**.

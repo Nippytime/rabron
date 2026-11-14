@@ -101,6 +101,192 @@
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
       "status": "documented_scan_not_fully_verified"
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/vehicle-cars_assets_all.bundle",
+      "sha256": "119d9aa6abef7adcc2823284dbc236fc953d0e35dc4a1a423aff7e336e503540",
+      "monobehaviours_total": 78,
+      "monobehaviours_parsed": 78,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/gameplay-bundle-batch-1.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43584959275",
+      "scope": "MonoBehaviour numeric field records only; max_fields=8192, max_depth=32; other Unity object kinds and server rules not extracted",
+      "status": "documented_bounded_scan_no_reported_field_limits",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 28
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "BoxCollider": 14,
+        "CapsuleCollider": 2,
+        "GameObject": 478,
+        "LODGroup": 3,
+        "Material": 2,
+        "Mesh": 1,
+        "MeshFilter": 340,
+        "MeshRenderer": 340,
+        "MonoBehaviour": 78,
+        "Texture2D": 8,
+        "Transform": 478
+      }
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/equipement_assets_usableitem.bundle",
+      "sha256": "cb89ea19ccc682aa47673384c16473a8c572c502a556c9c40f9ad47e4a22c08f",
+      "monobehaviours_total": 163,
+      "monobehaviours_parsed": 163,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/gameplay-bundle-batch-1.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43584959275",
+      "scope": "MonoBehaviour numeric field records only; max_fields=8192, max_depth=32; other Unity object kinds and server rules not extracted",
+      "status": "documented_bounded_scan_no_reported_field_limits",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 140
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "GameObject": 47,
+        "LODGroup": 9,
+        "Material": 5,
+        "Mesh": 19,
+        "MeshFilter": 35,
+        "MeshRenderer": 35,
+        "MonoBehaviour": 163,
+        "Texture2D": 15,
+        "Transform": 47
+      }
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-environment-plot_assets_all.bundle",
+      "sha256": "e4d428a426175fd318afc4ee1797985fb5f2cade21a80b142c256a89a1d35ad3",
+      "monobehaviours_total": 3,
+      "monobehaviours_parsed": 3,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/gameplay-bundle-batch-1.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43584959275",
+      "scope": "MonoBehaviour numeric field records only; max_fields=8192, max_depth=32; other Unity object kinds and server rules not extracted",
+      "status": "documented_bounded_scan_no_reported_field_limits",
+      "candidate_field_counts": {
+        "combat": 3,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 105
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "GameObject": 146,
+        "LODGroup": 15,
+        "Material": 43,
+        "Mesh": 123,
+        "MeshFilter": 123,
+        "MeshRenderer": 123,
+        "MonoBehaviour": 3,
+        "Texture2D": 102,
+        "Transform": 146
+      }
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/vehicles-helicopters_assets_all.bundle",
+      "sha256": "6ca29e596bfb0bffd534bb02795b3abc7ede16848e6f5d5e411b44653415d984",
+      "monobehaviours_total": 132,
+      "monobehaviours_parsed": 132,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/gameplay-bundle-batch-1.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43584959275",
+      "scope": "MonoBehaviour numeric field records only; max_fields=8192, max_depth=32; other Unity object kinds and server rules not extracted",
+      "status": "documented_bounded_scan_no_reported_field_limits",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 48
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "BoxCollider": 20,
+        "CapsuleCollider": 36,
+        "GameObject": 824,
+        "LODGroup": 8,
+        "Material": 11,
+        "Mesh": 62,
+        "MeshFilter": 584,
+        "MeshRenderer": 584,
+        "MonoBehaviour": 132,
+        "Texture2D": 7,
+        "Transform": 824
+      }
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/weapon-vulture50_assets_all.bundle",
+      "sha256": "576c2da1b7f987bffad5737c50c5b5e5b9195c3d673eee3416c84af897746377",
+      "monobehaviours_total": 34,
+      "monobehaviours_parsed": 34,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/gameplay-bundle-batch-1.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43584959275",
+      "scope": "MonoBehaviour numeric field records only; max_fields=8192, max_depth=32; other Unity object kinds and server rules not extracted",
+      "status": "documented_bounded_scan_no_reported_field_limits",
+      "candidate_field_counts": {
+        "combat": 88,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 12
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "BoxCollider": 4,
+        "GameObject": 94,
+        "LODGroup": 4,
+        "Material": 4,
+        "Mesh": 8,
+        "MeshFilter": 48,
+        "MeshRenderer": 48,
+        "MonoBehaviour": 34,
+        "Texture2D": 12,
+        "Transform": 94
+      }
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-settlement-standalone_scenes_settlement_standalone.bundle",
+      "sha256": "8bdcfda70d8e69618e76f282d4c289ac0d406fad8d2cc3f774668c155e1c78db",
+      "monobehaviours_total": 910,
+      "monobehaviours_parsed": 910,
+      "numeric_field_cap_records": 0,
+      "scan_evidence": "reconstruction/docs/gameplay-bundle-batch-1.md",
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43584959275",
+      "scope": "MonoBehaviour numeric field records only; max_fields=8192, max_depth=32; other Unity object kinds and server rules not extracted",
+      "status": "documented_bounded_scan_no_reported_field_limits",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 11
+      },
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "BoxCollider": 2217,
+        "CapsuleCollider": 358,
+        "GameObject": 2494,
+        "Light": 1,
+        "LightProbeGroup": 1,
+        "LightProbes": 1,
+        "LightingSettings": 1,
+        "LightmapSettings": 1,
+        "MeshCollider": 395,
+        "MonoBehaviour": 910,
+        "NavMeshSettings": 1,
+        "OcclusionArea": 1,
+        "OcclusionCullingSettings": 1,
+        "PreloadData": 1,
+        "RenderSettings": 1,
+        "Transform": 2494
+      }
     }
   ],
   "known_lfs_not_yet_scanned": [

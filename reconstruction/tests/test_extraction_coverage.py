@@ -20,11 +20,11 @@ def bundle(name):
 
 
 class ExtractionCoverageTests(unittest.TestCase):
-    def test_historic_scans_account_for_known_parsed_objects_and_caps(self):
+    def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 9)
+        self.assertEqual(len(LEDGER["scans"]), 15)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 7787)
+                             for entry in LEDGER["scans"]), 9107)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
                              for entry in LEDGER["scans"]), 56)
         self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 2)
@@ -33,8 +33,24 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 9)
+        self.assertEqual(len(known), 15)
         self.assertEqual(len(pending), 2)
+
+    def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
+        recent = [entry for entry in LEDGER["scans"]
+                  if entry.get("status") == "documented_bounded_scan_no_reported_field_limits"]
+        self.assertEqual(len(recent), 6)
+        self.assertEqual(sum(e["monobehaviours_parsed"] for e in recent), 1320)
+        self.assertTrue(all(e["numeric_field_cap_records"] == 0 for e in recent))
+        self.assertTrue(all(e["run_url"].endswith("/43584959275")
+                            for e in recent))
+        self.assertTrue(all(e["candidate_field_counts"]["economy"] == 0
+                            for e in recent))
+        self.assertTrue(all("Unity object kinds" in e["scope"]
+                            for e in recent))
+        self.assertTrue(all(e["scan_evidence"] ==
+                            "reconstruction/docs/gameplay-bundle-batch-1.md"
+                            for e in recent))
 
     def test_queue_does_not_call_any_historical_scan_complete(self):
         report = plan_scans(
