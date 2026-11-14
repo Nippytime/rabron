@@ -127,6 +127,8 @@ The prototype currently has no NPCs; alarm escalation is not simulated.
 
 Nearby pillars now require a clear ray from the player's eye: a solid
 warehouse wall or fence counter prevents interaction from its opposite side.
+The cash-pickup station is therefore on the **rear** side of the counter;
+walk around to it rather than interacting through the front.
 Trigger colliders do not obstruct the ray. The third-person follow camera
 moves in front of solid walls rather than clipping through them. Both systems
 reuse preallocated physics-hit buffers instead of allocating on every frame.
