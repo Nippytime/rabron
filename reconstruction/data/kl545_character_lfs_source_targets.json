@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AF two original Git LFS KL545 weapon and character UnityFS sources; original pointer identities only",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/weapon-kl545_assets_all.bundle",
+      "git_blob_sha": "4ac760157bfd24b94b59817dade7eaa78723875b",
+      "lfs_oid_sha256": "b8d9643f6333f07ab662371d5d64a00cf961b0e602d6a8018ca33393621ec3db",
+      "size_bytes": 105697435
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character_assets_.bundle",
+      "git_blob_sha": "b31ab609a90d429dc37fffef3b1d7c1a4f4331a4",
+      "lfs_oid_sha256": "0d6ac130fa1761c2058d3f790b887b0275bdbc08c6576fbd16fccf4a33f94ba1",
+      "size_bytes": 97160534
+    }
+  ]
+}

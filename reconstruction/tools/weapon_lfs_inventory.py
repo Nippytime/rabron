@@ -19,11 +19,13 @@ PREFIX = "StreamingAssets/aa/StandaloneWindows64/"
 EVIDENCE = "GitHub Actions W1-AC original weapon LFS source inventory artifact"
 AD_EVIDENCE = "GitHub Actions W1-AD original equipment-realm LFS source inventory artifact"
 AE_EVIDENCE = "GitHub Actions W1-AE original RC556-TAG12K LFS source inventory artifact"
+AF_EVIDENCE = "GitHub Actions W1-AF original KL545-character LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
 AD_NAMES = {"equipement_assets_vfx.bundle", "space-realm_scenes_all.bundle"}
 AE_NAMES = {"weapon-rc556_assets_all.bundle", "weapon-tag12k_assets_all.bundle"}
+AF_NAMES = {"weapon-kl545_assets_all.bundle", "character_assets_.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -33,7 +35,7 @@ def load_targets(path):
     if data.get("schema_version") != 1 or len(data.get("sources", [])) != 2:
         raise ValueError("Exactly two versioned LFS source targets required")
     sources = data["sources"]
-    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES):
+    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES, AF_NAMES):
         raise ValueError("Unexpected original LFS source scope")
     for e in sources:
         if (set(e) != {"bundle", "git_blob_sha", "lfs_oid_sha256", "size_bytes"}
@@ -194,6 +196,8 @@ def main():
         evidence, log_prefix = AD_EVIDENCE, "W1AD"
     elif names == AE_NAMES:
         evidence, log_prefix = AE_EVIDENCE, "W1AE"
+    elif names == AF_NAMES:
+        evidence, log_prefix = AF_EVIDENCE, "W1AF"
     else:
         evidence, log_prefix = EVIDENCE, "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
