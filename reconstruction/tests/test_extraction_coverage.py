@@ -52,6 +52,56 @@ class ExtractionCoverageTests(unittest.TestCase):
                             "reconstruction/docs/gameplay-bundle-batch-1.md"
                             for e in recent))
 
+    def test_verified_selected_path_ids_and_remaining_caps(self):
+        recovery = json.loads((ROOT / "data/targeted_numeric_recovery.json").read_text(
+            encoding="utf-8"
+        ))
+        self.assertEqual(recovery["schema_version"], 1)
+        self.assertEqual(len(recovery["bundles"]), 7)
+        self.assertEqual(recovery["record_counts"], {
+            "historical": 56, "resolved": 30,
+            "unresolved": 26, "adaptive_retried": 36,
+        })
+        total = [0, 0, 0]
+        for bundle in recovery["bundles"]:
+            path = bundle["bundle"]
+            evidence = next(e for e in LEDGER["scans"]
+                            if e["bundle"].endswith("/" + path))
+            resolved = bundle["resolved_path_ids"]
+            unresolved = bundle["unresolved_path_ids"]
+            self.assertEqual(bundle["source_sha256"], evidence["sha256"])
+            self.assertEqual(len(resolved) + len(unresolved),
+                             evidence["numeric_field_cap_records"])
+            self.assertEqual(len(set(resolved + unresolved)),
+                             len(resolved) + len(unresolved))
+            self.assertTrue(all(str(int(value)) == value
+                                for value in resolved + unresolved))
+            targeted = evidence["targeted_rescan"]
+            self.assertEqual(targeted["resolved_count"], len(resolved))
+            self.assertEqual(targeted["unresolved_count"], len(unresolved))
+            self.assertEqual(targeted["complete_historical_field_caps"],
+                             len(unresolved) == 0)
+            total[0] += len(resolved)
+            total[1] += len(unresolved)
+            total[2] += bundle["adaptive_retry_count"]
+        self.assertEqual(total, [30, 26, 36])
+
+        paths = [entry["bundle"] for entry in LEDGER["scans"]]
+        paths.extend(entry["bundle"] for entry in
+                     LEDGER["known_lfs_not_yet_scanned"])
+        planned = plan_scans(paths, LEDGER)
+        self.assertEqual(planned["historic_field_capped_records"], 56)
+        self.assertEqual(planned["remaining_historic_field_capped_records"], 26)
+        statuses = {entry["bundle"]: entry["status"] for entry
+                    in planned["backlog"]}
+        self.assertEqual(
+            statuses[BUNDLE_PREFIX + "inbuild_assets_all.bundle"],
+            "historic_caps_resolved_scope_partial",
+        )
+        self.assertEqual(planned["statuses"]["partial_field_cap"], 6)
+        self.assertEqual(planned["statuses"][
+            "historic_caps_resolved_scope_partial"], 1)
+
     def test_queue_does_not_call_any_historical_scan_complete(self):
         report = plan_scans(
             [bundle("random-decoration"), bundle("npc_assets_all"),

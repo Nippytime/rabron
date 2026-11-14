@@ -13,12 +13,17 @@ from collections import Counter
 from pathlib import Path
 
 
-def numeric_fields(data, *, max_fields=512, max_depth=16):
-    """Return sorted, scalar-only field paths and a truthful truncation flag."""
+def numeric_fields(data, *, max_fields=512, max_depth=16,
+                   return_reasons=False):
+    """Read scalar field paths with optional explicit truncation reasons.
+
+    Default result is (fields, truncated_bool) for existing callers.
+    return_reasons=True returns (fields, ["field_limit", "depth_limit", ...]).
+    """
     if max_fields < 1 or max_depth < 0:
         raise ValueError("Limits must be positive (depth may be zero)")
     found = []
-    depth_skipped = False
+    reasons = set()
     stack = [("$", data, 0)]
     while stack:
         path, node, depth = stack.pop()
@@ -28,7 +33,8 @@ def numeric_fields(data, *, max_fields=512, max_depth=16):
             if isinstance(node, float) and not math.isfinite(node):
                 continue
             if len(found) == max_fields:
-                return sorted(found, key=lambda item: item["path"]), True
+                reasons.add("field_limit")
+                break
             found.append({"path": path, "value": node})
         elif isinstance(node, dict):
             if depth < max_depth:
@@ -37,22 +43,27 @@ def numeric_fields(data, *, max_fields=512, max_depth=16):
                                                        key=lambda item: str(item[0]),
                                                        reverse=True))
             elif node:
-                depth_skipped = True
+                reasons.add("depth_limit")
         elif isinstance(node, (list, tuple)):
             if depth < max_depth:
                 stack.extend((f"{path}[{index}]", value, depth + 1)
                              for index, value in reversed(list(enumerate(node))))
             elif node:
-                depth_skipped = True
-    # A skipped nested subtree may contain numerics. Mark extraction partial
-    # instead of reporting false completeness. Empty containers are harmless.
-    return sorted(found, key=lambda item: item["path"]), depth_skipped
+                reasons.add("depth_limit")
+    # The presence of nested structures behind the depth limit makes
+    # extraction incomplete, even when no visible numeric fields were found.
+    result = sorted(found, key=lambda item: item["path"])
+    return result, sorted(reasons) if return_reasons else bool(reasons)
 
 
 def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
-                max_depth=16):
+                max_depth=16, path_ids=None, expected_sha256=None):
     if max_fields < 1 or max_depth < 0:
         raise ValueError("max_fields must be positive and max_depth nonnegative")
+    if path_ids is not None:
+        path_ids = {str(int(value)) for value in path_ids}
+        if not path_ids:
+            raise ValueError("Selected path ID list must not be empty")
     # A successful git checkout can still contain a small Git LFS pointer
     # instead of the requested Unity binary when the LFS object was not fetched.
     with path.open("rb") as source:
@@ -73,6 +84,8 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
     with path.open("rb") as source:
         sha256 = hashlib.file_digest(source, "sha256").hexdigest()
 
+    if expected_sha256 is not None and sha256 != expected_sha256:
+        raise ValueError("Source bundle SHA-256 does not match recorded evidence")
     environment = UnityPy.load(str(path))
     objects = Counter()
     errors = Counter()
@@ -86,6 +99,8 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
         if kind != "MonoBehaviour":
             continue
         total_behaviours += 1
+        if path_ids is not None and str(reader.path_id) not in path_ids:
+            continue
         if max_behaviours is not None and len(records) >= max_behaviours:
             cap_hit = True
             continue
@@ -94,9 +109,12 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
         try:
             parsed = reader.parse_as_dict()
             entry["name"] = str(parsed.get("m_Name", ""))
-            entry["numeric_fields"], entry["fields_truncated"] = numeric_fields(
-                parsed, max_fields=max_fields, max_depth=max_depth
+            entry["numeric_fields"], reasons = numeric_fields(
+                parsed, max_fields=max_fields, max_depth=max_depth,
+                return_reasons=True
             )
+            entry["numeric_truncation_reasons"] = reasons
+            entry["fields_truncated"] = bool(reasons)
             entry["status"] = "parsed"
         except (Exception) as exc:
             # Missing MonoBehaviour typetrees must stay visible as missing data.
@@ -108,6 +126,12 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
         records.append(entry)
 
     parsed_count = sum(entry["status"] == "parsed" for entry in records)
+    missing_path_ids = sorted(path_ids - {r["path_id"] for r in records}) if (
+        path_ids is not None) else []
+    bounded_complete = (
+        not cap_hit and not missing_path_ids and parsed_count == len(records)
+        and not any(r.get("fields_truncated") for r in records)
+    )
     result = {
         "tool": "UnityPy",
         "tool_version": getattr(UnityPy, "__version__", "unknown"),
@@ -123,9 +147,14 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
         "monobehaviours_parsed": parsed_count,
         "unparsed_reason_counts": dict(sorted(errors.items())),
         "limit_reached": cap_hit,
+        "selected_path_ids": sorted(path_ids) if path_ids is not None else None,
+        "missing_path_ids": missing_path_ids,
+        "selected_numeric_extraction_complete": (
+            bounded_complete if path_ids is not None else None
+        ),
         "complete_numeric_extraction": (
-            not cap_hit and parsed_count == total_behaviours
-            and not any(e.get("fields_truncated") for e in records)
+            path_ids is None and parsed_count == total_behaviours
+            and bounded_complete
         ),
         "records": records,
     }
@@ -139,15 +168,28 @@ def main():
     parser.add_argument("--max-behaviours", type=int, default=None)
     parser.add_argument("--max-fields", type=int, default=512)
     parser.add_argument("--max-depth", type=int, default=16,
-                        help="Nested field traversal depth; exceeding it now marks scan incomplete")
+                        help="Nested field traversal depth; exceeding it marks scan incomplete")
+    parser.add_argument("--path-ids-file", type=Path,
+                        help="Optional newline-separated Unity path IDs to inspect")
+    parser.add_argument("--expect-sha256",
+                        help="Reject bytes that differ from the recorded source SHA-256")
     args = parser.parse_args()
 
     if args.max_behaviours is not None and args.max_behaviours < 1:
         parser.error("--max-behaviours must be >= 1")
     if args.max_fields < 1 or args.max_depth < 0:
         parser.error("--max-fields must be >= 1 and --max-depth must be >= 0")
+    selected = None
+    if args.path_ids_file is not None:
+        selected = args.path_ids_file.read_text(encoding="utf-8").splitlines()
+        if not selected or any(not value.strip() for value in selected):
+            parser.error("--path-ids-file must contain nonblank integer path IDs")
     result = scan_bundle(args.bundle, max_behaviours=args.max_behaviours,
-                         max_fields=args.max_fields, max_depth=args.max_depth)
+                         max_fields=args.max_fields, max_depth=args.max_depth,
+                         path_ids=selected, expected_sha256=args.expect_sha256)
+    if result["missing_path_ids"]:
+        raise ValueError("Selected MonoBehaviour path IDs not found in source: " +
+                         ", ".join(result["missing_path_ids"]))
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True,
                                       allow_nan=False) + "\n", encoding="utf-8")

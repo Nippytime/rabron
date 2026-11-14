@@ -51,7 +51,16 @@ six **real new extraction runs** at GitHub Actions run 43584959275. They cover
 numeric field-limit truncations. The newer six report no caps under 8,192
 fields/depth 32, but this only establishes numeric MonoBehaviour scope,
 **not** server formulas or complete recovery of all Unity object types.
-See reconstruction/docs/gameplay-bundle-batch-1.md for measured results.
+ See reconstruction/docs/gameplay-bundle-batch-1.md for measured results.
+
+**W1-C targeted overflow follow-up:** The seven verified UnityFS jobs reproduced
+all **56** older numeric field caps by SHA-256 and Unity path ID, resolved
+**30** within bounded retries and still flag **26** as field-limited.
+The unresolved records include dialogue, vegetation and large base prefab
+metadata. Exact unresolved IDs and checksums are tracked in
+reconstruction/data/targeted_numeric_recovery.json; see
+reconstruction/docs/capped-numeric-rescan.md. No authoritative economy,
+combat, police or server numbers were recovered from this step.
 
 List all tracked bundles without downloading binaries, cross-check known
 SHA-256 evidence and produce a prioritized, explicitly incomplete backlog:

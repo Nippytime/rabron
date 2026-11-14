@@ -27,6 +27,7 @@ jobs:
           lfs: false
           sparse-checkout: |
             reconstruction/
+            .github/workflows/extract-gameplay-bundles.yml
             StreamingAssets/aa/StandaloneWindows64/scriptableobjects_assets_all.bundle
           sparse-checkout-cone-mode: false
       - uses: actions/setup-python@v5

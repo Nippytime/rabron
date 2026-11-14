@@ -59,6 +59,14 @@ def validate_ledger(ledger, paths):
             raise ValueError("Invalid scan counts for " + path)
         if total < 0 or not 0 <= parsed <= total or not 0 <= capped <= parsed:
             raise ValueError("Inconsistent scan counts for " + path)
+        targeted = entry.get("targeted_rescan")
+        if targeted is not None:
+            resolved = targeted.get("resolved_count")
+            unresolved = targeted.get("unresolved_count")
+            if (not all(type(n) is int and n >= 0 for n in
+                        (resolved, unresolved)) or resolved + unresolved != capped or
+                    targeted.get("complete_historical_field_caps") != (unresolved == 0)):
+                raise ValueError("Inconsistent targeted source rescan counts: " + path)
         scanned[path] = entry
     lfs = {}
     for entry in ledger.get("known_lfs_not_yet_scanned", ()):
@@ -90,8 +98,15 @@ def plan_scans(paths, ledger):
         if evidence:
             # Even with no reported cap, the historic scanner omitted nested
             # depth-limit branches and did not extract every Unity object kind.
-            status = ("partial_field_cap" if evidence["numeric_field_cap_records"]
-                      else "documented_monobehaviour_pass_unverified")
+            cap = evidence["numeric_field_cap_records"]
+            retry = evidence.get("targeted_rescan")
+            remaining = retry["unresolved_count"] if retry else cap
+            if cap and not remaining:
+                status = "historic_caps_resolved_scope_partial"
+            elif remaining:
+                status = "partial_field_cap"
+            else:
+                status = "documented_monobehaviour_pass_unverified"
         elif path in pending_lfs:
             status = "needs_lfs_bytes"
         else:
@@ -102,7 +117,9 @@ def plan_scans(paths, ledger):
             "priority": rank,
             "status": status,
             "next_action": (
-                "rescan with depth-aware completeness and raised field limit"
+                ("review unresolved field-limited objects with source labels"
+                 if status == "partial_field_cap" else
+                 "audit other Unity object types and confirm source semantics")
                 if evidence else
                 "fetch verified LFS bytes then inventory" if path in pending_lfs
                 else "run read-only UnityFS inventory and classify results"
@@ -110,6 +127,11 @@ def plan_scans(paths, ledger):
             "evidence_doc": evidence["scan_evidence"] if evidence else None,
             "historic_numeric_cap_records": (
                 evidence["numeric_field_cap_records"] if evidence else None
+            ),
+            "remaining_historic_field_caps": (
+                evidence.get("targeted_rescan", {}).get(
+                    "unresolved_count", evidence["numeric_field_cap_records"])
+                if evidence else None
             ),
             "historic_source_sha256": evidence["sha256"] if evidence else None,
         })
@@ -119,6 +141,7 @@ def plan_scans(paths, ledger):
         "partial_field_cap": 1,
         "not_documented_scanned": 2,
         "documented_monobehaviour_pass_unverified": 3,
+        "historic_caps_resolved_scope_partial": 4,
     }
     queue.sort(key=lambda item: (rank[item["priority"]],
                                  status_rank[item["status"]],
@@ -134,6 +157,11 @@ def plan_scans(paths, ledger):
         ),
         "historic_field_capped_records": sum(
             e["numeric_field_cap_records"] for e in known.values()
+        ),
+        "remaining_historic_field_capped_records": sum(
+            e.get("targeted_rescan", {}).get(
+                "unresolved_count", e["numeric_field_cap_records"])
+            for e in known.values()
         ),
         "statuses": dict(sorted(count.items())),
         "source_limitations": ledger.get("blocking_missing_sources", []),
@@ -166,6 +194,7 @@ def main():
     print(json.dumps({key: data[key] for key in (
         "tracked_bundles", "historically_documented_scan_bundles",
         "documented_monobehaviours_parsed", "historic_field_capped_records",
+        "remaining_historic_field_capped_records",
         "statuses")}, sort_keys=True))
     for item in data["backlog"][:12]:
         print(item["status"] + "\t" + item["bundle"])

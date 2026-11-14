@@ -12,7 +12,23 @@
       "scan_evidence": "reconstruction/docs/scriptableobjects-full-pass.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43533207312",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 25,
+        "resolved_count": 9,
+        "unresolved_count": 16,
+        "adaptive_retried_count": 23,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/location-settlement-data_assets_all.bundle",
@@ -23,7 +39,23 @@
       "scan_evidence": "reconstruction/docs/lfs-bundle-audit.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534837573",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 12,
+        "resolved_count": 6,
+        "unresolved_count": 6,
+        "adaptive_retried_count": 9,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-global_assets_all.bundle",
@@ -45,7 +77,23 @@
       "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 2,
+        "resolved_count": 1,
+        "unresolved_count": 1,
+        "adaptive_retried_count": 1,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/location-hub-data_assets_all.bundle",
@@ -56,7 +104,23 @@
       "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 5,
+        "resolved_count": 4,
+        "unresolved_count": 1,
+        "adaptive_retried_count": 1,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/location-prison-data_assets_all.bundle",
@@ -78,7 +142,23 @@
       "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 1,
+        "resolved_count": 0,
+        "unresolved_count": 1,
+        "adaptive_retried_count": 1,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/location-settlement2-data_assets_all.bundle",
@@ -89,7 +169,23 @@
       "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 1,
+        "resolved_count": 0,
+        "unresolved_count": 1,
+        "adaptive_retried_count": 1,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/inbuild_assets_all.bundle",
@@ -100,7 +196,21 @@
       "scan_evidence": "reconstruction/docs/location-bundle-audit.md",
       "run_url": "https://github.com/Nippytime/rabron/actions/runs/43534168289",
       "scope": "MonoBehaviour numeric fields only; nesting beyond old traversal depth not measured",
-      "status": "documented_scan_not_fully_verified"
+      "status": "documented_scan_not_fully_verified",
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43586244089",
+        "source_ref": "reconstruction/data/targeted_numeric_recovery.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 10,
+        "resolved_count": 10,
+        "unresolved_count": 0,
+        "adaptive_retried_count": 0,
+        "remaining_reasons": [],
+        "complete_historical_field_caps": true
+      }
     },
     {
       "bundle": "StreamingAssets/aa/StandaloneWindows64/vehicle-cars_assets_all.bundle",

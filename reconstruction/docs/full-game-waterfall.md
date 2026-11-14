@@ -70,6 +70,14 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   establish full original data or authoritative mechanics. Detailed
   checksums and category observations:
   reconstruction/docs/gameplay-bundle-batch-1.md .
+- W1-C real selected-rescan pass: all 56 historic numeric field caps
+  reproduced across seven original, SHA-256-verified bundle inputs;
+  **30 resolved, 26 remain field-limited** after a bounded higher-cap
+  retry. The unresolved objects include dialogue, GrassData and large
+  settlement structure prefab metadata. See
+  reconstruction/docs/capped-numeric-rescan.md and
+  reconstruction/data/targeted_numeric_recovery.json. This does not
+  verify a single authoritative server/gameplay formula.
 - A few source-backed weapon HUD spread offsets and cash-pile visual size
   thresholds are known. **No original loot payout, laundering, tax, recoil
   ballistics, damage, or police formula has been validated**.
