@@ -1,0 +1,77 @@
+name: Audit location and gameplay configuration
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tests/test_summarize_numeric_evidence.py"
+      - ".github/workflows/scan-location-config.yml"
+  pull_request:
+    paths:
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tests/test_summarize_numeric_evidence.py"
+      - ".github/workflows/scan-location-config.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  inspect-bundle:
+    name: inspect-${{ matrix.label }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: city
+            bundle: location-city-data_assets_all.bundle
+          - label: hub
+            bundle: location-hub-data_assets_all.bundle
+          - label: prison
+            bundle: location-prison-data_assets_all.bundle
+          - label: sector-center
+            bundle: location-sectorcenter-data_assets_all.bundle
+          - label: settlement-two
+            bundle: location-settlement2-data_assets_all.bundle
+          - label: inbuild
+            bundle: inbuild_assets_all.bundle
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: Parse source bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python reconstruction/tools/extract_unity_bundle.py \
+            "StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}" \
+            --max-fields 256 \
+            --output "$RUNNER_TEMP/raw.json"
+      - name: Categorize source-backed numeric fields
+        run: |
+          python reconstruction/tools/summarize_numeric_evidence.py \
+            "$RUNNER_TEMP/raw.json" \
+            --samples-per-category 40 \
+            --output "$RUNNER_TEMP/summary.json"
+      - name: Upload complete audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-evidence-${{ matrix.label }}
+          path: |
+            ${{ runner.temp }}/raw.json
+            ${{ runner.temp }}/summary.json
+          if-no-files-found: warn
+          retention-days: 30
