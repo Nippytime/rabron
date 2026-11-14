@@ -93,6 +93,17 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   reconstruction/docs/npc-tutorial-lfs-audit.md. This does NOT recover
   tutorial gameplay logic, NPC AI formulas, server data or media rights.
 
+- W1-E inspected eight more verified original weapon, vehicle and prison
+  UnityFS sources, adding **1,102/1,102** parsed MonoBehaviours
+  at 2,048 fields/depth32 without reported truncations. The source
+  ledger now covers **25/330** bundles and **10,583** parsed
+  MonoBehaviours; **305 bundles** and **26 previously field-capped
+  records** remain incomplete. Weapon numeric paths include recoil
+  *animation* parameters, while prison fields include blink and idle
+  animation timing; neither proves server-authoritative damage,
+  law enforcement, economy, or player imprisonment rules. See
+  reconstruction/docs/weapon-vehicle-prison-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
