@@ -11,9 +11,10 @@ namespace Rabron.Prototype
 
         public static IReadOnlyList<InteractionMarker> Create(Transform parent,
                                                                out ThirdPersonMotor player,
-                                                               out CashPilePresenter cashPile)
+                                                               out CashPilePresenter cashPile,
+                                                               out GuardSensor guard)
         {
-            var stations = new List<InteractionMarker>(14);
+            var stations = new List<InteractionMarker>(15);
             var asphalt = Hex("#242A34");
             var concrete = Hex("#56616F");
             var wall = Hex("#3E4858");
@@ -55,6 +56,20 @@ namespace Rabron.Prototype
             Cube(parent, "Watch display", new Vector3(3, 0.6f, 29),
                  new Vector3(1.6f, 1.2f, 1.6f), wood);
 
+            // Original primitive guard, not an extracted game NPC. He faces
+            // the entrance and has a configurable demo-only sight cone.
+            var security = new GameObject("Warehouse guard");
+            security.transform.SetParent(parent, false);
+            security.transform.position = new Vector3(0f, 0f, 33f);
+            security.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+            var guardBody = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            guardBody.name = "Guard placeholder mesh";
+            guardBody.transform.SetParent(security.transform, false);
+            guardBody.transform.localPosition = Vector3.up;
+            guardBody.GetComponent<Renderer>().sharedMaterial = Swatch(Hex("#BD5252"));
+            guardBody.GetComponent<Collider>().isTrigger = true;
+            guard = security.AddComponent<GuardSensor>();
+
             // Distinct fence, money pickup, laundering and ATM locations.
             Cube(parent, "Fence stage", new Vector3(-19, 0.25f, 1),
                  new Vector3(8, 0.5f, 9), concrete);
@@ -93,6 +108,9 @@ namespace Rabron.Prototype
                     new Vector3(-3, 1.3f, 26), "#F2BD64");
             Station(parent, stations, StationAction.Watch, "Take watch",
                     new Vector3(3, 1.3f, 29), "#F2BD64");
+            Station(parent, stations, StationAction.ControlStaff,
+                    "Control guard without raising alarm",
+                    new Vector3(3f, 0f, 34f), "#D99BB5");
             Station(parent, stations, StationAction.Escape, "Escape with loot",
                     new Vector3(0, 0, 5), "#86C8A5");
             Station(parent, stations, StationAction.Fence, "Sell loot at fence",

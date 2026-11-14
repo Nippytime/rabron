@@ -14,6 +14,7 @@ namespace Rabron.Prototype
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
         private ThirdPersonMotor _player = null!;
+        private GuardSensor _guard = null!;
         private CashPilePresenter _cashPile = null!;
         private PrototypeHud _hud = null!;
         private IReadOnlyList<InteractionMarker> _stations = null!;
@@ -31,7 +32,8 @@ namespace Rabron.Prototype
             }
 
             _session = new HeistSession();
-            _stations = PrototypeWorld.Create(transform, out _player, out _cashPile);
+            _stations = PrototypeWorld.Create(transform, out _player, out _cashPile,
+                                              out _guard);
 
             var hudObject = new GameObject("Prototype HUD");
             hudObject.transform.SetParent(transform, false);
@@ -48,6 +50,14 @@ namespace Rabron.Prototype
             {
                 _session.CompleteLaundering(now);
                 Notice("Laundering complete. Leave the city to clear criminal status.");
+            }
+
+            if (_session.Phase == HeistPhase.Robbing &&
+                !_session.StaffControlled && !_session.AlarmRaised &&
+                _guard.CanSee(_player.transform))
+            {
+                _session.RaiseAlarm();
+                Notice("ALARM RAISED! The guard spotted you. Escape with any loot.");
             }
 
             var focused = FindNearbyStation();
@@ -126,6 +136,8 @@ namespace Rabron.Prototype
                                          !_session.Loot.Contains("artwork-001"),
                 StationAction.Watch => _session.Phase == HeistPhase.Robbing &&
                                        !_session.Loot.Contains("watch-001"),
+                StationAction.ControlStaff => _session.Phase == HeistPhase.Robbing &&
+                                              !_session.StaffControlled,
                 StationAction.Escape => _session.Phase == HeistPhase.Robbing &&
                                         _session.Loot.Count > 0,
                 StationAction.Fence => _session.Phase == HeistPhase.Escaped &&
@@ -163,6 +175,9 @@ namespace Rabron.Prototype
                     break;
                 case StationAction.Watch:
                     _session.TakeLoot("watch-001");
+                    break;
+                case StationAction.ControlStaff:
+                    _session.ControlStaff();
                     break;
                 case StationAction.Escape:
                     _session.Escape();
@@ -211,8 +226,12 @@ namespace Rabron.Prototype
                 HeistPhase.Scouted when _session.CurrentRole == PlayerRole.Civilian
                     => "Activate the red MASK marker beside the warehouse.",
                 HeistPhase.Scouted => "Go through the warehouse entrance to BEGIN HEIST.",
+                HeistPhase.Robbing when _session.AlarmRaised
+                    => "ALARM! Finish collecting loot and escape the warehouse.",
+                HeistPhase.Robbing when _session.Loot.Count == 0 && !_session.StaffControlled
+                    => "Avoid the guard's view. Approach from the side to control staff, or find loot.",
                 HeistPhase.Robbing when _session.Loot.Count == 0
-                    => "Find the artwork/watch pillars inside the warehouse.",
+                    => "Staff controlled. Collect artwork/watch loot.",
                 HeistPhase.Robbing => "Take the other object or reach the green ESCAPE marker.",
                 HeistPhase.Escaped => "Move to the western FENCE counter and sell your loot.",
                 HeistPhase.CashOnCounter => "Pick up the physical cash pile at the counter.",

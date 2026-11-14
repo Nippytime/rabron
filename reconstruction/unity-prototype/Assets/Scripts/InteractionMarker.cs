@@ -4,7 +4,7 @@ namespace Rabron.Prototype
 {
     public enum StationAction
     {
-        Scout, Mask, BeginRobbery, Artwork, Watch, Escape, Fence,
+        Scout, Mask, BeginRobbery, Artwork, Watch, ControlStaff, Escape, Fence,
         CollectCash, Launder, ExitCity, EnterCity, OpenBank, Deposit, Reset
     }
 

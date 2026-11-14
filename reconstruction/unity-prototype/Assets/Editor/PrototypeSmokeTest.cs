@@ -25,7 +25,7 @@ namespace Rabron.Prototype.Editor
             try
             {
                 var stations = PrototypeWorld.Create(root.transform, out var player,
-                                                    out var cashPile);
+                                                    out var cashPile, out var guard);
                 var kinds = new HashSet<StationAction>();
                 foreach (var station in stations)
                 {
@@ -53,6 +53,21 @@ namespace Rabron.Prototype.Editor
                 // The heist wall must block both interaction and camera.
                 // Probe the actual generated colliders, not a mock scene.
                 Physics.SyncTransforms();
+                Check(guard != null && guard.transform.parent == root.transform,
+                      "Warehouse security guard did not spawn");
+
+                // Source-backed FOV geometry, with invented demo distance/angles.
+                player.transform.position = new Vector3(0f, 0f, 28f);
+                Physics.SyncTransforms();
+                Check(guard.CanSee(player.transform),
+                      "Guard should see a player directly ahead inside the warehouse");
+                player.transform.position = new Vector3(0f, 0f, 36f);
+                Physics.SyncTransforms();
+                Check(!guard.CanSee(player.transform),
+                      "Guard should not see a player directly behind him");
+                player.transform.position = new Vector3(0f, 0.12f, -15f);
+                Physics.SyncTransforms();
+
                 var hits = new RaycastHit[24];
                 Vector3 artwork = default;
                 foreach (var station in stations)
@@ -139,6 +154,9 @@ namespace Rabron.Prototype.Editor
             session.Scout();
             session.PutOnMask();
             session.StartHeist();
+            session.ControlStaff();
+            Check(session.StaffControlled && !session.AlarmRaised,
+                  "Controlling staff should not itself raise an alarm");
             session.TakeLoot("smoke-loot-01");
             session.Escape();
             session.SellLoot(new Dictionary<string, long>

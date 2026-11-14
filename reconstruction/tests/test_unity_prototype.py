@@ -61,7 +61,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertEqual(enum_cases, dispatch)
         self.assertEqual(enum_cases, available)
         self.assertEqual(enum_cases, placed)
-        self.assertEqual(len(enum_cases), 14)
+        self.assertEqual(len(enum_cases), 15)
 
     def test_play_mode_bootstrap_and_editor_scene(self):
         boot = read("PrototypeBoot.cs")
@@ -155,6 +155,34 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Follow camera must remain on the near side", smoke)
         self.assertNotIn("Physics.RaycastAll(", query)
         self.assertNotIn("Physics.SphereCastAll(", query)
+
+    def test_guard_raises_alarm_and_staff_control_is_a_gameplay_rule(self):
+        sensor = read("GuardSensor.cs")
+        world = read("PrototypeWorld.cs")
+        director = read("PrototypeDirector.cs")
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("public void ControlStaff()", core)
+        self.assertIn("public bool StaffControlled", core)
+        self.assertIn("StaffControlled = false;", core)
+        self.assertIn("WorldOcclusion.HasClearLine(", sensor)
+        self.assertIn("Vector3.Angle(", sensor)
+        self.assertIn("DemoSightRange", sensor)
+        self.assertIn("DemoHalfSightAngle", sensor)
+        self.assertIn("out GuardSensor guard", world)
+        self.assertIn('new GameObject("Warehouse guard")', world)
+        self.assertIn("StationAction.ControlStaff", world)
+        self.assertIn("_guard.CanSee(_player.transform)", director)
+        self.assertIn("_session.RaiseAlarm()", director)
+        self.assertIn("_session.ControlStaff()", director)
+        self.assertIn("Guard should see a player directly ahead", smoke)
+        self.assertIn("Guard should not see a player directly behind", smoke)
+        self.assertIn("session.ControlStaff();", smoke)
 
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")

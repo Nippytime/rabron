@@ -10,7 +10,8 @@ namespace Rabron.Prototype
     public static class WorldOcclusion
     {
         public static bool HasClearLine(Vector3 from, Vector3 to,
-                                        Transform ignore, RaycastHit[] hits)
+                                        Transform ignore, RaycastHit[] hits,
+                                        Transform alsoIgnore = null)
         {
             Vector3 offset = to - from;
             float length = offset.magnitude;
@@ -26,7 +27,9 @@ namespace Rabron.Prototype
             for (int i = 0; i < count; i++)
             {
                 Collider collider = hits[i].collider;
-                if (collider != null && !collider.transform.IsChildOf(ignore))
+                if (collider != null &&
+                    !collider.transform.IsChildOf(ignore) &&
+                    (alsoIgnore == null || !collider.transform.IsChildOf(alsoIgnore)))
                     return false;
             }
             return true;
