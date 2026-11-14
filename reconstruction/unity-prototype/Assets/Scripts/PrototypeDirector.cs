@@ -10,6 +10,7 @@ namespace Rabron.Prototype
     public sealed class PrototypeDirector : MonoBehaviour
     {
         private const float InteractionRadius = 3.8f;
+        private readonly RaycastHit[] _stationHits = new RaycastHit[24];
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
         private ThirdPersonMotor _player = null!;
@@ -91,13 +92,37 @@ namespace Rabron.Prototype
 
                 float distance = (marker.transform.position - _player.transform.position)
                     .sqrMagnitude;
-                if (distance < best)
+                if (distance < best && CanReachStation(marker))
                 {
                     nearest = marker;
                     best = distance;
                 }
             }
             return nearest;
+        }
+
+        private bool CanReachStation(InteractionMarker marker)
+        {
+            // Proximity alone would let the player steal loot through the
+            // warehouse wall or pick up cash through the fence counter.
+            Vector3 eye = _player.transform.position + Vector3.up * 1.5f;
+            Vector3 delta = marker.transform.position - eye;
+            float length = delta.magnitude;
+            if (length < 0.001f)
+                return true;
+
+            int hits = Physics.RaycastNonAlloc(eye, delta / length, _stationHits,
+                                              length, ~0, QueryTriggerInteraction.Ignore);
+            if (hits == _stationHits.Length)
+                return false; // Never grant interaction from an incomplete scan.
+
+            for (int i = 0; i < hits; i++)
+            {
+                var collider = _stationHits[i].collider;
+                if (collider != null && !collider.transform.IsChildOf(_player.transform))
+                    return false;
+            }
+            return true;
         }
 
         private bool Available(StationAction action)
