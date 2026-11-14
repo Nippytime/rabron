@@ -119,6 +119,16 @@ Close the graphical Unity Editor first, then run from repository root:
 .\reconstruction\unity-prototype\Tools\Verify-PlayMode.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe'
 ~~~
 
+Unity test discovery uses a **dedicated Editor-only test assembly** with
+NUnit, UnityEngine.TestRunner and UnityEditor.TestRunner references, as
+required by Unity's assembly definition documentation. The tests are not
+included in ordinary packaged Windows builds.
+
+The NUnit result acceptance gate is independently exercised in GitHub
+Actions with synthetic successful, missing, malformed, failed and duplicate
+test reports, so CI can validate the gate without pretending to run Unity.
+Those fixture tests provide **no evidence of a real Unity Play Mode run**.
+
 The runner uses Unity's -runTests -testPlatform PlayMode commands WITHOUT
 -quit, which Unity does not support during tests. The selected test category
 is RabronPlayMode. It writes Logs/playmode-results.xml (NUnit) and
