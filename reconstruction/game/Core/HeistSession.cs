@@ -256,6 +256,13 @@ namespace Rabron.Reconstruction
                   snapshot.LaunderingPayout == 0 &&
                   snapshot.LaunderingReadyAt == 0;
 
+            // In the actual state transitions, beginning another heist
+            // clears the previous alarm and guard-control flags.
+            bool beforeHeist = snapshot.Phase == HeistPhase.Idle ||
+                               snapshot.Phase == HeistPhase.Scouted;
+            bool validAlertStage = !beforeHeist ||
+                                   (!snapshot.AlarmRaised && !snapshot.StaffControlled);
+
             bool lootPhase = snapshot.Phase == HeistPhase.Robbing ||
                              snapshot.Phase == HeistPhase.Escaped;
             bool counterPhase = snapshot.Phase == HeistPhase.CashOnCounter;
@@ -263,7 +270,7 @@ namespace Rabron.Reconstruction
                 (counterPhase ? snapshot.CounterCash > 0 : snapshot.CounterCash == 0) &&
                 (snapshot.Phase != HeistPhase.DirtyCashCollected || snapshot.DirtyCash > 0);
 
-            if (!validJob || !validMoneyStage)
+            if (!validJob || !validMoneyStage || !validAlertStage)
                 throw new ArgumentException("Save contains inconsistent heist state.", nameof(snapshot));
 
             var session = new HeistSession(snapshot.Zone, snapshot.Role)
