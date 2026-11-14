@@ -18,6 +18,7 @@ def numeric_fields(data, *, max_fields=512, max_depth=16):
     if max_fields < 1 or max_depth < 0:
         raise ValueError("Limits must be positive (depth may be zero)")
     found = []
+    depth_skipped = False
     stack = [("$", data, 0)]
     while stack:
         path, node, depth = stack.pop()
@@ -29,18 +30,29 @@ def numeric_fields(data, *, max_fields=512, max_depth=16):
             if len(found) == max_fields:
                 return sorted(found, key=lambda item: item["path"]), True
             found.append({"path": path, "value": node})
-        elif depth < max_depth and isinstance(node, dict):
-            stack.extend((f"{path}.{key}", value, depth + 1)
-                         for key, value in sorted(node.items(),
-                                                   key=lambda item: str(item[0]),
-                                                   reverse=True))
-        elif depth < max_depth and isinstance(node, (list, tuple)):
-            stack.extend((f"{path}[{index}]", value, depth + 1)
-                         for index, value in reversed(list(enumerate(node))))
-    return sorted(found, key=lambda item: item["path"]), False
+        elif isinstance(node, dict):
+            if depth < max_depth:
+                stack.extend((f"{path}.{key}", value, depth + 1)
+                             for key, value in sorted(node.items(),
+                                                       key=lambda item: str(item[0]),
+                                                       reverse=True))
+            elif node:
+                depth_skipped = True
+        elif isinstance(node, (list, tuple)):
+            if depth < max_depth:
+                stack.extend((f"{path}[{index}]", value, depth + 1)
+                             for index, value in reversed(list(enumerate(node))))
+            elif node:
+                depth_skipped = True
+    # A skipped nested subtree may contain numerics. Mark extraction partial
+    # instead of reporting false completeness. Empty containers are harmless.
+    return sorted(found, key=lambda item: item["path"]), depth_skipped
 
 
-def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512):
+def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
+                max_depth=16):
+    if max_fields < 1 or max_depth < 0:
+        raise ValueError("max_fields must be positive and max_depth nonnegative")
     # A successful git checkout can still contain a small Git LFS pointer
     # instead of the requested Unity binary when the LFS object was not fetched.
     with path.open("rb") as source:
@@ -83,7 +95,7 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512):
             parsed = reader.parse_as_dict()
             entry["name"] = str(parsed.get("m_Name", ""))
             entry["numeric_fields"], entry["fields_truncated"] = numeric_fields(
-                parsed, max_fields=max_fields
+                parsed, max_fields=max_fields, max_depth=max_depth
             )
             entry["status"] = "parsed"
         except (Exception) as exc:
@@ -102,6 +114,8 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512):
         "source": str(path),
         "sha256": sha256,
         "size_bytes": path.stat().st_size,
+        "numeric_field_limit": max_fields,
+        "numeric_depth_limit": max_depth,
         "unityfs_magic": path.open("rb").read(8).startswith(b"UnityFS"),
         "objects_by_type": dict(sorted(objects.items())),
         "monobehaviours_total": total_behaviours,
@@ -124,12 +138,16 @@ def main():
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--max-behaviours", type=int, default=None)
     parser.add_argument("--max-fields", type=int, default=512)
+    parser.add_argument("--max-depth", type=int, default=16,
+                        help="Nested field traversal depth; exceeding it now marks scan incomplete")
     args = parser.parse_args()
 
     if args.max_behaviours is not None and args.max_behaviours < 1:
         parser.error("--max-behaviours must be >= 1")
+    if args.max_fields < 1 or args.max_depth < 0:
+        parser.error("--max-fields must be >= 1 and --max-depth must be >= 0")
     result = scan_bundle(args.bundle, max_behaviours=args.max_behaviours,
-                         max_fields=args.max_fields)
+                         max_fields=args.max_fields, max_depth=args.max_depth)
     args.output.parent.mkdir(parents=True, exist_ok=True)
     args.output.write_text(json.dumps(result, indent=2, sort_keys=True,
                                       allow_nan=False) + "\n", encoding="utf-8")
