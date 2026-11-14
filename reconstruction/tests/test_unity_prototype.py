@@ -82,6 +82,33 @@ class UnityPrototypeStructureTests(unittest.TestCase):
                           })
         self.assertEqual(artifacts, ())
 
+    def test_actual_editor_validation_is_explicit_and_not_falsely_green(self):
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        runner = (UNITY / "Tools/Verify-Unity.ps1").read_text(
+            encoding="utf-8"
+        )
+        world = read("PrototypeWorld.cs")
+
+        self.assertIn("ValidateProject()", editor)
+        self.assertIn("ValidateAndBuildWindows()", editor)
+        self.assertIn("PrototypeWorld.Create(", editor)
+        self.assertIn("PrototypeSceneInstaller.BuildWindows()", editor)
+        self.assertIn("RABRON_UNITY_EDITOR_SMOKE_PASS", editor)
+        self.assertIn("RABRON_UNITY_WINDOWS_BUILD_PASS", editor)
+        self.assertIn("Builds/RabronPrototype.exe", editor)
+        self.assertIn("UnityEngine.Object.DestroyImmediate(root)", editor)
+        self.assertIn("controller.stepOffset = 0.65f", world)
+        self.assertIn("Object.DestroyImmediate(bodyCollider)", world)
+
+        self.assertIn("'-executeMethod', $method", runner)
+        self.assertIn("'-buildTarget', 'StandaloneWindows64'", runner)
+        self.assertIn("$exitCode -ne 0", runner)
+        self.assertIn("$logText.Contains($token)", runner)
+        self.assertIn("Test-Path -LiteralPath $exe", runner)
+        self.assertNotIn("ignorecompilererrors", runner.lower())
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")

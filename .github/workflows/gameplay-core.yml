@@ -4,10 +4,12 @@ on:
   push:
     paths:
       - "reconstruction/game/**"
+      - "reconstruction/unity-prototype/**"
       - ".github/workflows/gameplay-core.yml"
   pull_request:
     paths:
       - "reconstruction/game/**"
+      - "reconstruction/unity-prototype/**"
       - ".github/workflows/gameplay-core.yml"
 
 permissions:

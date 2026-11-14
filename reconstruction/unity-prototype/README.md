@@ -45,6 +45,47 @@ The local gameplay package still resolves because it also lives inside
    must be installed through Unity Hub; this repository does not contain
    a prebuilt EXE.
 
+## Verifiable Unity Editor smoke test (Windows)
+
+The source-only CI cannot prove that Unity compiles or plays the project.
+A real Unity 6000.3.18f1 installation can run the authored Editor smoke
+test and optionally build a Windows executable in a deterministic CLI session.
+
+Close the project in the graphical Unity Editor first, then run from
+the repository root in PowerShell:
+
+~~~powershell
+# Compiles the project in Unity and checks procedural station/collider setup
+.\reconstruction\unity-prototype\Tools\Verify-Unity.ps1
+
+# Also builds and verifies a Windows executable and its data directory
+.\reconstruction\unity-prototype\Tools\Verify-Unity.ps1 -BuildWindows
+
+# With a custom Unity installation path
+.\reconstruction\unity-prototype\Tools\Verify-Unity.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe' -BuildWindows
+~~~
+
+The runner locates Unity through the normal Unity Hub installation path
+(or uses the UNITY_EDITOR environment variable or -EditorPath), starts
+Unity in -batchmode, and inspects Logs/editor-smoke.log. It requires both
+a zero Unity exit code and an explicit smoke success token. Builds also
+require the EXE and matching data directory. It fails instead of reporting
+a false green when Unity is missing, package import fails, or checks fail.
+
+The Editor smoke checks generated procedural geometry, all 14 station
+types and trigger colliders, the 0.65m step offset needed to climb the
+fence platform, and the heist-to-bank behavior contract. The optional
+build requires Windows Build Support and produces
+Builds/RabronPrototype.exe inside the Unity project.
+
+Launching the EXE remains necessary to verify input, camera, HUD, and
+the full interactive play-mode loop. The first Editor import might
+need a graphical session to activate the Input System.
+
+**Verification status:** The hosted GitHub CI has not executed
+Unity Editor or built a Windows player. Passing Python, .NET, and
+PowerShell syntax checks cannot establish Unity runtime success.
+
 ## Controls
 
 | Action | Keyboard / mouse | Gamepad |

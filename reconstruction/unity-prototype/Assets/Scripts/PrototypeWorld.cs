@@ -102,13 +102,21 @@ namespace Rabron.Prototype
             controller.height = 1.9f;
             controller.radius = 0.36f;
             controller.center = new Vector3(0, 0.95f, 0);
+            // The fence has a raised 0.5m platform. The default 0.3m
+            // CharacterController step cannot reach its cash pickup.
+            controller.stepOffset = 0.65f;
 
             var body = GameObject.CreatePrimitive(PrimitiveType.Capsule);
             body.name = "Player mesh";
             body.transform.SetParent(actor.transform, false);
             body.transform.localPosition = new Vector3(0, 0.95f, 0);
             body.transform.localScale = new Vector3(0.7f, 0.95f, 0.7f);
-            Object.Destroy(body.GetComponent<Collider>());
+            // Editor-mode geometry smoke tests must not queue destruction.
+            var bodyCollider = body.GetComponent<Collider>();
+            if (Application.isPlaying)
+                Object.Destroy(bodyCollider);
+            else
+                Object.DestroyImmediate(bodyCollider);
             body.GetComponent<Renderer>().sharedMaterial = Swatch(Hex("#F2B76D"));
             player = actor.AddComponent<ThirdPersonMotor>();
 
