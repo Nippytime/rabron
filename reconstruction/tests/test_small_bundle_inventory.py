@@ -1,0 +1,187 @@
+"""W1-F source conservation and fail-closed small-bundle batch regression tests."""
+import hashlib
+import json
+import tempfile
+import unittest
+from pathlib import Path
+from unittest.mock import patch
+
+from reconstruction.tools.small_bundle_inventory import (
+    BUNDLE_PREFIX, MAX_SIZE, MIN_SIZE, consolidate, inspect_source,
+    make_plan, parse_git_tree, run_batch, selected_batch, verify_bytes,
+)
+
+
+def path(name):
+    return BUNDLE_PREFIX + name + ".bundle"
+
+
+def entry(name, size=2048, sha="a" * 40):
+    return {"bundle": path(name), "git_blob_sha": sha,
+            "git_blob_size": size}
+
+
+class SmallBundleInventoryTests(unittest.TestCase):
+    def setUp(self):
+        self.ledger = {"schema_version": 1, "scans": [],
+                       "known_lfs_not_yet_scanned": []}
+
+    def test_git_tree_parsing_rejects_unsafe_and_duplicate_paths(self):
+        row = lambda p: (
+            b"100644 blob " + b"a" * 40 + b" 2048\t" + p.encode() + b"\0"
+        )
+        listed = parse_git_tree(row(path("location-test")))
+        self.assertEqual(listed[path("location-test")]["git_blob_size"], 2048)
+        # Original tree legitimately contains parenthesized locale names.
+        self.assertIn(path("localization-english(en-us)"),
+                      parse_git_tree(row(path("localization-english(en-us)"))))
+        for invalid in (path("../escape"), path("invalid name")):
+            with self.subTest(invalid=invalid), self.assertRaises(ValueError):
+                parse_git_tree(row(invalid))
+        with self.assertRaisesRegex(ValueError, "Duplicate"):
+            parse_git_tree(row(path("same")) * 2)
+        with self.assertRaisesRegex(ValueError, "Malformed"):
+            parse_git_tree(b"broken\0")
+
+    def test_dynamic_selection_reconciles_scans_sizes_lfs_and_batches(self):
+        existing = entry("already-scanned", 2048)
+        self.ledger["scans"] = [{
+            "bundle": existing["bundle"], "sha256": "b" * 64,
+            "monobehaviours_total": 0, "monobehaviours_parsed": 0,
+            "numeric_field_cap_records": 0, "scan_evidence": "test",
+        }]
+        candidates = [entry("part-%02d" % i) for i in range(21)]
+        data = {
+            e["bundle"]: e for e in [
+                existing, entry("lfs-pointer", 133),
+                entry("small-under", MIN_SIZE - 1),
+                entry("medium-over", MAX_SIZE + 1), *candidates,
+            ]
+        }
+        plan = make_plan(data, self.ledger, expected_tracked=len(data))
+        self.assertEqual(plan["documented_scans_before"], 1)
+        self.assertEqual(plan["eligible_small_sources"], 21)
+        self.assertEqual([len(x["sources"]) for x in plan["batches"]], [20, 1])
+        self.assertEqual(len(set(
+            y["bundle"] for group in plan["batches"] for y in group["sources"]
+        )), 21)
+        self.assertEqual(selected_batch(plan, 1)[0]["bundle"], candidates[-1]["bundle"])
+        with self.assertRaises(ValueError):
+            make_plan(data, self.ledger, batch_size=21, expected_tracked=len(data))
+        with self.assertRaises(ValueError):
+            make_plan(data, self.ledger, expected_tracked=len(data) + 1)
+
+    def test_batch_rejects_unsafe_paths_duplicate_ids_and_sizes(self):
+        plan = make_plan({path("ok"): entry("ok")}, self.ledger, expected_tracked=1)
+        self.assertEqual(len(selected_batch(plan, 0)), 1)
+        plan["batches"][0]["sources"].append(entry("ok"))
+        with self.assertRaisesRegex(ValueError, "Duplicate"):
+            selected_batch(plan, 0)
+        plan["batches"][0]["sources"] = [entry("bad", size=0)]
+        with self.assertRaisesRegex(ValueError, "Unsafe"):
+            selected_batch(plan, 0)
+        plan["batches"][0]["sources"] = [entry("ok")]
+        plan["batches"][0]["id"] = 5
+        with self.assertRaisesRegex(ValueError, "non-contiguous"):
+            selected_batch(plan, 5)
+
+    def test_source_bytes_must_match_exact_size_magic_and_git_blob(self):
+        with tempfile.TemporaryDirectory() as folder:
+            source = Path(folder) / "test.bundle"
+            data = b"UnityFS" + b"\0" * 2048
+            source.write_bytes(data)
+            blob = hashlib.sha1(
+                b"blob " + str(len(data)).encode() + b"\0" + data
+            ).hexdigest()
+            item = {"git_blob_size": len(data), "git_blob_sha": blob}
+            self.assertEqual(verify_bytes(source, item),
+                             hashlib.sha256(data).hexdigest())
+            with self.assertRaisesRegex(ValueError, "size"):
+                verify_bytes(source, {**item, "git_blob_size": len(data) + 1})
+            with self.assertRaisesRegex(ValueError, "SHA-1"):
+                verify_bytes(source, {**item, "git_blob_sha": "0" * 40})
+            source.write_bytes(b"version https://git-lfs.github.com/spec/v1")
+            with self.assertRaises(ValueError):
+                verify_bytes(source, item)
+            source.unlink()
+            with self.assertRaisesRegex(ValueError, "missing"):
+                verify_bytes(source, item)
+
+    def test_zero_behaviour_and_truncated_source_remain_truthful(self):
+        with tempfile.TemporaryDirectory() as folder:
+            output = Path(folder) / "batch-00.json"
+            zero = {**entry("zero"), "sha256": "b" * 64,
+                    "source_status": "bounded_mono_numeric_complete",
+                    "monobehaviours_total": 0, "monobehaviours_parsed": 0,
+                    "unparsed_records": 0, "numeric_field_cap_records": 0,
+                    "bounded_numeric_scan_complete": True,
+                    "numeric_field_limit": 2048, "numeric_depth_limit": 32,
+                    "path_ids": [], "objects_by_type": {"Sprite": 1},
+                    "candidate_field_counts": {"economy": 0}}
+            capped = {**entry("capped"), "sha256": "c" * 64,
+                      "source_status": "partial_mono_numeric",
+                      "monobehaviours_total": 1, "monobehaviours_parsed": 1,
+                      "unparsed_records": 0, "numeric_field_cap_records": 1,
+                      "bounded_numeric_scan_complete": False,
+                      "numeric_field_limit": 2048, "numeric_depth_limit": 32,
+                      "path_ids": [{"id": "12", "status": "parsed",
+                                    "truncation": ["field_limit"]}],
+                      "objects_by_type": {"MonoBehaviour": 1},
+                      "candidate_field_counts": {"economy": 2}}
+            plan = make_plan({x["bundle"]: x for x in (zero, capped)},
+                             self.ledger, expected_tracked=2)
+            # Consolidation must accept real zeros without inventing numeric data.
+            group = [next(e for e in (zero, capped) if e["bundle"] == x["bundle"])
+                     for x in plan["batches"][0]["sources"]]
+            output.write_text(json.dumps({
+                "schema_version": 1, "batch_id": 0, "sources": group,
+            }))
+            report, proposal = consolidate(plan, Path(folder), self.ledger,
+                                           run_url="https://github.com/Nippytime/rabron/actions/runs/1")
+            self.assertEqual(report["new_documented"], 2)
+            self.assertEqual(report["unscanned_after"], 0)
+            self.assertEqual(proposal["scans"][0]["monobehaviours_total"], 1
+                             if group[0]["bundle"] == capped["bundle"] else 0)
+            self.assertTrue(any(e["numeric_field_cap_records"] == 1
+                                for e in proposal["scans"]))
+            group.pop()
+            output.write_text(json.dumps({"batch_id": 0, "sources": group}))
+            with self.assertRaisesRegex(ValueError, "Missing"):
+                consolidate(plan, Path(folder), self.ledger, run_url="test")
+
+    def test_unparseable_source_is_not_promoted_to_zero_behaviours(self):
+        bad = {**entry("unparseable"), "sha256": "d" * 64,
+               "source_status": "unparseable", "parse_error_type": "TypeTreeError",
+               "monobehaviours_total": None, "monobehaviours_parsed": None,
+               "numeric_field_cap_records": None}
+        plan = make_plan({bad["bundle"]: bad}, self.ledger, expected_tracked=1)
+        with tempfile.TemporaryDirectory() as folder:
+            (Path(folder) / "batch-00.json").write_text(json.dumps({
+                "batch_id": 0, "sources": [bad],
+            }))
+            report, proposal = consolidate(plan, Path(folder), self.ledger,
+                                           run_url="test")
+            self.assertEqual(report["new_documented"], 0)
+            self.assertEqual(report["unscanned_after"], 1)
+            self.assertEqual(len(proposal["scans"]), 0)
+            self.assertEqual(report["unparseable_attempts"][0]["error"],
+                             "TypeTreeError")
+
+    def test_batch_worker_persists_results_but_never_swallows_missing_source(self):
+        plan = make_plan({path("one"): entry("one")}, self.ledger,
+                         expected_tracked=1)
+        with tempfile.TemporaryDirectory() as folder:
+            target = Path(folder) / "batch-00.json"
+            with patch("reconstruction.tools.small_bundle_inventory.inspect_source",
+                       return_value={"source_status": "partial_mono_numeric"}):
+                results = run_batch(plan, 0, target)
+            self.assertEqual(len(results), 1)
+            self.assertTrue(target.is_file())
+            with patch("reconstruction.tools.small_bundle_inventory.inspect_source",
+                       side_effect=ValueError("Missing original source")):
+                with self.assertRaisesRegex(ValueError, "Missing"):
+                    run_batch(plan, 0, target)
+
+
+if __name__ == "__main__":
+    unittest.main()
