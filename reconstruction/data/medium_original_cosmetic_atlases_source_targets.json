@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AA: ten original medium character bag and body/car sprite-atlas UnityFS sources (3 bags, 7 UI atlases)",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_32_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_3.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets__fullspriteatlas.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_4k.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_hd.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_qhd.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_hd.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_qhd.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_fbodiesspriteatlas_4k.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_32_type_1_paint_1.asset.bundle": {
+      "size_bytes": 2247600,
+      "git_blob_sha": "e131546fca5abbb1418326663e9893adeefd4c9d"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_2.asset.bundle": {
+      "size_bytes": 1725473,
+      "git_blob_sha": "efe2ce73a42a8c5e58a383bbfb19814d2b342cc3"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_scriptableobjects_skincenter_customizercontent_characterbagsviewdescription_bag_7_type_1_paint_3.asset.bundle": {
+      "size_bytes": 1874120,
+      "git_blob_sha": "94e525690d68a790f4503109b14ff878b3ebca7a"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets__fullspriteatlas.bundle": {
+      "size_bytes": 1185990,
+      "git_blob_sha": "5beb594cd53572e62b5bee64789e0bf6f12996e0"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_4k.bundle": {
+      "size_bytes": 1867567,
+      "git_blob_sha": "b6dd0d8387843873d965254500b66a83d6636bfa"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_hd.bundle": {
+      "size_bytes": 1856566,
+      "git_blob_sha": "ac13ba86c4bf7c8c2bccf14f79ed1a062b6099c0"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_bodiesspriteatlas_qhd.bundle": {
+      "size_bytes": 1856434,
+      "git_blob_sha": "7a8949fdb47d67027d2cacebf7c3cd69ba125134"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_hd.bundle": {
+      "size_bytes": 1396625,
+      "git_blob_sha": "cb87a04eacc8359e360ab583a6267549b794d3e0"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_qhd.bundle": {
+      "size_bytes": 1396626,
+      "git_blob_sha": "ae411035f6c79f6d992e4f2e5233d92a31857367"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_fbodiesspriteatlas_4k.bundle": {
+      "size_bytes": 1714688,
+      "git_blob_sha": "0715c71a922f1d0f2b5413fdccff1f9a59425a85"
+    }
+  }
+}
