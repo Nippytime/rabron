@@ -15,7 +15,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  coneightts: read
+  contents: read
 
 jobs:
   plan:
@@ -75,7 +75,7 @@ jobs:
           name: medium-civilian-remaining-source-plan
           path: ${{ runner.temp }}/medium-civilian-remaining-plan.json
           if-no-files-found: error
-          reeighttion-days: 30
+          retention-days: 30
 
   inspect:
     needs: plan
@@ -123,7 +123,7 @@ jobs:
           name: medium-civilian-remaining-batch-${{ matrix.id }}
           path: ${{ runner.temp }}/batch-*.json
           if-no-files-found: error
-          reeighttion-days: 30
+          retention-days: 30
 
   reconcile:
     needs: [plan, inspect]
@@ -173,7 +173,7 @@ jobs:
           baseline = json.loads(Path("reconstruction/data/extraction_coverage.json").read_text())
           report = json.loads((temp / "w1p-report.json").read_text())
           if (report["new_documented"] + report["source_reverified"] +
-                  len(report["unparseable_attempts"]) != 10):
+                  len(report["unparseable_attempts"]) != 8):
               raise ValueError("W1-P must account for all eight sources")
           if report["new_documented"] and report["source_reverified"]:
               raise ValueError("Mixed new and rechecked source evidence")
@@ -190,4 +190,4 @@ jobs:
             ${{ runner.temp }}/w1p-report.json
             ${{ runner.temp }}/w1p-proposed-ledger.json
           if-no-files-found: error
-          reeighttion-days: 30
+          retention-days: 30
