@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AG two original global-space and hub-scene Git LFS UnityFS sources; original pointer identities only",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/space-global_assets_all.bundle",
+      "git_blob_sha": "0941486d6b49947aa32b504ab9854d173624b1a5",
+      "lfs_oid_sha256": "b500b6d5f173eb1c2fcb0abeecef0f72e334dd39f784027cf676a774c036af6f",
+      "size_bytes": 120234780
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-hub_standalone_scenes_all.bundle",
+      "git_blob_sha": "b69cf3c55cd5f253f6e1ab8094b8a212c2237c24",
+      "lfs_oid_sha256": "3cc468e96fe0a97e8b78d84a3b74ac8d29a8c7613b8b2d44aa2c0c71da91feee",
+      "size_bytes": 119040551
+    }
+  ]
+}

@@ -443,6 +443,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   unscanned, **42** older numeric caps unresolved. See
   reconstruction/docs/kl545-character-lfs-source-batch.md.
 
+- W1-AG source-verified original global-space and hub-scene Git LFS
+  UnityFS binaries (**239,275,331** actual original bytes),
+  **38,724/38,724** parsed MonoBehaviours, **1,731 Mesh**,
+  **310 Texture2D**, **1,804 CanvasGroup**, zero unparsed records.
+  The hub-scene scan exposed **2 new bounded numeric caps**
+  (`bounded_numeric_scan_complete=false`), which remain unresolved;
+  client keyword matches cannot establish server-authoritative
+  game formulas. Original source run: https://github.com/Nippytime/rabron/actions/runs/43652173183 .
+  Evidence ledger now **320/330** original bundles and **125,947**
+  parsed MonoBehaviours; **10** original LFS sources unscanned;
+  **44** unresolved historic+new numeric caps. See
+  reconstruction/docs/global-hub-lfs-source-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
