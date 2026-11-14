@@ -239,6 +239,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/civilian-body-batch.md. Client
   customization media is **not authoritative game mechanics**.
 
+- W1-P verified the final eight original medium civilian body
+  customization UnityFS variants (**48,780,159** source bytes), **8/8**
+  parsed MonoBehaviours, **20 Mesh** and **18 Texture2D** objects,
+  zero unparsed records, zero new numeric caps, and no exported
+  original media. Ledger now documents **198/330** original sources,
+  **81,854** parsed MonoBehaviours; **132** originals remain unscanned
+  (112 medium non-LFS and 20 LFS), and **42** numeric caps remain
+  unresolved. Verified original-source run:
+  https://github.com/Nippytime/rabron/actions/runs/43634223903 .
+  See reconstruction/docs/civilian-body-remaining-batch.md.
+  No authoritative gameplay formula is inferred from this data.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
