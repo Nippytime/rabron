@@ -40,7 +40,7 @@ jobs:
         run: |
           python reconstruction/tools/extract_unity_bundle.py \
             StreamingAssets/aa/StandaloneWindows64/scriptableobjects_assets_all.bundle \
-            --max-behaviours 2000 \
+            --max-fields 4096 \
             --output "$RUNNER_TEMP/scriptableobjects-index.json"
       - name: Preserve machine-readable evidence (including partial extraction)
         if: always()
