@@ -1,9 +1,11 @@
 """Tests scalar normalization independently of UnityPy or any protected assets."""
 
 import math
+import tempfile
 import unittest
+from pathlib import Path
 
-from reconstruction.tools.extract_unity_bundle import numeric_fields
+from reconstruction.tools.extract_unity_bundle import numeric_fields, scan_bundle
 
 
 class NumericFieldsTests(unittest.TestCase):
@@ -47,6 +49,25 @@ class NumericFieldsTests(unittest.TestCase):
             numeric_fields({"a": 1}, max_fields=0)
         with self.assertRaises(ValueError):
             numeric_fields({"a": 1}, max_depth=-1)
+
+
+class BundleFormatTests(unittest.TestCase):
+    def test_git_lfs_pointer_is_not_misreported_as_emptied_bundle(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "missing.bundle"
+            path.write_bytes(
+                b"version https://git-lfs.github.com/spec/v1\n"
+                b"oid sha256:" + b"0" * 64 + b"\nsize 1234\n"
+            )
+            with self.assertRaisesRegex(ValueError, "Git LFS pointer"):
+                scan_bundle(path)
+
+    def test_invalid_bundle_is_rejected_explicitly(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "invalid.bundle"
+            path.write_bytes(b"not UnityFS bytes")
+            with self.assertRaisesRegex(ValueError, "Not a UnityFS bundle"):
+                scan_bundle(path)
 
 
 if __name__ == "__main__":
