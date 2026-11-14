@@ -68,6 +68,22 @@ namespace Rabron.Prototype.Editor
                           new Vector3(-3f, 1.5f, 23f), artwork, player.transform, hits),
                       "Artwork must be interactable from inside the warehouse");
 
+                Vector3 cashPickup = default;
+                foreach (var station in stations)
+                {
+                    if (station.Action == StationAction.CollectCash)
+                        cashPickup = station.transform.position;
+                }
+
+                Check(!WorldOcclusion.HasClearLine(
+                          new Vector3(-19f, 1.5f, -2f), cashPickup,
+                          player.transform, hits),
+                      "Cash counter must block collection from its front");
+                Check(WorldOcclusion.HasClearLine(
+                          new Vector3(-19f, 1.5f, 3f), cashPickup,
+                          player.transform, hits),
+                      "Cash must be reachable from behind the counter");
+
                 Vector3 pivot = new Vector3(-3f, 1.6f, 13f);
                 Vector3 wallSide = new Vector3(-3f, 1.6f, 20f);
                 Vector3 clamped = WorldOcclusion.ClampCamera(
