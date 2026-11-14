@@ -1,0 +1,170 @@
+name: W1-F inventory remaining small original UnityFS sources
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/extract-small-bundles.yml"
+      - "reconstruction/tools/small_bundle_inventory.py"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/plan_bundle_scans.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tools/validate_source_inventory.py"
+      - "reconstruction/data/extraction_coverage.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - name: Checkout authored code and original Git metadata (not game media)
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Compute exact size-bounded unscanned inventory from Git tree
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory plan \
+            --ref HEAD --expected-tracked 330 \
+            --output "$RUNNER_TEMP/small-plan.json" \
+            --matrix "$RUNNER_TEMP/matrix.json"
+      - name: Export dynamic, bounded batch matrix
+        id: matrix
+        shell: bash
+        run: echo "value=$(cat "$RUNNER_TEMP/matrix.json")" >> "$GITHUB_OUTPUT"
+      - name: Retain non-media batch plan
+        uses: actions/upload-artifact@v4
+        with:
+          name: small-source-plan
+          path: ${{ runner.temp }}/small-plan.json
+          if-no-files-found: error
+          retention-days: 30
+
+  inspect:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: Small-bundle inventory / batch ${{ matrix.id }}
+    steps:
+      - name: Sparse checkout authored code only
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Download exact plan from this workflow run
+        uses: actions/download-artifact@v4
+        with:
+          name: small-source-plan
+          path: ${{ runner.temp }}
+      - name: Materialize only the batch's tracked original small sources
+        env:
+          BATCH_ID: ${{ matrix.id }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory checkout \
+            --plan "$RUNNER_TEMP/small-plan.json" --batch-id "$BATCH_ID"
+      - name: Install pinned read-only UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: Scan and byte-verify each source, recording incomplete results explicitly
+        env:
+          BATCH_ID: ${{ matrix.id }}
+        shell: bash
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory scan \
+            --plan "$RUNNER_TEMP/small-plan.json" --batch-id "$BATCH_ID" \
+            --output "$(printf "$RUNNER_TEMP/batch-%02d.json" "$BATCH_ID")"
+      - name: Upload bounded metadata only, never original game media
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: batch-${{ matrix.id }}
+          path: ${{ runner.temp }}/batch-*.json
+          if-no-files-found: error
+          retention-days: 30
+
+  reconcile:
+    needs: [plan, inspect]
+    if: ${{ needs.plan.result == 'success' && needs.inspect.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          name: small-source-plan
+          path: ${{ runner.temp }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: batch-*
+          path: ${{ runner.temp }}/evidence
+          merge-multiple: true
+      - name: Reconcile exact original bundle conservation and path IDs
+        env:
+          SOURCE_RUN: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          python -m reconstruction.tools.small_bundle_inventory consolidate \
+            --plan "$RUNNER_TEMP/small-plan.json" \
+            --evidence-dir "$RUNNER_TEMP/evidence" \
+            --run-url "$SOURCE_RUN" \
+            --output "$RUNNER_TEMP/w1f-report.json" \
+            --proposed-ledger "$RUNNER_TEMP/w1f-proposed-ledger.json"
+      - name: Publish source-only ledger entries to the review log
+        # Enables independent source-reconciliation review without publishing
+        # copyrighted game media or granting CI write permissions.
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          payload = json.loads(
+              (Path(os.environ["RUNNER_TEMP"]) / "w1f-proposed-ledger.json").read_text()
+          )
+          before = json.loads(
+              (Path("reconstruction/data/extraction_coverage.json")).read_text()
+          )
+          new = payload["scans"][len(before["scans"]):]
+          compact = json.dumps(new, separators=(",", ":"), sort_keys=True)
+          for offset in range(0, len(compact), 4000):
+              print(f"W1F_CHUNK_{offset // 4000:03d}={compact[offset:offset + 4000]}")
+          PY
+      - name: Retain review-only measured ledger (never auto-promote to dev)
+        uses: actions/upload-artifact@v4
+        with:
+          name: small-source-measured-ledger
+          path: |
+            ${{ runner.temp }}/w1f-report.json
+            ${{ runner.temp }}/w1f-proposed-ledger.json
+          if-no-files-found: error
+          retention-days: 30
