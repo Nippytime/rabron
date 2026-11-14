@@ -27,9 +27,16 @@ EXPECTED = {
 
 class PriorityLfsRegistryTests(unittest.TestCase):
     def test_registry_is_exactly_two_original_tracked_sources(self):
-        entries = [*LEDGER["known_lfs_not_yet_scanned"],
+        paths = {PREFIX + name for name in EXPECTED}
+        entries = [e for e in [*LEDGER["known_lfs_not_yet_scanned"],
                    *(e for e in LEDGER["scans"] if "lfs_oid_sha256" in e)]
-        self.assertEqual(len(entries), 2)
+                   if e["bundle"] in paths]
+        self.assertEqual({e["bundle"] for e in entries}, paths)
+        self.assertEqual(len(entries), len(EXPECTED))
+        self.assertTrue(all(
+            e["sha256"] == e["lfs_oid_sha256"] and e["size_bytes"] > 1024
+            for e in LEDGER["scans"] if "lfs_oid_sha256" in e
+        ))
         for name, (digest, size) in EXPECTED.items():
             item = source_entry(LEDGER, PREFIX + name)
             self.assertEqual(item["lfs_oid_sha256"], digest)

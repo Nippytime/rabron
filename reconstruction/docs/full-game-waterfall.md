@@ -395,6 +395,17 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/medium-original-final-sprite-atlases-batch.md.
   These client art inventories are not authoritative game rules.
 
+- W1-AC source-verified **two original weapon Git LFS UnityFS**
+  bundles (MC10 and PDW90, **109,658,562** real original source
+  bytes, 135/135 parsed MonoBehaviours, 51 Mesh, 69 Texture2D,
+  13 Material), zero unparsed/new numeric caps. **330 combat-related**
+  numeric keyword matches are candidate serialized client fields, not
+  authoritative weapon formulas. Actual source Actions:
+  https://github.com/Nippytime/rabron/actions/runs/43649328171 .
+  Evidence ledger **312/330** originals, **82,268** parsed MonoBehaviours,
+  **18** unscanned original LFS sources, **42** older numeric caps.
+  See reconstruction/docs/weapon-lfs-source-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file

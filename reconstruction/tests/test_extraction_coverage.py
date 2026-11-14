@@ -22,9 +22,9 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 310)
+        self.assertEqual(len(LEDGER["scans"]), 312)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 82133)
+                             for entry in LEDGER["scans"]), 82268)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
                              for entry in LEDGER["scans"]), 72)
         self.assertEqual(len(LEDGER["known_lfs_not_yet_scanned"]), 0)
@@ -33,7 +33,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 310)
+        self.assertEqual(len(known), 312)
         self.assertEqual(len(pending), 0)
 
     def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
@@ -67,7 +67,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         statuses = {e["bundle"]: e["status"] for e in plan["backlog"]}
         self.assertEqual(statuses[tutorial["bundle"]],
                          "inspected_no_monobehaviours")
-        self.assertEqual(plan["historically_documented_scan_bundles"], 310)
+        self.assertEqual(plan["historically_documented_scan_bundles"], 312)
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]
@@ -1150,6 +1150,32 @@ class ExtractionCoverageTests(unittest.TestCase):
             self.assertEqual(x["numeric_depth_limit"], 32)
             self.assertTrue(all(value == 0 for value in x["candidate_field_counts"].values()))
             self.assertEqual(x["scan_evidence"], "GitHub Actions W1-AB medium-original-final-sprite-atlases source inventory artifact")
+
+    def test_w1ac_two_original_weapon_lfs_sources_conserved(self):
+        run = "https://github.com/Nippytime/rabron/actions/runs/43649328171"
+        manifest = json.loads((ROOT / "data/weapon_lfs_source_targets.json").read_text(encoding="utf-8"))
+        scans = [e for e in LEDGER["scans"] if e.get("run_url") == run]
+        self.assertEqual(len(scans), 2)
+        pins = {e["bundle"]: e for e in manifest["sources"]}
+        self.assertEqual({e["bundle"] for e in scans}, set(pins))
+        self.assertEqual(sum(e["size_bytes"] for e in scans), 109658562)
+        self.assertEqual(sum(e["monobehaviours_total"] for e in scans), 135)
+        self.assertEqual(sum(e["monobehaviours_parsed"] for e in scans), 135)
+        self.assertEqual(sum(e["numeric_field_cap_records"] for e in scans), 0)
+        self.assertEqual(sum(e["unparsed_records"] for e in scans), 0)
+        self.assertEqual(sum(e["objects_by_type"].get("Mesh", 0) for e in scans), 51)
+        self.assertEqual(sum(e["objects_by_type"].get("Texture2D", 0) for e in scans), 69)
+        self.assertEqual(sum(e["candidate_field_counts"]["combat"] for e in scans), 330)
+        for e in scans:
+            source = pins[e["bundle"]]
+            self.assertEqual(e["sha256"], source["lfs_oid_sha256"])
+            self.assertEqual(e["lfs_oid_sha256"], source["lfs_oid_sha256"])
+            self.assertEqual(e["git_blob_sha"], source["git_blob_sha"])
+            self.assertEqual(e["size_bytes"], source["size_bytes"])
+            self.assertEqual(e["numeric_field_limit"], 2048)
+            self.assertEqual(e["numeric_depth_limit"], 32)
+            self.assertIs(e["bounded_numeric_scan_complete"], True)
+            self.assertEqual(e["scan_evidence"], "GitHub Actions W1-AC original weapon LFS source inventory artifact")
 
     def test_verified_selected_path_ids_and_remaining_caps(self):
         recovery = json.loads((ROOT / "data/targeted_numeric_recovery.json").read_text(
