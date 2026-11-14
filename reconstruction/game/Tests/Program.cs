@@ -15,6 +15,8 @@ internal static class Program
             EnforcesLaunderingDeadlineAndInput,
             RejectsDuplicateItems,
             ResetsOnlyTheHeistCycle,
+            ControlledStaffPreventsFutureAlarmWithoutRewritingThePast,
+            StaffControlMustOccurDuringHeist,
         };
 
         foreach (Action test in tests)
@@ -162,6 +164,40 @@ internal static class Program
         Eq(0, game.Loot.Count);
         True(!game.AlarmRaised);
         game.Scout();
+    }
+
+    private static void ControlledStaffPreventsFutureAlarmWithoutRewritingThePast()
+    {
+        var session = StartHeistWithOneItem();
+        session.RaiseAlarm();
+        session.ControlStaff();
+        True(session.StaffControlled);
+        True(session.AlarmRaised);
+
+        // The next heist must start with a fresh staff/alarm state.
+        session.Escape();
+        session.SellLoot(new Dictionary<string, long> { ["camera"] = 20 });
+        session.CollectCounterCash();
+        session.StartLaundering(20, 15, 100, 2);
+        session.CompleteLaundering(102);
+        session.BeginAnotherHeist();
+        True(!session.StaffControlled);
+        True(!session.AlarmRaised);
+    }
+
+    private static void StaffControlMustOccurDuringHeist()
+    {
+        var session = new HeistSession();
+        Throws<InvalidOperationException>(() => session.ControlStaff());
+        session.Scout();
+        session.PutOnMask();
+        Throws<InvalidOperationException>(() => session.ControlStaff());
+        session.StartHeist();
+        session.ControlStaff();
+        Throws<InvalidOperationException>(() => session.ControlStaff());
+        True(session.StaffControlled);
+        session.Escape();
+        Throws<InvalidOperationException>(() => session.ControlStaff());
     }
 
     private static HeistSession StartHeistWithOneItem()
