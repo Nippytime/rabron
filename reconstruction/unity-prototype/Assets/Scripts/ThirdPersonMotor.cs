@@ -16,6 +16,9 @@ namespace Rabron.Prototype
         private InputAction _interact = null!;
         private float _pitch = 18f;
         private float _verticalVelocity;
+        private const float CameraRadius = 0.22f;
+        private const float CameraClearance = 0.12f;
+        private readonly RaycastHit[] _cameraHits = new RaycastHit[24];
 
         public bool InteractPressed => _interact != null && _interact.WasPressedThisFrame();
 
@@ -113,10 +116,39 @@ namespace Rabron.Prototype
             Quaternion pitch = Quaternion.Euler(_pitch, 0f, 0f);
             Vector3 pivot = transform.position + Vector3.up * 1.6f;
             Vector3 target = pivot + yaw * pitch * new Vector3(0f, 0.9f, -5.5f);
+            target = CameraPositionWithCollision(pivot, target);
+
+            // Smooth only when moving away from obstacles. Moving toward a
+            // blocked wall must be immediate or the camera can clip through it.
             float damping = 1f - Mathf.Exp(-12f * Time.deltaTime);
-            _camera.transform.position = Vector3.Lerp(_camera.transform.position,
-                                                      target, damping);
+            Vector3 eased = Vector3.Lerp(_camera.transform.position, target, damping);
+            _camera.transform.position = CameraPositionWithCollision(pivot, eased);
             _camera.transform.LookAt(pivot);
+        }
+
+        private Vector3 CameraPositionWithCollision(Vector3 pivot, Vector3 desired)
+        {
+            Vector3 offset = desired - pivot;
+            float distance = offset.magnitude;
+            if (distance <= 0.01f)
+                return desired;
+
+            Vector3 direction = offset / distance;
+            int hits = Physics.SphereCastNonAlloc(pivot, CameraRadius, direction,
+                                                _cameraHits, distance, ~0,
+                                                QueryTriggerInteraction.Ignore);
+            float clearance = distance;
+            for (int i = 0; i < hits; i++)
+            {
+                var hit = _cameraHits[i];
+                if (hit.collider == null || hit.collider.transform.IsChildOf(transform))
+                    continue;
+
+                clearance = Mathf.Min(clearance,
+                                      Mathf.Max(0.1f, hit.distance - CameraClearance));
+            }
+
+            return pivot + direction * clearance;
         }
 
         public void WarpTo(Vector3 destination)
