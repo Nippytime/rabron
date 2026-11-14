@@ -38,7 +38,9 @@ jobs:
           $parseErrors = $null
           foreach ($script in @(
             "reconstruction/unity-prototype/Tools/Verify-Unity.ps1",
-            "reconstruction/unity-prototype/Tools/Verify-PlayMode.ps1"
+            "reconstruction/unity-prototype/Tools/Verify-PlayMode.ps1",
+            "reconstruction/unity-prototype/Tools/Assert-PlayModeResults.ps1",
+            "reconstruction/unity-prototype/Tools/Test-PlayModeResults.ps1"
           )) {
             $tokens = $null
             $parseErrors = $null
@@ -52,3 +54,7 @@ jobs:
               exit 1
             }
           }
+      - name: Exercise fake NUnit result gates (does not execute Unity)
+        shell: pwsh
+        run: |
+          & ./reconstruction/unity-prototype/Tools/Test-PlayModeResults.ps1
