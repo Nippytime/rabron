@@ -226,6 +226,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("JsonUtility.ToJson(session.ExportSnapshot())", store)
         self.assertIn("JsonUtility.FromJson<HeistSessionSnapshot>", store)
         self.assertIn("HeistSession.FromSnapshot(checkpoint)", store)
+        self.assertIn("JsonUtility.ToJson(session.ExportSnapshot())", editor)
+        self.assertIn("HeistSession.FromSnapshot(JsonUtility.FromJson", editor)
         self.assertIn("File.Replace(temporary, target, target + \".bak\")", store)
         self.assertIn("Application.persistentDataPath", store)
         self.assertIn("PrototypeSaveStore.Load(out string startupMessage)", director)
