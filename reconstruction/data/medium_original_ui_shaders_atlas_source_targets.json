@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-Y: ten original unscanned medium shader, tattoo, achievement UI and sprite-atlas UnityFS bundles",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/shaders_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/tattoo_scenes_tattoounlock.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_achievementboard_achievementboard_4k.spriteatlasv2.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_achievementboard_achievementboard_qhd.spriteatlasv2.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_all__fullspriteatlas_hd.spriteatlasv2.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_all__fullspriteatlas_qhd.spriteatlasv2.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_4k.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_hd.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_qhd.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_4k.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/shaders_assets_all.bundle": {
+      "size_bytes": 14633538,
+      "git_blob_sha": "e56dae5adbe5ed015b4f72d004db2901907e4781"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/tattoo_scenes_tattoounlock.bundle": {
+      "size_bytes": 2726770,
+      "git_blob_sha": "806d8d907edd9cae26bc6583b40f1c6a411eb0f9"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_achievementboard_achievementboard_4k.spriteatlasv2.bundle": {
+      "size_bytes": 2572274,
+      "git_blob_sha": "1ae76d2293acbc17aea8781d0c059e8b3e111298"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_achievementboard_achievementboard_qhd.spriteatlasv2.bundle": {
+      "size_bytes": 2376885,
+      "git_blob_sha": "2c416f8776ad030981d708c1885ada61302ad0ea"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_all__fullspriteatlas_hd.spriteatlasv2.bundle": {
+      "size_bytes": 9252721,
+      "git_blob_sha": "6118e344cb4347627f1cde775f3b79f248c8930d"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas-4k_assets_assets_content_ui_sprites_4k_all__fullspriteatlas_qhd.spriteatlasv2.bundle": {
+      "size_bytes": 15949340,
+      "git_blob_sha": "568cf700232515f0003a7365c366a4d88bd9eb38"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_4k.bundle": {
+      "size_bytes": 2251297,
+      "git_blob_sha": "89132045f3b4ea2d58c657977164b25b4611e852"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_hd.bundle": {
+      "size_bytes": 2209627,
+      "git_blob_sha": "1fbd33a694ac7c90660645c409215a0699cd9216"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_weaponsspriteatlas_qhd.bundle": {
+      "size_bytes": 2209641,
+      "git_blob_sha": "0301302af83aac247b7a74109ffdebb2b4f68bc9"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/ui-spriteatlas_assets_carsspriteatlas_4k.bundle": {
+      "size_bytes": 1405211,
+      "git_blob_sha": "fc802e30fe79214f66b0ea80ecbf11d36832a32c"
+    }
+  }
+}
