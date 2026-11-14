@@ -13,6 +13,7 @@ namespace Rabron.Prototype
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
         private ThirdPersonMotor _player = null!;
+        private CashPilePresenter _cashPile = null!;
         private PrototypeHud _hud = null!;
         private IReadOnlyList<InteractionMarker> _stations = null!;
         private string _notice = "";
@@ -29,7 +30,7 @@ namespace Rabron.Prototype
             }
 
             _session = new HeistSession();
-            _stations = PrototypeWorld.Create(transform, out _player);
+            _stations = PrototypeWorld.Create(transform, out _player, out _cashPile);
 
             var hudObject = new GameObject("Prototype HUD");
             hudObject.transform.SetParent(transform, false);
@@ -69,6 +70,8 @@ namespace Rabron.Prototype
                 }
             }
 
+            // Visual only. This does not credit money or change the game state.
+            _cashPile.SetAmount(_session.CounterCash);
             _hud.Render(_session, Objective(now), focused == null ? "" : focused.Label,
                         Time.unscaledTime < _noticeUntil ? _notice : "");
         }

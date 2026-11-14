@@ -24,7 +24,8 @@ namespace Rabron.Prototype.Editor
             var root = new GameObject("Temporary prototype verification");
             try
             {
-                var stations = PrototypeWorld.Create(root.transform, out var player);
+                var stations = PrototypeWorld.Create(root.transform, out var player,
+                                                    out var cashPile);
                 var kinds = new HashSet<StationAction>();
                 foreach (var station in stations)
                 {
@@ -48,6 +49,21 @@ namespace Rabron.Prototype.Editor
                       "Fencing platform is not reachable by walking");
                 Check(root.transform.Find("Ground") != null,
                       "No collidable ground was created");
+
+                // Exercise the actual presenter, not a mocked visibility flag.
+                Check(cashPile != null && !cashPile.IsVisible,
+                      "Counter cash must start hidden");
+                Check(cashPile.transform.childCount == 4,
+                      "Expected four procedural cash bundles on the counter");
+                foreach (Transform bundle in cashPile.transform)
+                    Check(!bundle.GetComponent<Collider>().enabled,
+                          "Decorative cash must not obstruct walking");
+                cashPile.SetAmount(200); // Explicit test fixture, not a source payout.
+                Check(cashPile.IsVisible,
+                      "Uncollected cash must be physically visible after fencing");
+                cashPile.SetAmount(0);
+                Check(!cashPile.IsVisible,
+                      "Collected cash must disappear from the fence");
 
                 ValidateHeistCore();
             }

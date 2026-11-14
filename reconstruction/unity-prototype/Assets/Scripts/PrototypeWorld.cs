@@ -10,7 +10,8 @@ namespace Rabron.Prototype
             new Dictionary<Color, Material>();
 
         public static IReadOnlyList<InteractionMarker> Create(Transform parent,
-                                                               out ThirdPersonMotor player)
+                                                               out ThirdPersonMotor player,
+                                                               out CashPilePresenter cashPile)
         {
             var stations = new List<InteractionMarker>(14);
             var asphalt = Hex("#242A34");
@@ -59,6 +60,22 @@ namespace Rabron.Prototype
                  new Vector3(8, 0.5f, 9), concrete);
             Cube(parent, "Fence counter", new Vector3(-19, 1.05f, 0),
                  new Vector3(5, 1, 1.3f), wood);
+
+            // Cash is not in the wallet until the player explicitly picks it up.
+            // This original placeholder mesh is visual-only: the economy lives
+            // in HeistSession, and no actual game models are imported.
+            var money = new GameObject("Fence cash waiting on counter");
+            money.transform.SetParent(parent, false);
+            var cashColor = Hex("#6FBF88");
+            for (int i = 0; i < 4; i++)
+            {
+                var bundle = Cube(money.transform, "Cash bundle " + (i + 1),
+                    new Vector3(-20.1f + i * 0.72f, 1.64f, 0),
+                    new Vector3(0.62f, 0.12f, 0.42f), cashColor);
+                bundle.GetComponent<Collider>().enabled = false;
+            }
+            cashPile = money.AddComponent<CashPilePresenter>();
+            cashPile.SetAmount(0);
             Cube(parent, "Laundering workbench", new Vector3(20, 0.9f, 1),
                  new Vector3(5, 1.8f, 2), Hex("#647B81"));
             Cube(parent, "ATM booth", new Vector3(0, 1.35f, -24),
@@ -81,7 +98,7 @@ namespace Rabron.Prototype
             Station(parent, stations, StationAction.Fence, "Sell loot at fence",
                     new Vector3(-19, 0.65f, -2.3f), "#D6BB83");
             Station(parent, stations, StationAction.CollectCash, "Collect cash on counter",
-                    new Vector3(-19, 0.85f, 2.5f), "#E0DB7B");
+                    new Vector3(-19, 0.65f, 1.65f), "#E0DB7B");
             Station(parent, stations, StationAction.Launder, "Start laundering",
                     new Vector3(20, 0, 3.5f), "#80C9B9");
             Station(parent, stations, StationAction.OpenBank, "Open bank account",
@@ -145,7 +162,7 @@ namespace Rabron.Prototype
             stations.Add(marker);
         }
 
-        private static void Cube(Transform parent, string label, Vector3 center,
+        private static GameObject Cube(Transform parent, string label, Vector3 center,
                                  Vector3 size, Color color)
         {
             var primitive = GameObject.CreatePrimitive(PrimitiveType.Cube);
@@ -154,6 +171,7 @@ namespace Rabron.Prototype
             primitive.transform.position = center;
             primitive.transform.localScale = size;
             primitive.GetComponent<Renderer>().sharedMaterial = Swatch(color);
+            return primitive;
         }
 
         private static Material Swatch(Color color)

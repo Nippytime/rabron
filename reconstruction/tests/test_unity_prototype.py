@@ -109,6 +109,28 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Test-Path -LiteralPath $exe", runner)
         self.assertNotIn("ignorecompilererrors", runner.lower())
 
+    def test_fence_cash_is_physical_but_only_session_credits_money(self):
+        world = read("PrototypeWorld.cs")
+        director = read("PrototypeDirector.cs")
+        presenter = read("CashPilePresenter.cs")
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+
+        self.assertIn("out CashPilePresenter cashPile", world)
+        self.assertIn('new GameObject("Fence cash waiting on counter")', world)
+        self.assertIn("bundle.GetComponent<Collider>().enabled = false", world)
+        self.assertIn("cashPile.SetAmount(0);", world)
+        self.assertIn("_cashPile.SetAmount(_session.CounterCash)", director)
+        self.assertIn("public void SetAmount(long counterCash)", presenter)
+        self.assertIn("bool visible = counterCash > 0", presenter)
+        self.assertIn("cashPile.SetAmount(200)", smoke)
+        self.assertIn("cashPile.SetAmount(0)", smoke)
+        self.assertIn("Uncollected cash must be physically visible", smoke)
+        self.assertIn("Collected cash must disappear", smoke)
+        self.assertNotIn("DirtyCash =", presenter)
+        self.assertNotIn("BankBalance =", presenter)
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")

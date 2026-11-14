@@ -108,9 +108,12 @@ around the city.
 3. Use the amber entrance pillar to **begin the heist**.
 4. Walk through the 4 m opening and collect one or both loot objects.
 5. Leave the building; use the **Escape** pillar on the road.
-6. Go **west** to the fence counter. Selling turns loot into a visible
-   cash pickup on the counter **without** instantly adding to your wallet.
-7. Collect the cash pile, then go **east** to the laundry workstation.
+6. Go **west** to the fence counter. Selling now reveals four original
+   green cash-bundle meshes **on top of the counter**; they are visual only,
+   with no collision. None of the cash is added to your wallet yet.
+7. Walk around the counter to its collection marker and press **E / A**.
+   The bundle meshes disappear and the balance moves from Counter Cash to
+   Dirty Cash. The next destination is the **eastern** laundry workstation.
 8. Laundering finishes after an adjustable demo timer. Go **south** to the
    city-exit marker to clear criminal status and use the return marker.
 9. As a **civilian**, open the bank account at the ATM if not already open,
@@ -118,6 +121,11 @@ around the city.
    heist phase and retains account balances.
 
 The prototype currently has no NPCs; alarm escalation is not simulated.
+
+The physical cash bundle display is a **generic presentation placeholder**,
+not a reproduction of ROB RUN cash denomination meshes or the extracted
+money-workbench pile thresholds. Those reference thresholds are recorded
+separately and are not assumed to control fence payouts or visual sizes.
 
 ## Adjust demo values without modifying code
 
