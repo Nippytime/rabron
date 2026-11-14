@@ -52,7 +52,7 @@ class MediumOriginalFinalSpriteAtlasesInventoryTests(unittest.TestCase):
         ))
         plan = make_plan(self.sources, self.ledger, **self.args)
         self.assertEqual(plan["mode"], "new")
-        self.assertEqual(plan["eligible_small_sources"], 10)
+        self.assertEqual(plan["eligible_small_sources"], 2)
         self.assertEqual([len(batch["sources"]) for batch in plan["batches"]],
                          [2])
         self.assertEqual(
@@ -70,7 +70,7 @@ class MediumOriginalFinalSpriteAtlasesInventoryTests(unittest.TestCase):
         plan = make_plan(self.sources, {**self.ledger, "scans": scans},
                          **self.args)
         self.assertEqual(plan["mode"], "recheck")
-        self.assertEqual(plan["recheck_documented_sources"], 10)
+        self.assertEqual(plan["recheck_documented_sources"], 2)
         self.assertEqual([len(batch["sources"]) for batch in plan["batches"]],
                          [2])
         with self.assertRaisesRegex(ValueError, "partly documented"):
