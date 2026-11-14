@@ -7,7 +7,7 @@ namespace Rabron.Reconstruction
     // Economy prices, production time and exchange rates must be supplied by
     // verified data or a future authoritative server.
     public enum Zone { City, Desert }
-    public enum Role { Civilian, Criminal, Police }
+    public enum PlayerRole { Civilian, Criminal, Police }
     public enum HeistPhase
     {
         Idle, Scouted, Robbing, Escaped, CashOnCounter,
@@ -19,8 +19,8 @@ namespace Rabron.Reconstruction
         private readonly List<string> _loot = new List<string>();
         private LaunderingJob? _laundering;
 
-        public Zone Zone { get; private set; }
-        public Role Role { get; private set; }
+        public Zone CurrentZone { get; private set; }
+        public PlayerRole CurrentRole { get; private set; }
         public HeistPhase Phase { get; private set; }
         public bool AlarmRaised { get; private set; }
         public bool BankAccountOpened { get; private set; }
@@ -31,31 +31,31 @@ namespace Rabron.Reconstruction
         public long BankBalance { get; private set; }
         public IReadOnlyList<string> Loot => _loot.AsReadOnly();
 
-        public HeistSession(Zone initialZone = Zone.City, Role initialRole = Role.Civilian)
+        public HeistSession(Zone initialZone = Zone.City, PlayerRole initialRole = PlayerRole.Civilian)
         {
-            Zone = initialZone;
-            Role = initialRole;
+            CurrentZone = initialZone;
+            CurrentRole = initialRole;
             Phase = HeistPhase.Idle;
         }
 
         public void Scout()
         {
-            Require(Zone == Zone.City && Phase == HeistPhase.Idle,
+            Require(CurrentZone == Zone.City && Phase == HeistPhase.Idle,
                     "Scouting is only available in the city before a heist.");
             Phase = HeistPhase.Scouted;
         }
 
         public void PutOnMask()
         {
-            Require(Zone == Zone.City && Role == Role.Civilian,
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian,
                     "Only a civilian in the city may enter criminal mode.");
-            Role = Role.Criminal;
+            CurrentRole = PlayerRole.Criminal;
         }
 
         public void StartHeist()
         {
-            Require(Phase == HeistPhase.Scouted && Role == Role.Criminal &&
-                    Zone == Zone.City, "Scout and enter criminal mode first.");
+            Require(Phase == HeistPhase.Scouted && CurrentRole == PlayerRole.Criminal &&
+                    CurrentZone == Zone.City, "Scout and enter criminal mode first.");
             Phase = HeistPhase.Robbing;
         }
 
@@ -145,28 +145,28 @@ namespace Rabron.Reconstruction
 
         public void LeaveCity()
         {
-            Require(Zone == Zone.City, "Already outside the city.");
-            Zone = Zone.Desert;
-            if (Role == Role.Criminal)
-                Role = Role.Civilian; // Official status reset occurs on city exit.
+            Require(CurrentZone == Zone.City, "Already outside the city.");
+            CurrentZone = Zone.Desert;
+            if (CurrentRole == PlayerRole.Criminal)
+                CurrentRole = PlayerRole.Civilian; // Official status reset occurs on city exit.
         }
 
         public void EnterCity()
         {
-            Require(Zone == Zone.Desert, "Already inside the city.");
-            Zone = Zone.City;
+            Require(CurrentZone == Zone.Desert, "Already inside the city.");
+            CurrentZone = Zone.City;
         }
 
         public void OpenBankAccount()
         {
-            Require(Zone == Zone.City && Role == Role.Civilian,
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian,
                     "A civilian must open the account inside the city.");
             BankAccountOpened = true;
         }
 
         public void DepositCleanCash(long amount)
         {
-            Require(BankAccountOpened && Zone == Zone.City && Role == Role.Civilian,
+            Require(BankAccountOpened && CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian,
                     "Bank deposits require a civilian account holder in the city.");
             Require(amount > 0 && amount <= CleanCash,
                     "Cannot deposit more clean cash than owned.");
