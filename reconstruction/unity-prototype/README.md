@@ -29,9 +29,11 @@ The local gameplay package still resolves because it also lives inside
    \`reconstruction/unity-prototype/\`
    (do not open the repository root).
 3. Wait for Package Manager import. The manifest pins
-   \`com.unity.inputsystem@1.20.1\` and references the gameplay core as a
-   **local package** at \`../../game/Core\`. The original game content folder
-   is never imported into the Unity project.
+   \`com.unity.inputsystem@1.20.1\` and enables Unity's built-in Physics, Audio and UI Toolkit
+   modules. It references the gameplay core as a
+   **local package** at \`../../game/Core\`. This local package path is relative to the project's Packages
+   directory, not the shell's working directory. The original game content
+   folder is never imported into the Unity project.
 4. If Unity asks to enable its new Input System, click **Yes** and allow the
    requested Editor restart. Only the Input System backend is supported.
 5. On first launch, the Editor helper creates \`Assets/Scenes/Prototype.unity\`
@@ -67,7 +69,11 @@ the repository root in PowerShell:
 
 The runner locates Unity through the normal Unity Hub installation path
 (or uses the UNITY_EDITOR environment variable or -EditorPath), starts
-Unity in -batchmode, and inspects Logs/editor-smoke.log. It requires both
+Unity in -batchmode, and inspects Logs/editor-smoke.log. The Editor
+creates the scene through AssetDatabase and writes Windows build outputs
+inside the Unity project irrespective of the shell's current directory.
+The smoke check fails if the new Input System backend is disabled; enable
+it in Player Settings and restart Unity. The runner requires both
 a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
