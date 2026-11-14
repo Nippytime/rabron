@@ -5429,6 +5429,298 @@
       "size_bytes": 8681637,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_12_type_1_paint_1.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "0ac2a50ae6a7447c81e6ec292e2cfa2ccdff31b1",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "Mesh": 5,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "c719f565d32d1c7583efbd2f5e602bccd24c62fdadb076b40e6ea8c6de456e3a",
+      "size_bytes": 9834628,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_16_type_1_paint_1.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b581dc0ad1fd984054298f1e029c154720438932",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "8a4780ae201fd4ec167d73795eb40798b15b54dfec152a30175586f0e32319bc",
+      "size_bytes": 3762350,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_16_type_1_paint_2.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "f0214a688ed3580d9febc5c827f8ecf3bc086f48",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "c30e0e64af6aff38ab768c7b8b5cd7fe22c2885a60422a284b6a561576bdfcb7",
+      "size_bytes": 3781735,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_16_type_1_paint_3.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "72a46740ccf45727f68c18a6c0b3d57265a52812",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 2
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "422b732023d4ba58759e53870a5aa9322255483204e964beaef88d821ee39252",
+      "size_bytes": 3698361,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_18_type_1_paint_1.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "2374569a0d14cdfc635a958b1970c46ffadd1e66",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "e476d07bf86d7a9d88156c0613631bcd355422e12a6e87e18516590514bf42da",
+      "size_bytes": 7083002,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_18_type_1_paint_2.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "5aa0f9b6583f77d16bb74d4e61b429cc0b2c7a0b",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "8cd537dfe5bf1d7b1436661d6104306e5de348fbcf7b1f11bc6dfa768cc19c3c",
+      "size_bytes": 7593958,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_18_type_1_paint_3.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "6b339294a7a12a6f55b08ade881ee5c314c6d878",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "c61ae6245072e519e1cd1d13aa77667393b18d10fe45d3b222c4470571de5185",
+      "size_bytes": 7525426,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_18_type_1_paint_4.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "066c8190cb42f5ab1a32909110fac53edd2bc032",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "709cd42f3ff6e43c6eff6bad3d7379e0b60e5ccf73b6ae7bfce06c9f8a2c5dd0",
+      "size_bytes": 7652010,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_28_type_1_paint_1.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "a64f3b7e5f35d6e38042c1d9778651773a8c5a12",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "Mesh": 9,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "98843c086f86dd9b14c2c6317a85812882498fd9d01d88bef48a5ecf05b1a5d1",
+      "size_bytes": 9044997,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_30_type_1_paint_1.asset.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "252f6a1c88be3018677fdde056e299bc927d70ec",
+      "monobehaviours_parsed": 1,
+      "monobehaviours_total": 1,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 1,
+        "MonoBehaviour": 1,
+        "Texture2D": 3
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43633293481",
+      "scan_evidence": "GitHub Actions W1-O medium-player-body source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "8ba4adda3444cfa455f7a0fee158db4eacbb6be802bae59b93a622b32572b536",
+      "size_bytes": 8299139,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],

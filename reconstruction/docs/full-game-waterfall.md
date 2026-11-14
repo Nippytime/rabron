@@ -226,6 +226,19 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   See reconstruction/docs/police-body-batch.md. Customization
   source object names are **not authoritative police gameplay**.
 
+- W1-O verified ten original medium civilian body customization
+  UnityFS sources (**68,275,606 original bytes**), **10/10**
+  parsed MonoBehaviours, **14 Mesh, 27 Texture2D** and 10
+  Material/AssetBundle objects, zero unparsed records, zero
+  new numeric field/depth caps. No original game media was
+  exported. Ledger covers **190/330** original sources,
+  **81,846** parsed MonoBehaviours, **140** unscanned
+  originals (120 medium non-LFS, 20 LFS) and **42** unresolved
+  numeric field-capped records. Verified original-source
+  run: https://github.com/Nippytime/rabron/actions/runs/43633293481 .
+  See reconstruction/docs/civilian-body-batch.md. Client
+  customization media is **not authoritative game mechanics**.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
