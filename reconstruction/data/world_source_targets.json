@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "scope": "W1-H six exact original non-LFS medium world environment and battle UnityFS sources",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/environment-interactive_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/space-battle_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/shared-environment-city_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/space-mainmenu_scenes_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/space-realm_assets_all.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/environment_assets_all.bundle"
+  ]
+}
