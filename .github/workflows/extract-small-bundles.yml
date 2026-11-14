@@ -139,6 +139,26 @@ jobs:
             --run-url "$SOURCE_RUN" \
             --output "$RUNNER_TEMP/w1f-report.json" \
             --proposed-ledger "$RUNNER_TEMP/w1f-proposed-ledger.json"
+      - name: Publish source-only ledger entries to the review log
+        # Enables independent source-reconciliation review without publishing
+        # copyrighted game media or granting CI write permissions.
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          payload = json.loads(
+              (Path(os.environ["RUNNER_TEMP"]) / "w1f-proposed-ledger.json").read_text()
+          )
+          before = json.loads(
+              (Path("reconstruction/data/extraction_coverage.json")).read_text()
+          )
+          new = payload["scans"][len(before["scans"]):]
+          compact = json.dumps(new, separators=(",", ":"), sort_keys=True)
+          for offset in range(0, len(compact), 4000):
+              print(f"W1F_CHUNK_{offset // 4000:03d}={compact[offset:offset + 4000]}")
+          PY
       - name: Retain review-only measured ledger (never auto-promote to dev)
         uses: actions/upload-artifact@v4
         with:
