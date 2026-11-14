@@ -30,8 +30,11 @@ class SmallBundleInventoryTests(unittest.TestCase):
         row = lambda p: (
             b"100644 blob " + b"a" * 40 + b" 2048\t" + p.encode() + b"\0"
         )
-        listed = parse_git_tree(row(path("location-test")))
+        listed = parse_git_tree(row(path("location-test")) +
+                                row(BUNDLE_PREFIX + "catalog_1.bin") +
+                                row(BUNDLE_PREFIX + "catalog_1.hash"))
         self.assertEqual(listed[path("location-test")]["git_blob_size"], 2048)
+        self.assertEqual(len(listed), 1)
         # Original tree legitimately contains parenthesized locale names.
         self.assertIn(path("localization-english(en-us)"),
                       parse_git_tree(row(path("localization-english(en-us)"))))
@@ -166,6 +169,30 @@ class SmallBundleInventoryTests(unittest.TestCase):
             self.assertEqual(len(proposal["scans"]), 0)
             self.assertEqual(report["unparseable_attempts"][0]["error"],
                              "TypeTreeError")
+
+    def test_valid_scan_with_inconsistent_accounting_fails_ci(self):
+        item = entry("verified")
+        with patch("reconstruction.tools.small_bundle_inventory.verify_bytes",
+                   return_value="a" * 64), patch(
+                "reconstruction.tools.small_bundle_inventory.scan_bundle",
+                return_value={"tool_version": "1.25.4"}), patch(
+                "reconstruction.tools.small_bundle_inventory.summarize",
+                return_value={}), patch(
+                "reconstruction.tools.small_bundle_inventory.validate",
+                side_effect=ValueError("MonoBehaviour counts do not reconcile")):
+            with self.assertRaisesRegex(ValueError, "counts do not reconcile"):
+                inspect_source(item)
+
+    def test_unparseable_actual_bundle_keeps_error_type_without_zero_counts(self):
+        item = entry("schema-missing")
+        with patch("reconstruction.tools.small_bundle_inventory.verify_bytes",
+                   return_value="a" * 64), patch(
+                "reconstruction.tools.small_bundle_inventory.scan_bundle",
+                side_effect=ValueError("Unknown Unity schema")):
+            result = inspect_source(item)
+        self.assertEqual(result["source_status"], "unparseable")
+        self.assertEqual(result["parse_error_type"], "ValueError")
+        self.assertIsNone(result["monobehaviours_total"])
 
     def test_batch_worker_persists_results_but_never_swallows_missing_source(self):
         plan = make_plan({path("one"): entry("one")}, self.ledger,
