@@ -418,6 +418,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   unscanned and **42** old numeric field caps remain unresolved.
   See reconstruction/docs/equipment-realm-lfs-source-batch.md.
 
+- W1-AE source-verified the original RC556/TAG12K weapon Git LFS
+  UnityFS bundles (**128,115,372** original bytes, **189/189** parsed
+  MonoBehaviours, **68 Mesh**, **75 Texture2D**, zero unparsed/new
+  numeric caps). **396 combat** and **36 timing/world** numeric
+  keyword matches are serialized client candidates, not recovered
+  authoritative gameplay formulas. Original byte scan Actions:
+  https://github.com/Nippytime/rabron/actions/runs/43650766303 .
+  Coverage now **316/330** original UnityFS sources, **82,566**
+  parsed MonoBehaviours; **14** original LFS sources unscanned and
+  **42** older numeric caps unresolved. Source report:
+  reconstruction/docs/weapon-rc556-tag12k-lfs-source-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
