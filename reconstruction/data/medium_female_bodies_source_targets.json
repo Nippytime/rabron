@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "scope": "W1-W: ten exact original unscanned medium female character-body customization UnityFS sources",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_16_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_16_type_1_paint_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_16_type_1_paint_3.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_3.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_4.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_28_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_30_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_30_type_1_paint_2.asset.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_16_type_1_paint_1.asset.bundle": {
+      "size_bytes": 3549466,
+      "git_blob_sha": "8f4864ceb100e657cb1ae1d6e4f0301914b9bf01"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_16_type_1_paint_2.asset.bundle": {
+      "size_bytes": 3465981,
+      "git_blob_sha": "16b169ecf969323e40c08bab92e8b9d6bcecbc72"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_16_type_1_paint_3.asset.bundle": {
+      "size_bytes": 3259624,
+      "git_blob_sha": "b7c8ccdaf556a3ec6578b84d28740ddd3064a4a9"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_1.asset.bundle": {
+      "size_bytes": 8146144,
+      "git_blob_sha": "a350c222c7a77ed49c6b7f4067694fb526d3f1b5"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_2.asset.bundle": {
+      "size_bytes": 8216229,
+      "git_blob_sha": "671a9a3ddd84c720b31a69b7681ab90d77d15f6d"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_3.asset.bundle": {
+      "size_bytes": 8050604,
+      "git_blob_sha": "d41689fe0c3b8354804f4c7d53f74bf9bdadf76e"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_18_type_1_paint_4.asset.bundle": {
+      "size_bytes": 7984519,
+      "git_blob_sha": "7bbd61abe26b5b1f16f5f7ab809479df9c2c000e"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_28_type_1_paint_1.asset.bundle": {
+      "size_bytes": 9129544,
+      "git_blob_sha": "624d7ddc99788fa954b9223d012a30f18266b89f"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_30_type_1_paint_1.asset.bundle": {
+      "size_bytes": 8455387,
+      "git_blob_sha": "94964a446377a40418ebef1b18cabb5214ab4da9"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterfbodiesviewdescription_f_body_30_type_1_paint_2.asset.bundle": {
+      "size_bytes": 7989402,
+      "git_blob_sha": "17564db84cc28732a43cb7164e812706dba68620"
+    }
+  }
+}
