@@ -1,0 +1,33 @@
+name: Reconstruction rules and audit tests
+
+on:
+  push:
+    paths:
+      - "reconstruction/**"
+      - ".github/workflows/reconstruction-tests.yml"
+  pull_request:
+    paths:
+      - "reconstruction/**"
+      - ".github/workflows/reconstruction-tests.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  python-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout authored reconstruction code only
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Test evidence tools and gameplay rules
+        run: python -m unittest discover -s reconstruction/tests -v
