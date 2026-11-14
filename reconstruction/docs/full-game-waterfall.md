@@ -212,6 +212,20 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   https://github.com/Nippytime/rabron/actions/runs/43631572017 .
   Details: reconstruction/docs/medium-wwise-batch.md.
 
+- W1-N verified seven original medium non-LFS police character-body
+  customization UnityFS bundles (**62,510,955 original bytes**).
+  The seven sources each had one parsed MonoBehaviour, five Mesh
+  objects and three Texture2D objects: **7/7** parsed, **35**
+  Mesh and **21** Texture2D objects, zero unparsed records, zero
+  new numeric caps. The already documented small 0-man-police
+  source was not rescanned. Ledger coverage is **180/330** original
+  bundles with **81,836** parsed MonoBehaviours, leaving **150**
+  original bundles unscanned (130 medium non-LFS, 20 LFS pointers)
+  and **42** unresolved numeric capped records. Measured CI:
+  https://github.com/Nippytime/rabron/actions/runs/43632465318 .
+  See reconstruction/docs/police-body-batch.md. Customization
+  source object names are **not authoritative police gameplay**.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
