@@ -172,7 +172,7 @@ def reconcile(plan, records, ledger, run_url, tracked):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("command", choices=("plan", "pointer", "scan", "reconcile"))
+    parser.add_argument("command", choices=("plan", "pointer", "bytes", "scan", "reconcile"))
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--ledger", type=Path, required=True)
     parser.add_argument("--bundle")
@@ -184,11 +184,13 @@ def main():
     args = parser.parse_args()
     targets = load_targets(args.manifest)
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
-    if args.command == "pointer":
+    if args.command in ("pointer", "bytes"):
         item = next((e for e in targets if e["bundle"] == args.bundle), None)
         if item is None:
             raise ValueError("Source path absent from exact LFS registry")
-        print(json.dumps(verify_pointer(item), sort_keys=True))
+        result = (verify_pointer(item) if args.command == "pointer" else
+                  verify_source(Path(item["bundle"]), item, phase="bytes"))
+        print(json.dumps(result, sort_keys=True))
     elif args.command == "scan":
         item = next((e for e in targets if e["bundle"] == args.bundle), None)
         if item is None or not args.run_url or args.output is None:
