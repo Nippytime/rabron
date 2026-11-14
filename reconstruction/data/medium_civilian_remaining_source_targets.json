@@ -1,0 +1,48 @@
+{
+  "schema_version": 1,
+  "scope": "W1-P: eight remaining exact original non-LFS medium civilian-body UnityFS bundles",
+  "bundles": [
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_30_type_1_paint_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_31_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_31_type_2_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_33_type_2_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_42_type_1_paint_1.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_42_type_1_paint_2.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_42_type_1_paint_3.asset.bundle",
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_5_type_1_paint_1.asset.bundle"
+  ],
+  "expected_git_blobs": {
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_30_type_1_paint_2.asset.bundle": {
+      "size_bytes": 7780131,
+      "git_blob_sha": "16f76b80cf20925b1871004f48baa74380271ac2"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_31_type_1_paint_1.asset.bundle": {
+      "size_bytes": 9131096,
+      "git_blob_sha": "72f1dd13c9503421e5fdb98002c1d0e80c6d2f03"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_31_type_2_paint_1.asset.bundle": {
+      "size_bytes": 9506770,
+      "git_blob_sha": "260f46726909da864d700aafddc563dae07c68eb"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_33_type_2_paint_1.asset.bundle": {
+      "size_bytes": 8922946,
+      "git_blob_sha": "aa9e80b3576578bc15414e866f946854c3c5f4bf"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_42_type_1_paint_1.asset.bundle": {
+      "size_bytes": 1557943,
+      "git_blob_sha": "7f6f737a63b156dcba4cb0ca8e7b8d8bb9fb31e2"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_42_type_1_paint_2.asset.bundle": {
+      "size_bytes": 1215072,
+      "git_blob_sha": "2495ab14bc89ec491ece9bfb94ce637db2eb6512"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_42_type_1_paint_3.asset.bundle": {
+      "size_bytes": 1354334,
+      "git_blob_sha": "a8466897f60a0aac131daefc9561fa9c07628e3f"
+    },
+    "StreamingAssets/aa/StandaloneWindows64/character-separeted_assets_assets_scriptableobjects_skincenter_customizercontent_characterbodiesviewdescription_body_5_type_1_paint_1.asset.bundle": {
+      "size_bytes": 9311867,
+      "git_blob_sha": "dfa59bbca3565d9b7dc16bdaad209aa90549ed05"
+    }
+  }
+}
