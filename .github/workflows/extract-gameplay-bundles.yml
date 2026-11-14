@@ -36,6 +36,7 @@ jobs:
           lfs: false
           sparse-checkout: |
             reconstruction/
+            .github/workflows/extract-gameplay-bundles.yml
             StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
           sparse-checkout-cone-mode: false
       - name: Set up Python
