@@ -1,0 +1,76 @@
+name: Extract six gameplay-relevant reference bundles
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - ".github/workflows/extract-gameplay-bundles.yml"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tests/test_extract_unity_bundle.py"
+
+permissions:
+  contents: read
+
+jobs:
+  extract-bundle:
+    name: inspect / ${{ matrix.bundle }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      max-parallel: 3
+      matrix:
+        bundle:
+          - vehicle-cars_assets_all.bundle
+          - equipement_assets_usableitem.bundle
+          - shared-environment-plot_assets_all.bundle
+          - vehicles-helicopters_assets_all.bundle
+          - weapon-vulture50_assets_all.bundle
+          - location-settlement-standalone_scenes_settlement_standalone.bundle
+    steps:
+      - name: Checkout only scanner and selected original UnityFS input
+        uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.bundle }}
+          sparse-checkout-cone-mode: false
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install pinned UnityPy parser
+        run: python -m pip install UnityPy==1.25.4
+      - name: Verify scanner and scalar extraction semantics
+        run: python -m unittest discover -s reconstruction/tests -v
+      - name: Extract source-identified numeric fields with explicit limits
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT_DIR: ${{ runner.temp }}
+        run: |
+          python reconstruction/tools/extract_unity_bundle.py \
+            "StreamingAssets/aa/StandaloneWindows64/$BUNDLE" \
+            --max-fields 8192 --max-depth 32 \
+            --output "$OUTPUT_DIR/$BUNDLE.raw.json"
+      - name: Categorize provenance-linked numeric candidates (not verified formulas)
+        env:
+          BUNDLE: ${{ matrix.bundle }}
+          OUTPUT_DIR: ${{ runner.temp }}
+        run: |
+          python reconstruction/tools/summarize_numeric_evidence.py \
+            "$OUTPUT_DIR/$BUNDLE.raw.json" \
+            --samples-per-category 20 \
+            --output "$OUTPUT_DIR/$BUNDLE.summary.json"
+      - name: Preserve small research-only evidence artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: source-evidence-${{ matrix.bundle }}
+          path: |
+            ${{ runner.temp }}/${{ matrix.bundle }}.raw.json
+            ${{ runner.temp }}/${{ matrix.bundle }}.summary.json
+          if-no-files-found: warn
+          retention-days: 30
