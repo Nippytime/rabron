@@ -198,6 +198,20 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   This is bounded Unity client metadata, **not evidence of
   authoritative server formulas or rights to source media**.
 
+- W1-M source-verified the final three medium non-LFS original
+  Wwise battle-localized, game-start and initialization-bank
+  UnityFS bundles (**27,353,739 original bytes**),
+  **5/5 parsed MonoBehaviours**, **0 unparsed**, **4 new
+  numeric field-capped records** across the three sources.
+  Bounded audio-bank inventories are **partial** and are not
+  playable audio or authoritative gameplay/source formulas.
+  Source ledger now covers **173/330** original paths
+  and **81,829** parsed MonoBehaviours, with **157** still
+  unscanned (137 medium non-LFS, 20 LFS pointers) and
+  **42 unresolved numeric capped records**. Source run:
+  https://github.com/Nippytime/rabron/actions/runs/43631572017 .
+  Details: reconstruction/docs/medium-wwise-batch.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
