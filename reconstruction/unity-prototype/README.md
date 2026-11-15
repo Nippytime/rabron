@@ -511,6 +511,17 @@ any meaningful wall-occlusion check, allowing an active guard to arrest
 an overlapping criminal after an alarm. Ordinary positions retain the
 original limited field-of-view cone. Controlling the guard prevents
 subsequent detection but cannot erase an existing alarm.
+
+The demo guard's physical ray now aims at the player's actual upper capsule
+rather than a fixed standing-height point. You can **crouch behind low cover**
+to obstruct line of sight, then become visible above it when standing; this is
+not a magical invisibility toggle, and unblocked sightlines can still trigger
+the alarm. The provisional sight range also includes vertical separation,
+rather than allowing detection far above the guard. A real Unity Editor
+geometry smoke scenario (standing, crouched, standing again, elevated) is
+authored but **not executed** in hosted CI. Actual stealth/collision feel
+requires hands-on Unity and Windows testing.
+
 This is **not** the original NPC AI, arrest formula, police dispatch,
 wanted-level system or any authoritative online gameplay. Police patrol
 movement, pursuit and server enforcement are not implemented.
