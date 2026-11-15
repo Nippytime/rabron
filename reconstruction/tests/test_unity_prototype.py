@@ -629,7 +629,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
             encoding="utf-8")
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("StationAction.VehicleEnter", marker)
+        self.assertIn("WithdrawEmptyHanded, VehicleEnter", marker)
         self.assertIn("new List<InteractionMarker>(21)", world)
         self.assertIn("car.AddComponent<PrototypeVehicle>()", world)
         self.assertIn("Station(car.transform, stations, StationAction.VehicleEnter", world)
