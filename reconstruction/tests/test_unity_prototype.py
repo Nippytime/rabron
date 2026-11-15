@@ -778,6 +778,35 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("DirtyCash =", director)
         self.assertNotIn("CounterCash =", director)
 
+    def test_next_heist_requires_civilian_city_return_in_core_and_unity(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(encoding="utf-8")
+        tests = (ROOT / "game/Tests/Program.cs").read_text(encoding="utf-8")
+        director = read("PrototypeDirector.cs")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        core_guide = (ROOT / "game/README.md").read_text(encoding="utf-8")
+
+        reset = core.split("public void BeginAnotherHeist()", 1)[1].split(
+            "public HeistSessionSnapshot ExportSnapshot()", 1
+        )[0]
+        self.assertIn("CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian", reset)
+        self.assertIn("Phase == HeistPhase.Laundered", reset)
+        self.assertIn("CounterCash == 0", reset)
+        self.assertIn("_laundering == null && _loot.Count == 0", reset)
+        self.assertIn(
+            "StationAction.Reset => _session.Phase == HeistPhase.Laundered &&",
+            director,
+        )
+        self.assertIn("_session.CurrentRole == PlayerRole.Civilian", director)
+        self.assertIn("CompletedHeistRequiresCivilianCityReturnBeforeReset", tests)
+        self.assertIn("Throws<InvalidOperationException>(() => game.BeginAnotherHeist())",
+                      tests)
+        self.assertIn("game.LeaveCity();", tests)
+        self.assertIn("game.EnterCity();", tests)
+        self.assertIn("90L, game.CleanCash", tests)
+        self.assertIn("10L, game.BankBalance", tests)
+        self.assertIn("civilian", guide.lower())
+        self.assertIn("city", core_guide.lower())
+
     def test_city_travel_rejects_active_heist_and_unreachable_desert_saves(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8")
