@@ -721,6 +721,10 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("FindFirstObjectByType<ThirdPersonMotor>()", probe)
         self.assertIn("FindFirstObjectByType<PrototypeHud>()", probe)
         self.assertIn("markers.Length == 21 && actions.Count == 21", probe)
+        self.assertIn('director.transform.Find("Warehouse stealth cover")', probe)
+        self.assertIn("cover.GetComponent<BoxCollider>()", probe)
+        self.assertIn("coverCollider != null && coverCollider.enabled", probe)
+        self.assertIn("!coverCollider.isTrigger", probe)
         self.assertIn("RABRON_WINDOWS_PLAYER_SMOKE_PASS", probe)
         self.assertIn("Application.Quit(saved ? 0 : 1)", probe)
 
