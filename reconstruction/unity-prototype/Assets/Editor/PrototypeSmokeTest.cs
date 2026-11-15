@@ -387,6 +387,22 @@ namespace Rabron.Prototype.Editor
                 Check(CanReachControl(),
                       "Flanking physical cover must restore station sightline");
 
+                // The near-side flank above is intentionally exposed. This
+                // wider route must be genuinely quiet, not just covered:
+                // clear geometry to guard and station, but outside live FOV.
+                player.transform.position = new Vector3(-3.6f, 0.12f, 31f);
+                Physics.SyncTransforms();
+                CheckControlInReach();
+                Check(CanReachControl(),
+                      "Quiet left flank must reach the real guard-control station");
+                Check(WorldOcclusion.HasClearLine(
+                          guard.transform.position + Vector3.up * 1.5f,
+                          WorldOcclusion.UpperBodyPoint(player.transform),
+                          guard.transform, interactionHits, player.transform),
+                      "Quiet flank guard ray must be unobstructed, not hidden by cover");
+                Check(!guard.CanSee(player.transform),
+                      "Quiet flank must be outside the real guard vision cone");
+
                 player.transform.position = new Vector3(0f, 20f, 28f);
                 Physics.SyncTransforms();
                 Check(!guard.CanSee(player.transform),
