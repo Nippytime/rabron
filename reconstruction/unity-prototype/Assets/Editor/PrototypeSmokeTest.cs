@@ -214,6 +214,26 @@ namespace Rabron.Prototype.Editor
             Check(courier.BankBalance == 12,
                   "Lawful courier earnings were not depositable at the bank");
 
+            // Exercise the custody state through Unity's actual JSON
+            // serializer. An alarm alone is not the same as arrest.
+            var custody = new HeistSession();
+            custody.Scout();
+            custody.PutOnMask();
+            custody.StartHeist();
+            custody.TakeLoot("smoke-arrest-loot");
+            custody.RaiseAlarm();
+            custody.ArrestAfterAlarm();
+            custody = HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                JsonUtility.ToJson(custody.ExportSnapshot())));
+            Check(custody.Phase == HeistPhase.Arrested &&
+                  custody.CurrentRole == PlayerRole.Criminal &&
+                  custody.Loot.Count == 0 && custody.AlarmRaised,
+                  "Unity JSON lost the alarm/custody confiscation checkpoint");
+            custody.ReleaseFromCustody();
+            Check(custody.CurrentRole == PlayerRole.Civilian &&
+                  custody.Phase == HeistPhase.Idle && !custody.AlarmRaised,
+                  "Custody release must unlock lawful civilian gameplay");
+
             var session = new HeistSession();
             session.Scout();
             session.PutOnMask();
