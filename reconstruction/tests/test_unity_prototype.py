@@ -294,9 +294,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         )
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("player.GetComponent<CharacterController>()", guard)
-        self.assertIn("player.TransformPoint(body.center +", guard)
-        self.assertIn("body.height * 0.5f - body.radius * 0.5f", guard)
+        occlusion = read("WorldOcclusion.cs")
+        self.assertIn("WorldOcclusion.UpperBodyPoint(player)", guard)
+        self.assertIn("actor.GetComponent<CharacterController>()", occlusion)
+        self.assertIn("actor.TransformPoint(body.center +", occlusion)
+        self.assertIn("body.height * 0.5f - body.radius * 0.5f", occlusion)
         self.assertIn("delta.sqrMagnitude > DemoSightRange * DemoSightRange", guard)
         self.assertNotIn(
             "horizontal.sqrMagnitude > DemoSightRange * DemoSightRange", guard
@@ -325,6 +327,39 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Standing beside real warehouse cover must remain visible", editor)
         self.assertNotIn("UnityEngine.Object.DestroyImmediate(cover)", editor)
         self.assertIn("crouch behind low cover", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
+    def test_crouched_station_interactions_respect_live_capsule_and_cover(self):
+        occlusion = read("WorldOcclusion.cs")
+        guard = read("GuardSensor.cs")
+        director = read("PrototypeDirector.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("public static Vector3 UpperBodyPoint(Transform actor)", occlusion)
+        self.assertIn("actor.GetComponent<CharacterController>()", occlusion)
+        self.assertIn("body.center +", occlusion)
+        self.assertIn("body.height * 0.5f - body.radius * 0.5f", occlusion)
+        self.assertIn("actor.position + Vector3.up * 1.5f", occlusion)
+        self.assertIn("WorldOcclusion.UpperBodyPoint(player)", guard)
+        self.assertIn("WorldOcclusion.UpperBodyPoint(_player.transform)", director)
+        self.assertNotIn(
+            "_player.transform.position + Vector3.up * 1.5f", director
+        )
+
+        # This authored Editor regression targets actual generated cover and
+        # the live station geometry rather than a separate temporary barrier.
+        self.assertIn('root.Find("Warehouse stealth cover")', editor)
+        self.assertIn('marker => marker.Action == StationAction.ControlStaff', editor)
+        self.assertIn("WorldOcclusion.UpperBodyPoint(player.transform)", editor)
+        self.assertIn("WorldOcclusion.HasClearLine(", editor)
+        self.assertIn("Standing sightline should clear real cover", editor)
+        self.assertIn("Crouched station interaction cannot pass through", editor)
+        self.assertIn("Standing back up must restore the station sightline", editor)
+        self.assertIn("Flanking physical cover must restore station sightline", editor)
+        self.assertIn("station interactions", guide.lower())
         self.assertIn("not executed", guide.lower())
 
     def test_alarm_is_single_shot_and_requires_uncontrolled_staff(self):
