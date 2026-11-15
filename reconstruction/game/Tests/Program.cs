@@ -26,6 +26,9 @@ internal static class Program
             ConstructorRejectsUnknownRolesAndZones,
             SnapshotRejectsUnreachablePoliceEconomy,
             LaunderingRejectsUnrestorableTimestamps,
+            CourierDeliveryPaysOnceAndDepositsCleanCash,
+            CourierCargoPersistsAndRejectsUnreachableSaves,
+            CourierDeliveryOverflowIsAtomic,
         };
 
         foreach (Action test in tests)
@@ -488,6 +491,107 @@ internal static class Program
         Throws<InvalidOperationException>(() => restored.CompleteLaundering(0));
         restored.CompleteLaundering(1);
         Eq(25L, restored.CleanCash);
+    }
+
+    private static void CourierDeliveryPaysOnceAndDepositsCleanCash()
+    {
+        var game = new HeistSession();
+        game.OpenBankAccount();
+        Throws<InvalidOperationException>(() => game.DeliverCourierParcel(40));
+
+        game.PickUpCourierParcel();
+        True(game.CarryingCourierParcel);
+        Throws<InvalidOperationException>(() => game.PickUpCourierParcel());
+        Throws<InvalidOperationException>(() => game.DeliverCourierParcel(0));
+        Throws<InvalidOperationException>(() => game.DeliverCourierParcel(-1));
+        Eq(0L, game.CleanCash);
+        True(game.CarryingCourierParcel);
+
+        game.DeliverCourierParcel(40); // Fixture, not an original courier quote.
+        True(!game.CarryingCourierParcel);
+        Eq(40L, game.CleanCash);
+        Eq(0L, game.DirtyCash);
+        Eq(0L, game.CounterCash);
+        Throws<InvalidOperationException>(() => game.DeliverCourierParcel(40));
+        game.DepositCleanCash(40);
+        Eq(40L, game.BankBalance);
+
+        // Another reward requires another explicit pickup; no replay credit.
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(25);
+        Eq(25L, game.CleanCash);
+        Eq(40L, game.BankBalance);
+        Eq(HeistPhase.Idle, game.Phase);
+    }
+
+    private static void CourierCargoPersistsAndRejectsUnreachableSaves()
+    {
+        var game = new HeistSession();
+        game.PickUpCourierParcel();
+        Throws<InvalidOperationException>(() => game.Scout());
+        Throws<InvalidOperationException>(() => game.PutOnMask());
+        Throws<InvalidOperationException>(() => game.LeaveCity());
+
+        var checkpoint = game.ExportSnapshot();
+        var resumed = HeistSession.FromSnapshot(checkpoint);
+        True(resumed.CarryingCourierParcel);
+        Eq(0L, resumed.CleanCash);
+        resumed.DeliverCourierParcel(15);
+        Eq(15L, resumed.CleanCash);
+        Throws<InvalidOperationException>(() => resumed.DeliverCourierParcel(15));
+        // Mutating the exported checkpoint cannot affect the restored session.
+        checkpoint.CarryingCourierParcel = false;
+        Eq(15L, resumed.CleanCash);
+
+        void Reject(Action<HeistSessionSnapshot> mutate)
+        {
+            var forged = game.ExportSnapshot();
+            mutate(forged);
+            Throws<ArgumentException>(() => HeistSession.FromSnapshot(forged));
+        }
+
+        Reject(data => data.Zone = Zone.Desert);
+        Reject(data => data.Role = PlayerRole.Criminal);
+        Reject(data => data.Role = PlayerRole.Police);
+        Reject(data => data.Phase = HeistPhase.Scouted);
+        Reject(data => data.Phase = HeistPhase.Robbing);
+        Reject(data => data.Phase = HeistPhase.Laundered);
+
+        // Legacy v1 checkpoints have no cargo field, thus read as false.
+        var legacy = new HeistSession().ExportSnapshot();
+        legacy.CarryingCourierParcel = false;
+        True(!HeistSession.FromSnapshot(legacy).CarryingCourierParcel);
+
+        Throws<InvalidOperationException>(() =>
+            new HeistSession(Zone.Desert).PickUpCourierParcel());
+        Throws<InvalidOperationException>(() =>
+            new HeistSession(Zone.City, PlayerRole.Police).PickUpCourierParcel());
+        var criminal = new HeistSession();
+        criminal.PutOnMask();
+        Throws<InvalidOperationException>(() => criminal.PickUpCourierParcel());
+        var scouted = new HeistSession();
+        scouted.Scout();
+        Throws<InvalidOperationException>(() => scouted.PickUpCourierParcel());
+    }
+
+    private static void CourierDeliveryOverflowIsAtomic()
+    {
+        var game = new HeistSession();
+        game.OpenBankAccount();
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(long.MaxValue);
+        Eq(long.MaxValue, game.CleanCash);
+
+        game.PickUpCourierParcel();
+        Throws<OverflowException>(() => game.DeliverCourierParcel(1));
+        Eq(long.MaxValue, game.CleanCash);
+        True(game.CarryingCourierParcel);
+
+        game.DepositCleanCash(long.MaxValue);
+        game.DeliverCourierParcel(1);
+        Eq(1L, game.CleanCash);
+        Eq(long.MaxValue, game.BankBalance);
+        True(!game.CarryingCourierParcel);
     }
 
     private static HeistSession StartHeistWithOneItem()
