@@ -115,7 +115,9 @@ namespace Rabron.Prototype
             // Visual only. This does not credit money or change the game state.
             _cashPile.SetAmount(_session.CounterCash);
             _courierParcel.SetCarrying(_session.CarryingCourierParcel);
-            _hud.Render(_session, Objective(now), focused == null ? "" : focused.Label,
+            _hud.Render(_session, Objective(now),
+                        _player.IsDriving ? "Exit car after stopping" :
+                        focused == null ? "" : focused.Label,
                         Time.unscaledTime < _noticeUntil ? _notice : "");
         }
 
@@ -304,7 +306,7 @@ namespace Rabron.Prototype
                 HeistPhase.Idle when _session.CarryingCourierParcel
                     => "Deliver the parcel at the eastern kiosk, or return it to dispatch without payment.",
                 HeistPhase.Idle when _session.CurrentRole == PlayerRole.Civilian
-                    => "Choose a legal COURIER job to the west or SCOUT a heist to the north.",
+                    => "Try the parked CAR east of spawn, a legal COURIER job west, or SCOUT north.",
                 HeistPhase.Idle => "Travel to the warehouse to plan your next heist.",
                 HeistPhase.Scouted when _session.CurrentRole == PlayerRole.Civilian
                     => "Activate the red MASK marker beside the warehouse.",
