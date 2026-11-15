@@ -33,6 +33,73 @@ namespace Rabron.Prototype.Tests
             return presenters[0];
         }
 
+        [Test]
+        public void UnreadableCheckpointsMustSurviveLaterAutosaves()
+        {
+            // Never manipulate a developer's normal persistent demo save.
+            // The Windows runner uses -runTests and a unique temp directory.
+            if (!Array.Exists(Environment.GetCommandLineArgs(),
+                arg => string.Equals(arg, "-runTests",
+                                     StringComparison.OrdinalIgnoreCase)))
+                Assert.Ignore("File corruption test runs only in isolated -runTests mode.");
+
+            string primary = PrototypeSaveStore.SavePath;
+            string backup = primary + ".bak";
+            string temporary = primary + ".tmp";
+            byte[] originalPrimary = File.Exists(primary) ? File.ReadAllBytes(primary) : null;
+            byte[] originalBackup = File.Exists(backup) ? File.ReadAllBytes(backup) : null;
+            byte[] originalTemporary = File.Exists(temporary) ? File.ReadAllBytes(temporary) : null;
+
+            try
+            {
+                Directory.CreateDirectory(Path.GetDirectoryName(primary));
+                File.WriteAllText(primary, "{broken primary checkpoint");
+                File.WriteAllText(backup, "{broken backup checkpoint");
+                byte[] brokenPrimary = File.ReadAllBytes(primary);
+                byte[] brokenBackup = File.ReadAllBytes(backup);
+
+                var fresh = PrototypeSaveStore.Load(out string message);
+                Assert.That(message, Does.Contain("without saving"));
+                Assert.That(fresh.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(PrototypeSaveStore.TrySave(fresh, out string error),
+                            Is.False, "Auto-save must fail closed on corruption");
+                Assert.That(error, Does.Contain("Autosave disabled"));
+                Assert.That(File.ReadAllBytes(primary), Is.EqualTo(brokenPrimary),
+                            "Unreadable primary must survive auto-save unchanged");
+                Assert.That(File.ReadAllBytes(backup), Is.EqualTo(brokenBackup),
+                            "Unreadable backup must survive auto-save unchanged");
+
+                // Prove a genuinely valid fallback remains usable, and a
+                // new Load clears the session-only write block.
+                var knownGood = new HeistSession();
+                File.WriteAllText(backup, JsonUtility.ToJson(knownGood.ExportSnapshot()));
+                var recovered = PrototypeSaveStore.Load(out string recoveredMessage);
+                Assert.That(recoveredMessage, Does.Contain("recovered"));
+                Assert.That(recovered.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(PrototypeSaveStore.TrySave(recovered, out string saveError),
+                            Is.True, saveError);
+            }
+            finally
+            {
+                Restore(primary, originalPrimary);
+                Restore(backup, originalBackup);
+                Restore(temporary, originalTemporary);
+                // Do not leave a global write block affecting other tests.
+                PrototypeSaveStore.Load(out _);
+            }
+
+            void Restore(string path, byte[] bytes)
+            {
+                if (bytes == null)
+                {
+                    if (File.Exists(path))
+                        File.Delete(path);
+                }
+                else
+                    File.WriteAllBytes(path, bytes);
+            }
+        }
+
         [UnityTest]
         public IEnumerator SceneBootCreatesRuntimePlayerCameraHudAndStations()
         {
