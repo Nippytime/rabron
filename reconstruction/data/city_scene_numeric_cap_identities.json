@@ -1,0 +1,66 @@
+{
+  "bundle": "StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle",
+  "capped_count": 5,
+  "capped_objects": [
+    {
+      "display_name": "",
+      "path_id": "344196",
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "capped",
+      "truncation_reasons": [
+        "field_limit"
+      ],
+      "visible_numeric_field_count": 2048
+    },
+    {
+      "display_name": "",
+      "path_id": "344216",
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "capped",
+      "truncation_reasons": [
+        "field_limit"
+      ],
+      "visible_numeric_field_count": 2048
+    },
+    {
+      "display_name": "",
+      "path_id": "344248",
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "capped",
+      "truncation_reasons": [
+        "field_limit"
+      ],
+      "visible_numeric_field_count": 2048
+    },
+    {
+      "display_name": "",
+      "path_id": "344310",
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "capped",
+      "truncation_reasons": [
+        "field_limit"
+      ],
+      "visible_numeric_field_count": 2048
+    },
+    {
+      "display_name": "WaterQuadTreeData",
+      "path_id": "7968",
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf.sharedAssets",
+      "status": "capped",
+      "truncation_reasons": [
+        "field_limit"
+      ],
+      "visible_numeric_field_count": 2048
+    }
+  ],
+  "depth_limit": 32,
+  "field_limit": 2048,
+  "full_numeric_extraction_complete": false,
+  "monobehaviours_total": 14467,
+  "object_count": 366174,
+  "schema_version": 1,
+  "scope": "scoped object identities only; no original values, game formulas or media",
+  "size_bytes": 549566135,
+  "source_sha256": "5c06c4527fa48871b842e76d8dab5e37f9fde91da9b99a806270a763becadc7f",
+  "unparsed_count": 0
+}

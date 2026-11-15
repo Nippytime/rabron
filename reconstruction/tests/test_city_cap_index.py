@@ -134,6 +134,32 @@ class CityCapIndexTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     verify_index(altered, self.source)
 
+    def test_committed_five_original_cap_ids_match_measured_evidence(self):
+        path = ROOT / "data/city_scene_numeric_cap_identities.json"
+        self.assertTrue(path.is_file(), "Actual first-source artifact must be committed")
+        index = json.loads(path.read_text(encoding="utf-8"))
+        verify_index(index, self.source)
+        self.assertEqual(
+            [(item["serialized_file"], item["path_id"])
+             for item in index["capped_objects"]],
+            [
+                ("CAB-198a5be741d1a7bef84198e0c583d1cf", "344196"),
+                ("CAB-198a5be741d1a7bef84198e0c583d1cf", "344216"),
+                ("CAB-198a5be741d1a7bef84198e0c583d1cf", "344248"),
+                ("CAB-198a5be741d1a7bef84198e0c583d1cf", "344310"),
+                ("CAB-198a5be741d1a7bef84198e0c583d1cf.sharedAssets", "7968"),
+            ],
+        )
+        self.assertTrue(all(
+            item["truncation_reasons"] == ["field_limit"] and
+            item["visible_numeric_field_count"] == FIELDS and
+            item["status"] == "capped"
+            for item in index["capped_objects"]
+        ))
+        self.assertEqual(index["capped_objects"][-1]["display_name"],
+                         "WaterQuadTreeData")
+        self.assertFalse(index["full_numeric_extraction_complete"])
+
     def test_original_record_tampering_rejected(self):
         real = json.loads(CITY_LEDGER.read_text(encoding="utf-8"))
         source = next(x for x in real["scans"] if x["bundle"] == CITY)
