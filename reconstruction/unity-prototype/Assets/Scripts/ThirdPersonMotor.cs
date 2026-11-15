@@ -177,14 +177,14 @@ namespace Rabron.Prototype
                 Cursor.visible = false;
             }
 
-            // Look must run before the occupied-car branch returns. Camera
-            // orbit changes neither the car's steering nor the actor's yaw.
-            if (Cursor.lockState == CursorLockMode.Locked)
-            {
-                Vector2 look = _mouse.ReadValue<Vector2>() * 0.12f
-                    + _stick.ReadValue<Vector2>() * (120f * Time.deltaTime);
+            // Mouse movement needs captured cursor; gamepad right-stick
+            // must remain available after Escape releases it. Camera look
+            // runs before the occupied-car branch and never steers the car.
+            Vector2 look = ComposeLook(_mouse.ReadValue<Vector2>(),
+                _stick.ReadValue<Vector2>(),
+                Cursor.lockState == CursorLockMode.Locked, Time.deltaTime);
+            if (look.sqrMagnitude > 0f)
                 ApplyLookDelta(look);
-            }
 
             if (_vehicle != null)
             {
@@ -208,6 +208,18 @@ namespace Rabron.Prototype
             CollisionFlags collision = _character.Move(
                 (planar * speed + Vector3.up * _verticalVelocity) * Time.deltaTime);
             _verticalVelocity = ResolveCeiling(_verticalVelocity, collision);
+        }
+
+        // Pure look composition is used by runtime input and the real Unity
+        // Play Mode regression. Releasing the mouse cursor must never mute
+        // the gamepad right stick or redirect driving orbit into steering.
+        private static Vector2 ComposeLook(Vector2 mouseDelta, Vector2 gamepadStick,
+                                           bool cursorLocked, float deltaSeconds)
+        {
+            Vector2 mouseLook = cursorLocked ? mouseDelta * 0.12f : Vector2.zero;
+            Vector2 stickLook = Vector2.ClampMagnitude(gamepadStick, 1f)
+                * (120f * Mathf.Max(0f, deltaSeconds));
+            return mouseLook + stickLook;
         }
 
         private void ApplyLookDelta(Vector2 look)

@@ -338,6 +338,11 @@ its result can be claimed as verified.
 | Release mouse cursor | Escape | — |
 | Lock cursor again | Left click in the Game view | — |
 
+**Gamepad right stick stays active when the mouse cursor is unlocked** with
+Escape, on foot and while driving. Unlocking disables only mouse-driven camera
+movement; left click in the Game view recaptures mouse look. The gamepad
+does not require a mouse or a left click for camera movement.
+
 The independently authored motor uses a provisional jump height and gravity.
 Jumping requires ground contact and cancels upward velocity when the player
 hits a ceiling. The north-face gamepad button was selected to retain the
@@ -355,6 +360,7 @@ third-person camera follows the car. W/S and left-stick throttle drive forward
 or reverse, A/D and the stick steer, and Space/Y brakes. **Mouse and right stick
 look around independently while driving**: camera yaw orbits relative to the
 car's heading without steering it, with the same limited pitch as on foot.
+Gamepad look remains available even after Escape unlocks the mouse cursor.
 Once nearly stopped, **release and press E / A again on a later frame** to exit
 on a collision-clear side. The driving camera orbit resets on boarding and
 exiting; after a safe exit the walking heading matches the parked car.

@@ -917,6 +917,42 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn('"On-foot camera heading should match the parked car"', playmode)
         self.assertIn("mouse and right stick", guide.lower())
 
+    def test_gamepad_right_stick_works_with_unlocked_mouse_cursor(self):
+        motor = read("ThirdPersonMotor.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        hud = read("PrototypeHud.cs")
+
+        self.assertIn("private static Vector2 ComposeLook(", motor)
+        self.assertIn("Vector2 mouseLook = cursorLocked ? mouseDelta * 0.12f", motor)
+        self.assertIn("Vector2 stickLook = Vector2.ClampMagnitude(gamepadStick, 1f)", motor)
+        self.assertIn("120f * Mathf.Max(0f, deltaSeconds)", motor)
+        self.assertIn("return mouseLook + stickLook;", motor)
+        self.assertIn("Vector2 look = ComposeLook(_mouse.ReadValue<Vector2>(),", motor)
+        self.assertIn("_stick.ReadValue<Vector2>()", motor)
+        self.assertIn("Cursor.lockState == CursorLockMode.Locked, Time.deltaTime", motor)
+        self.assertIn("if (look.sqrMagnitude > 0f)\n                ApplyLookDelta(look);", motor)
+        self.assertNotIn(
+            "if (Cursor.lockState == CursorLockMode.Locked)\n            {\n"
+            "                Vector2 look", motor
+        )
+        self.assertLess(
+            motor.index("Vector2 look = ComposeLook("),
+            motor.index("if (_vehicle != null)\n            {\n"
+                        "                if (ExitPressAfterBoard"),
+        )
+        self.assertIn('GetMethod("ComposeLook", flags)', playmode)
+        self.assertIn("Right stick must still rotate the camera with released cursor",
+                      playmode)
+        self.assertIn("Unlocked mouse motion must not steer the camera", playmode)
+        self.assertIn("Locked cursor must retain both mouse and gamepad look",
+                      playmode)
+        self.assertIn("Gamepad look must not require a connected mouse", playmode)
+        self.assertIn("right stick", guide.lower())
+        self.assertIn("cursor", guide.lower())
+        self.assertIn("right stick", hud.lower())
+
     def test_car_board_press_cannot_same_frame_exit(self):
         motor = read("ThirdPersonMotor.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(

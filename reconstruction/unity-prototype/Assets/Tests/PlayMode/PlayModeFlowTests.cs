@@ -255,6 +255,33 @@ namespace Rabron.Prototype.Tests
                 new object[] { airborne, CollisionFlags.Above }), Is.EqualTo(airborne),
                 "Ceiling contact must preserve falling speed");
 
+            // Escape unlocks the desktop pointer but must not disable
+            // controller camera look. Exercise production input composition
+            // without requiring a synthetic physical gamepad in this test.
+            var composeLook = typeof(ThirdPersonMotor).GetMethod("ComposeLook", flags);
+            Assert.That(composeLook, Is.Not.Null, "Gamepad/mouse look composition missing");
+            var mouseDelta = new Vector2(80f, -60f);
+            var rightStick = new Vector2(0.5f, -0.25f);
+            var unlockedStick = (Vector2)composeLook.Invoke(null,
+                new object[] { mouseDelta, rightStick, false, 0.02f });
+            Assert.That(Vector2.Distance(unlockedStick, new Vector2(1.2f, -0.6f)),
+                        Is.LessThan(0.0001f),
+                        "Right stick must still rotate the camera with released cursor");
+            var unlockedMouseOnly = (Vector2)composeLook.Invoke(null,
+                new object[] { mouseDelta, Vector2.zero, false, 0.02f });
+            Assert.That(unlockedMouseOnly, Is.EqualTo(Vector2.zero),
+                        "Unlocked mouse motion must not steer the camera");
+            var lockedCombined = (Vector2)composeLook.Invoke(null,
+                new object[] { mouseDelta, rightStick, true, 0.02f });
+            Assert.That(Vector2.Distance(lockedCombined,
+                                        new Vector2(10.8f, -7.8f)),
+                        Is.LessThan(0.0001f),
+                        "Locked cursor must retain both mouse and gamepad look");
+            var unlockedWithoutMouse = (Vector2)composeLook.Invoke(null,
+                new object[] { Vector2.zero, rightStick, false, 0.02f });
+            Assert.That(unlockedWithoutMouse, Is.EqualTo(unlockedStick),
+                        "Gamepad look must not require a connected mouse");
+
             Assert.That(camera, Is.Not.Null, "No runtime follow camera");
             Assert.That(camera.isActiveAndEnabled, Is.True);
             Assert.That(hud, Is.Not.Null, "No runtime HUD");
