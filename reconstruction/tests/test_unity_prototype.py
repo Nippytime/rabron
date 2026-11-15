@@ -1022,7 +1022,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
 
         self.assertIn("private static bool _preserveUnreadableSaves;", store)
         self.assertIn("_preserveUnreadableSaves = false;", store)
-        self.assertIn("_preserveUnreadableSaves = File.Exists(primary) || File.Exists(backup);", store)
+        self.assertIn("_preserveUnreadableSaves = File.Exists(primary) ||", store)
+        self.assertIn("File.Exists(backup) || File.Exists(temporary);", store)
         self.assertIn("if (_preserveUnreadableSaves)", store)
         self.assertIn("Autosave disabled to preserve unreadable checkpoints.", store)
         self.assertIn("copy or move the existing save and backup files", store)
@@ -1049,6 +1050,41 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("move the save", guide.lower())
         self.assertIn("quarantine", guide.lower())
         self.assertIn("autosave", guide.lower())
+
+    def test_interrupted_first_save_stage_recovers_without_overwriting_data(self):
+        store = read("PrototypeSaveStore.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        load = store.split("public static HeistSession Load(", 1)[1].split(
+            "public static bool TrySave(", 1
+        )[0]
+        self.assertIn('string temporary = primary + ".tmp";', load)
+        self.assertIn("!File.Exists(primary) && !File.Exists(backup)", load)
+        self.assertIn("TryRead(temporary, out session)", load)
+        self.assertIn("File.Move(temporary, primary);", load)
+        self.assertNotIn("File.Copy(temporary, primary, overwrite: true)", load)
+        self.assertLess(
+            load.index("!File.Exists(primary) && !File.Exists(backup)"),
+            load.index("File.Move(temporary, primary);"),
+        )
+        self.assertIn("_preserveUnreadableSaves = true;", load)
+        self.assertIn("copy the .tmp file to safety and restart", load)
+        self.assertIn("File.Exists(backup) || File.Exists(temporary)", load)
+        self.assertIn("Preserve the .tmp checkpoint too.", load)
+        self.assertIn("File.WriteAllText(temporary,", playmode)
+        self.assertIn("resumed.CarryingCourierParcel, Is.True", playmode)
+        self.assertIn("File.ReadAllBytes(primary), Is.EqualTo(stagedBytes)", playmode)
+        self.assertIn("File.Exists(temporary), Is.False", playmode)
+        self.assertIn("File.ReadAllBytes(temporary), Is.EqualTo(badStage)", playmode)
+        self.assertIn("File.WriteAllBytes(temporary, stagedBytes)", playmode)
+        self.assertIn("File.ReadAllBytes(backup), Is.EqualTo(brokenBackup)", playmode)
+        self.assertIn("File.Delete(temporary);", playmode)
+        self.assertIn("staged", guide.lower())
+        self.assertIn("autosave", guide.lower())
+        self.assertIn("not executed", guide.lower())
 
     def test_unsaved_checkpoint_warning_remains_visible_in_live_hud(self):
         store = read("PrototypeSaveStore.cs")

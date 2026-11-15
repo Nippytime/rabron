@@ -281,10 +281,22 @@ minting extra currency. A timer that expired while the app was closed
 completes on the next gameplay update.
 
 The file is \`rabron-prototype-v1.json\` with a \`.bak\` previous checkpoint.
-The app saves via a temporary file and replacement, preserving the earlier
+The app saves via a staged `.tmp` file and replacement, preserving the earlier
 version on each completed write. It validates restored roles, stages, loot,
 balances, and any pending laundering payout/deadline; corrupt or unsupported
 checkpoints are rejected, with a previous valid backup used if available.
+
+If a crash interrupts the **first ever save** and neither a committed primary
+nor a backup exists, a valid staged `.tmp` checkpoint is promoted into the
+primary **without overwriting** anything, preserving the unfinished progress
+and its exact bytes. Committed primary/backup saves still take priority over
+staged data. An invalid orphan `.tmp` is **preserved, not overwritten**, with
+autosave disabled; if primary or backup is damaged, even a valid staged file
+cannot bypass corrupt-file protection. Copy **all** files, including any stage,
+to safety for manual recovery. If staged promotion itself fails, the state
+recovers in memory but saves stay disabled so the staged bytes survive.
+These are authored real Unity Play Mode filesystem regressions, **not executed**
+by hosted GitHub CI.
 If the backup is valid but the primary is unreadable, recovery first moves the
 damaged primary into a unique sibling **quarantine** file named
 `rabron-prototype-v1.json.corrupt-<random-id>`, then copies the validated

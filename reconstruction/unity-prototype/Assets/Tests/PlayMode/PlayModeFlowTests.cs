@@ -54,10 +54,64 @@ namespace Rabron.Prototype.Tests
             try
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(primary));
+                // Simulate interrupted FIRST write: only a valid staged .tmp
+                // survives, with neither committed primary nor backup.
+                if (File.Exists(primary)) File.Delete(primary);
+                if (File.Exists(backup)) File.Delete(backup);
+                if (File.Exists(temporary)) File.Delete(temporary);
+                var staged = new HeistSession();
+                staged.PickUpCourierParcel();
+                File.WriteAllText(temporary,
+                    JsonUtility.ToJson(staged.ExportSnapshot()));
+                byte[] stagedBytes = File.ReadAllBytes(temporary);
+                var resumed = PrototypeSaveStore.Load(out string stagedMessage);
+                Assert.That(stagedMessage, Does.Contain("interrupted first save"));
+                Assert.That(resumed.CarryingCourierParcel, Is.True,
+                    "A valid staged first checkpoint must restore unfinished cargo");
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.False);
+                Assert.That(File.Exists(temporary), Is.False,
+                    "Successful staged recovery must atomically consume the .tmp");
+                Assert.That(File.ReadAllBytes(primary), Is.EqualTo(stagedBytes),
+                    "Staged recovery must retain exact checkpoint bytes");
+                Assert.That(PrototypeSaveStore.TrySave(resumed, out string resumedError),
+                    Is.True, resumedError);
+                Assert.That(PrototypeSaveStore.Load(out _).CarryingCourierParcel,
+                    Is.True, "Promoted staged checkpoint must remain durably writable");
+
+                // An INVALID orphan stage must remain byte-for-byte intact.
+                // Startup must not silently overwrite its last evidence.
+                File.Delete(primary);
+                File.Delete(backup);
+                File.WriteAllText(temporary, "{truncated staged checkpoint");
+                byte[] badStage = File.ReadAllBytes(temporary);
+                var orphan = PrototypeSaveStore.Load(out string orphanMessage);
+                Assert.That(orphanMessage, Does.Contain("without saving"));
+                Assert.That(orphanMessage, Does.Contain(".tmp"));
+                Assert.That(orphan.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.True);
+                Assert.That(PrototypeSaveStore.TrySave(orphan, out _), Is.False);
+                Assert.That(File.ReadAllBytes(temporary), Is.EqualTo(badStage),
+                    "Invalid orphan stage must never be overwritten by autosave");
+                File.Delete(temporary);
+
                 File.WriteAllText(primary, "{broken primary checkpoint");
                 File.WriteAllText(backup, "{broken backup checkpoint");
                 byte[] brokenPrimary = File.ReadAllBytes(primary);
                 byte[] brokenBackup = File.ReadAllBytes(backup);
+
+                // With BOTH primary and backup damaged, even a valid stage
+                // must not bypass their protection: keep all three for manual
+                // recovery instead of rotating away the only evidence.
+                File.WriteAllBytes(temporary, stagedBytes);
+                var protectedStage = PrototypeSaveStore.Load(out string stageWarning);
+                Assert.That(protectedStage.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(stageWarning, Does.Contain("Preserve the .tmp"));
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.True);
+                Assert.That(PrototypeSaveStore.TrySave(protectedStage, out _), Is.False);
+                Assert.That(File.ReadAllBytes(temporary), Is.EqualTo(stagedBytes));
+                Assert.That(File.ReadAllBytes(primary), Is.EqualTo(brokenPrimary));
+                Assert.That(File.ReadAllBytes(backup), Is.EqualTo(brokenBackup));
+                File.Delete(temporary);
 
                 var fresh = PrototypeSaveStore.Load(out string message);
                 Assert.That(message, Does.Contain("without saving"));
