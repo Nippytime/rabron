@@ -52,6 +52,7 @@ $dirty = @(& git -C $repoRoot status --porcelain --untracked-files=no -- reconst
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {
     throw 'Tracked reconstruction source is dirty; commit and retry before acceptance.'
 }
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot
 
 function Assert-NonemptyFile([string]$path) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -79,13 +80,21 @@ $playmodeResults = Join-Path $logs 'playmode-results.xml'
 $playmodeLog = Join-Path $logs 'playmode-tests.log'
 $exe = Join-Path $project 'Builds\RabronPrototype.exe'
 $data = Join-Path $project 'Builds\RabronPrototype_Data'
+$scene = Join-Path $project 'Assets/Scenes/Prototype.unity'
 
 # These existing runners each independently require a real Unity exit
 # code plus a valid fresh log/expected token or actual NUnit result.
 & (Join-Path $PSScriptRoot 'Verify-Unity.ps1') -EditorPath $EditorPath
 Assert-NonemptyFile $smoke | Out-Null
 Copy-Item -LiteralPath $smoke -Destination $editorLogCopy
+# The Editor intentionally generates its single bootstrap scene. It is not
+# Git-tracked; fingerprint the actual scene used by every subsequent gate.
+$sceneAtSmoke = File-Summary $scene
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot
 & (Join-Path $PSScriptRoot 'Verify-PlayMode.ps1') -EditorPath $EditorPath
+if ((File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256) {
+    throw 'Generated Unity scene changed after the Editor smoke gate.'
+}
 Assert-NonemptyFile $playmodeResults | Out-Null
 Assert-NonemptyFile $playmodeLog | Out-Null
 
@@ -109,6 +118,10 @@ if (-not (Test-Path -LiteralPath $data -PathType Container) -or
 $dirtyAfter = @(& git -C $repoRoot status --porcelain --untracked-files=no -- reconstruction)
 if ($LASTEXITCODE -ne 0 -or $dirtyAfter.Count -gt 0) {
     throw 'Unity modified tracked reconstruction files; review changes before acceptance.'
+}
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot
+if ((File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256) {
+    throw 'Generated Unity scene changed after the Windows build gate.'
 }
 
 [xml]$xml = Get-Content -LiteralPath $playmodeResults -Raw
@@ -136,6 +149,7 @@ $manifest = [ordered]@{
     playmode_total = $testCount
     playmode_passed = $passedCount
     artifacts = [ordered]@{
+        generated_scene = $sceneAtSmoke
         editor_smoke_log = File-Summary $editorLogCopy
         playmode_nunit_xml = File-Summary $playmodeResults
         playmode_editor_log = File-Summary $playmodeLog
