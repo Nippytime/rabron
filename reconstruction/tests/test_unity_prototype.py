@@ -852,10 +852,10 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("StationAction.EnterCity => !city,", director)
         self.assertIn("StationAction.OpenBank => city && civilian", director)
         self.assertIn("CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian", core)
+        self.assertIn("if (_session.CurrentZone == Zone.Desert)", director)
         self.assertIn(
-            'if (_session.CurrentZone == Zone.Desert)\\n'
-            '                return "OUTSIDE CITY: use the purple RETURN TO CITY marker nearby',
-            director.replace("\\r\\n", "\\n"),
+            'return "OUTSIDE CITY: use the purple RETURN TO CITY marker nearby',
+            director,
         )
         self.assertLess(
             director.index("if (_session.CurrentZone == Zone.Desert)"),
