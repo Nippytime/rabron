@@ -74,6 +74,7 @@ namespace Rabron.Prototype.Tests
             var hud = UnityEngine.Object.FindFirstObjectByType<PrototypeHud>();
             var cash = FindCashPresenter();
             var guard = UnityEngine.Object.FindFirstObjectByType<GuardSensor>();
+            var car = UnityEngine.Object.FindFirstObjectByType<PrototypeVehicle>();
             var stations = UnityEngine.Object.FindObjectsByType<InteractionMarker>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None);
 
@@ -126,7 +127,10 @@ namespace Rabron.Prototype.Tests
                         Is.GreaterThan(0), "HUD labels were not attached");
             Assert.That(guard, Is.Not.Null, "No guard sensor in runtime scene");
             Assert.That(cash, Is.Not.Null, "No collectible physical counter money");
-            Assert.That(stations.Length, Is.EqualTo(20));
+            Assert.That(stations.Length, Is.EqualTo(21));
+            Assert.That(car, Is.Not.Null, "No original practice car");
+            Assert.That(car.GetComponent<CharacterController>(), Is.Not.Null);
+            Assert.That(car.Occupied, Is.False);
             var parcel = motor.GetComponentInChildren<CourierParcelPresenter>(true);
             Assert.That(parcel, Is.Not.Null, "No physical courier cargo visual");
             Assert.That(parcel.GetComponent<Collider>().enabled, Is.False,
@@ -161,6 +165,10 @@ namespace Rabron.Prototype.Tests
             var motor = UnityEngine.Object.FindFirstObjectByType<ThirdPersonMotor>();
             Assert.That(motor, Is.Not.Null);
             var originalPosition = motor.transform.position;
+            var car = UnityEngine.Object.FindFirstObjectByType<PrototypeVehicle>();
+            Assert.That(car, Is.Not.Null);
+            var carPosition = car.transform.position;
+            var carRotation = car.transform.rotation;
             var simulated = new HeistSession();
             var cash = FindCashPresenter();
             Assert.That(cash, Is.Not.Null);
@@ -181,6 +189,39 @@ namespace Rabron.Prototype.Tests
                 Assert.That(cash.IsVisible, Is.False);
                 Assert.That(FindCashPresenter(), Is.SameAs(cash),
                             "Hidden counter money must remain discoverable");
+
+                // Board and leave the actual collider-backed car through
+                // production station dispatch, without changing money or role.
+                var driver = new HeistSession();
+                field.SetValue(director, driver);
+                MethodInfo availableVehicle = typeof(PrototypeDirector).GetMethod(
+                    "Available", PrivateInstance);
+                Assert.That(availableVehicle, Is.Not.Null);
+                Assert.That((bool)availableVehicle.Invoke(director,
+                    new object[] { StationAction.VehicleEnter }), Is.True);
+                Interact(StationAction.VehicleEnter);
+                Assert.That(motor.IsDriving && car.Occupied, Is.True);
+                Assert.That(motor.GetComponent<CharacterController>().enabled, Is.False);
+                Assert.That((bool)availableVehicle.Invoke(director,
+                    new object[] { StationAction.VehicleEnter }), Is.False);
+                car.Drive(new Vector2(0f, 1f), false, 0.1f);
+                Assert.That(car.Speed, Is.GreaterThan(0f),
+                            "Throttle must accelerate the vehicle");
+                Assert.That(motor.TryExitVehicle(), Is.False,
+                            "Moving car must prevent an unsafe exit");
+                car.Drive(Vector2.zero, true, 0.3f);
+                Assert.That(car.Speed, Is.EqualTo(0f).Within(0.001f),
+                            "Brake must stop the car");
+                Physics.SyncTransforms();
+                Assert.That(motor.TryExitVehicle(), Is.True,
+                            "Stationary car must allow a collision-clear exit");
+                Assert.That(motor.IsDriving || car.Occupied, Is.False);
+                Assert.That(motor.GetComponent<CharacterController>().enabled, Is.True);
+                Assert.That(driver.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(driver.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
+                Assert.That(driver.CleanCash, Is.EqualTo(0L));
+                Assert.That(driver.DirtyCash, Is.EqualTo(0L));
+                Assert.That(driver.BankBalance, Is.EqualTo(0L));
 
                 // The lawful civilian path must be actionable through the
                 // production world marker dispatcher, without a robbery.
@@ -315,6 +356,12 @@ namespace Rabron.Prototype.Tests
             finally
             {
                 field.SetValue(director, original);
+                if (motor.IsDriving)
+                    motor.TryExitVehicle();
+                car.EndDriving();
+                car.GetComponent<CharacterController>().enabled = false;
+                car.transform.SetPositionAndRotation(carPosition, carRotation);
+                car.GetComponent<CharacterController>().enabled = true;
                 motor.WarpTo(originalPosition);
                 cash.SetAmount(original.CounterCash);
                 parcel.SetCarrying(original.CarryingCourierParcel);
