@@ -32,7 +32,7 @@ jobs:
       - name: Strict original Wwise source ledger and pointer check
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_cap_index plan --ledger reconstruction/data/extraction_coverage.json
+          python -m reconstruction.tools.wwise_cap_index plan --ledger reconstruction/data/extraction_coverage.json
           python -m unittest discover -s reconstruction/tests -p test_wwise_cap_index.py -v
 
   inspect:
@@ -54,7 +54,7 @@ jobs:
       - name: Verify exact Git LFS pointer before fetching original bytes
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_cap_index plan --ledger reconstruction/data/extraction_coverage.json
+          python -m reconstruction.tools.wwise_cap_index plan --ledger reconstruction/data/extraction_coverage.json
       - name: Fetch only the original 170 MB Wwise bundle
         run: |
           set -euo pipefail
@@ -67,7 +67,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_cap_index scan --ledger reconstruction/data/extraction_coverage.json --output "$RUNNER_TEMP/wwise-cap-index.json" &
+          python -m reconstruction.tools.wwise_cap_index scan --ledger reconstruction/data/extraction_coverage.json --output "$RUNNER_TEMP/wwise-cap-index.json" &
           scan_pid=$!
           trap 'kill "$scan_pid" 2>/dev/null || true' EXIT
           while kill -0 "$scan_pid" 2>/dev/null; do
@@ -111,4 +111,4 @@ jobs:
       - name: Strict Wwise original 274 caps plus one unparsed reconciliation
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_cap_index reconcile --ledger reconstruction/data/extraction_coverage.json --index "$RUNNER_TEMP/wwise-cap-index.json"
+          python -m reconstruction.tools.wwise_cap_index reconcile --ledger reconstruction/data/extraction_coverage.json --index "$RUNNER_TEMP/wwise-cap-index.json"
