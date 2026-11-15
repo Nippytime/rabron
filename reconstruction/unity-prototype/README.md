@@ -143,13 +143,22 @@ Editor smoke, Play Mode, build and Windows Player startup logs plus NUnit XML;
 the manifest records the tested Git HEAD, generated scene SHA-256, configured
 Editor version, test count, executable SHA-256, and SHA-256 for each log/result
 file. The Windows Player smoke requires a clean exit code and a runtime marker
-written after the actual packaged Player boots its procedural director,
-movement motor, HUD, and all 21 unique interaction station actions.
+written only after the actual packaged Player boots its procedural
+director, movement motor, follow camera, guard, collider-backed vehicle,
+physical cash and courier presenters, HUD, original generated audio and
+all 21 unique interaction station actions. The same probe also writes,
+reloads, atomically replaces and reloads a **real isolated checkpoint**,
+checking a lawful courier delivery, clean bank balance and the previous
+backup checkpoint. A missing/invalid replacement or missing backup fails
+the smoke rather than producing a green marker.
 
 The built Player is launched in `-batchmode -nographics` using an opt-in
 `-rabronPlayerSmoke` flag, with a finite timeout and a fresh `-logFile`.
-The smoke invocation uses an isolated, per-process temporary save location,
-not normal demo checkpoints. This automated **headless** startup probe is
+The smoke invocation first confirms it is writing inside a unique
+`rabron-player-smoke` subdirectory of Unity's temporary cache. It refuses
+any other save location and only removes that verified invocation directory
+afterward; it **never writes or removes normal demo checkpoints**. This
+automated **headless** startup and persistence probe is
 **not a manual** or visually rendered gameplay test; it cannot validate
 graphics, camera interaction, human controls, real vehicle feel or windowed
 performance. A timeout, crash, missing marker or missing log rejects the
