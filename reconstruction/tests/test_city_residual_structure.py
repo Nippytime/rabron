@@ -1,5 +1,6 @@
 """Synthetic fail-closed tests for original city residual structure metadata."""
 import copy
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -114,6 +115,31 @@ class ResidualCityShapeTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "inventory changed"):
                 scan_city({"objects_by_type": {"MonoBehaviour": 4}}, EXPECTED_IDS,
                           loader=loader)
+
+    def test_first_original_source_artifact_exact_and_still_incomplete(self):
+        path = ROOT / "data/city_residual_structure.json"
+        self.assertTrue(path.is_file(), "Original-byte Action artifact must be committed")
+        raw = path.read_bytes()
+        self.assertEqual(len(raw), 4755)
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),
+                         "aecf8a6f32b292ba4114aaf0d4126d0a2d007ee4eb7e4f2499565ee7730b857c")
+        report = json.loads(raw)
+        verify_report(report, EXPECTED_IDS)
+        self.assertEqual(report["numeric_caps_resolved"], 0)
+        self.assertIs(report["numeric_extraction_complete"], False)
+        self.assertEqual([row["root_member_count"] for row in report["outcomes"]],
+                         [9, 5, 6])
+        self.assertEqual([row["object_byte_size"] for row in report["outcomes"]],
+                         [523360, 507228, 673360])
+        members = [
+            {field["field"]: field["element_count"] for field in row["fields"]}
+            for row in report["outcomes"]
+        ]
+        self.assertEqual(members[0]["<Renderers>k__BackingField"], 41623)
+        self.assertEqual(members[0]["<HidingObjectRenderers>k__BackingField"], 1986)
+        self.assertEqual(members[1]["<MeshRenderers>k__BackingField"], 42266)
+        self.assertEqual(members[2]["Nodes"], 16810)
+        self.assertEqual(members[2]["RootNodeIds"], 225)
 
     def test_strict_source_report_rejects_forgery_and_payload_leaks(self):
         report, *_ = self._fake_scan()
