@@ -63,6 +63,7 @@ namespace Rabron.Prototype
             LastWriteFailed = false;
             string primary = SavePath;
             string backup = primary + ".bak";
+            string temporary = primary + ".tmp";
             Debug.Log("Rabron demo save path: " + primary);
 
             if (TryRead(primary, out HeistSession session))
@@ -102,10 +103,38 @@ namespace Rabron.Prototype
                 return session;
             }
 
-            _preserveUnreadableSaves = File.Exists(primary) || File.Exists(backup);
+            // A crash during the very first write may leave ONLY a complete
+            // staged .tmp checkpoint. Recover it without overwriting any
+            // committed save or backup; existing damaged files stay protected.
+            if (!File.Exists(primary) && !File.Exists(backup) &&
+                TryRead(temporary, out session))
+            {
+                message = "Recovered interrupted first save from temporary checkpoint.";
+                try
+                {
+                    File.Move(temporary, primary);
+                }
+                catch (Exception exception)
+                {
+                    // Keep the staged original intact and prevent the next
+                    // auto-save from replacing the only recoverable copy.
+                    _preserveUnreadableSaves = true;
+                    message = "Temporary checkpoint recovered in memory, but repair failed. " +
+                              "Saves are paused; copy the .tmp file to safety and restart.";
+                    Debug.LogWarning("Could not promote temporary save: " + exception.Message);
+                }
+                return session;
+            }
+
+            // A truncated .tmp is still potential recovery evidence. A valid
+            // staged file alongside unreadable primary/backup must NOT bypass
+            // their protection or be silently overwritten on the next save.
+            _preserveUnreadableSaves = File.Exists(primary) ||
+                                       File.Exists(backup) || File.Exists(temporary);
             message = _preserveUnreadableSaves
                 ? "Saved progress is unreadable. Starting fresh without saving; " +
-                  "copy or move the existing save and backup files, then restart."
+                  "copy or move the existing save and backup files, then restart." +
+                  (File.Exists(temporary) ? " Preserve the .tmp checkpoint too." : "")
                 : "New local demo session started.";
             if (_preserveUnreadableSaves)
                 Debug.LogWarning(message + " Location: " + primary);
