@@ -285,6 +285,15 @@ The app saves via a temporary file and replacement, preserving the earlier
 version on each completed write. It validates restored roles, stages, loot,
 balances, and any pending laundering payout/deadline; corrupt or unsupported
 checkpoints are rejected, with a previous valid backup used if available.
+If the backup is valid but the primary is unreadable, recovery first moves the
+damaged primary into a unique sibling **quarantine** file named
+`rabron-prototype-v1.json.corrupt-<random-id>`, then copies the validated
+backup into the now-vacant primary path **without overwriting** anything.
+This preserves the damaged file's original bytes for potential manual recovery
+instead of silently erasing them. The quarantine is not auto-deleted; store it
+safely if investigating lost progress. If either the quarantine move or copy
+fails, the game may resume from backup in memory but **autosave stays disabled**
+so that the validated backup cannot be lost during save rotation.
 If **both** save and backup are unreadable, the demo starts a fresh in-memory
 session but **autosave is disabled** to avoid overwriting the damaged files.
 Copy or move the save and backup files to a safe location, then restart the
