@@ -157,21 +157,45 @@ class RangeStream(RawIOBase):
         return data
 
 
+def _parse_without_unused_container_index(reader, original, assetbundle_type, *args, **kwargs):
+    """Keep original AssetBundle objects counted without eagerly indexing media.
+
+    UnityPy's SerializedFile.__init__ invokes parse_as_object() only to build
+    its optional container lookup. W1-AH does not inspect that lookup or claim
+    its contents were verified. No object headers or MonoBehaviour data are
+    removed; all other parse calls retain standard UnityPy behavior.
+    """
+    if reader.type != assetbundle_type:
+        return original(reader, *args, **kwargs)
+    print("WWISE_INVENTORY_CONTAINER_INDEX_NOT_REQUESTED "
+          f"path_id={reader.path_id}", flush=True)
+    return SimpleNamespace(m_Container=[], m_PreloadTable=[])
+
+
 @contextmanager
 def streamed_unityfs():
-    """Temporarily replace UnityPy's eager UnityFS file-copying operations.
+    """Temporarily replace eager UnityFS reads and unused container indexing.
 
-    Only used for the original Wwise battle source. All other bundle scanners
-    keep the standard UnityPy path. The original implementations are restored
-    even when decoding fails; errors are never suppressed or counted as scans.
+    The Wwise inventory counts all Unity object headers and parses every
+    MonoBehaviour. UnityPy also eagerly expands the non-MonoBehaviour
+    AssetBundle container index during SerializedFile initialization, which
+    this inventory never consults. Avoid that unbounded allocation, but keep
+    every original AssetBundle object in the counted metadata. Restore all
+    UnityPy methods on error; missing/capped MonoBehaviours still fail closed.
     """
-    from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld
-    from UnityPy.files import BundleFile, File, SerializedFile
+    from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld, ClassIDType
+    from UnityPy.files import BundleFile, File, ObjectReader, SerializedFile
     from UnityPy.helpers import ArchiveStorageManager, ImportHelper
     from UnityPy.streams import EndianBinaryReader
 
     old_fs = BundleFile.read_fs
     old_files = File.read_files
+    old_parse_object = ObjectReader.parse_as_object
+
+    def parse_as_object(reader, *args, **kwargs):
+        return _parse_without_unused_container_index(
+            reader, old_parse_object, ClassIDType.AssetBundle, *args, **kwargs
+        )
 
     def read_fs(self, reader):
         if self.signature != "UnityFS":
@@ -242,12 +266,18 @@ def streamed_unityfs():
         if not isinstance(getattr(reader, "stream", None), (BlockStream, RangeStream)):
             return old_files(self, reader, nodes)
         for node in nodes:
+            print(f"WWISE_INVENTORY_NODE_BEGIN name={node.path!r} "
+                  f"size_bytes={node.size}", flush=True)
             sub_reader = EndianBinaryReader(
                 RangeStream(reader.stream, node.offset, node.size)
             )
             parsed = ImportHelper.parse_file(
                 sub_reader, self, node.path, is_dependency=self.is_dependency
             )
+            kind = "serialized" if isinstance(parsed, SerializedFile) else "resource"
+            object_count = len(parsed.objects) if kind == "serialized" else 0
+            print(f"WWISE_INVENTORY_NODE_END name={node.path!r} "
+                  f"kind={kind} objects={object_count}", flush=True)
             if isinstance(parsed, (EndianBinaryReader, SerializedFile)):
                 if self.environment:
                     self.environment.register_cab(node.path, parsed)
@@ -256,8 +286,10 @@ def streamed_unityfs():
 
     BundleFile.read_fs = read_fs
     File.read_files = read_files
+    ObjectReader.parse_as_object = parse_as_object
     try:
         yield
     finally:
-        BundleFile.read_fs = old_fs
+        ObjectReader.parse_as_object = old_parse_object
         File.read_files = old_files
+        BundleFile.read_fs = old_fs

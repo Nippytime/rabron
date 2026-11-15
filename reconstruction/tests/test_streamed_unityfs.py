@@ -5,10 +5,14 @@ evidence; full binary verification still takes place on GitHub Actions.
 """
 import io
 import unittest
+from contextlib import redirect_stdout
+from enum import Enum
 from types import SimpleNamespace
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
-from reconstruction.tools.streamed_unityfs import BlockStream, RangeStream, MAX_BLOCK
+from reconstruction.tools.streamed_unityfs import (
+    BlockStream, RangeStream, MAX_BLOCK, _parse_without_unused_container_index,
+)
 
 
 class Reader:
@@ -73,6 +77,28 @@ class StreamedUnityfsTests(unittest.TestCase):
             self.assertEqual(self.backing.read(1), b"b")
             self.assertEqual(self.called, [0, 1, 0])
             self.assertLessEqual(self.backing.cache_bytes, 4)
+
+    def test_wwise_inventory_does_not_eagerly_parse_non_numeric_assetbundle_index(self):
+        class Kind(Enum):
+            AssetBundle = 1
+            MonoBehaviour = 2
+
+        original = Mock(return_value="parsed")
+        bundle = SimpleNamespace(type=Kind.AssetBundle, path_id=42)
+        with redirect_stdout(io.StringIO()) as output:
+            index = _parse_without_unused_container_index(
+                bundle, original, Kind.AssetBundle
+            )
+        self.assertEqual(index.m_Container, [])
+        self.assertEqual(index.m_PreloadTable, [])
+        self.assertIn("INDEX_NOT_REQUESTED path_id=42", output.getvalue())
+        original.assert_not_called()
+
+        monobehaviour = SimpleNamespace(type=Kind.MonoBehaviour, path_id=43)
+        self.assertEqual(_parse_without_unused_container_index(
+            monobehaviour, original, Kind.AssetBundle, check_read=True
+        ), "parsed")
+        original.assert_called_once_with(monobehaviour, check_read=True)
 
     def test_embedded_file_reads_only_selected_range(self):
         segment = RangeStream(self.backing, 2, 3)
