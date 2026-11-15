@@ -51,6 +51,7 @@ namespace Rabron.Prototype.Tests
             byte[] originalTemporary = File.Exists(temporary) ? File.ReadAllBytes(temporary) : null;
             string retainedDamagedPrimary = null;
             string retainedStagedCheckpoint = null;
+            string retainedDamagedBackup = null;
 
             try
             {
@@ -194,6 +195,35 @@ namespace Rabron.Prototype.Tests
                             Is.False,
                     "Loading must prefer the committed checkpoint, not the leftover stage");
 
+                // Primary is valid but the previous backup is unreadable.
+                // Rotating must quarantine the old backup before replacing
+                // it, rather than destroying its original recovery evidence.
+                byte[] committedBeforeRotation = File.ReadAllBytes(primary);
+                File.WriteAllText(backup, "{unreadable previous backup");
+                byte[] unreadableBackup = File.ReadAllBytes(backup);
+                var nextCommitted = new HeistSession();
+                nextCommitted.PickUpCourierParcel();
+                Assert.That(PrototypeSaveStore.TrySave(nextCommitted,
+                            out string rotateError), Is.True, rotateError);
+                string[] damagedBackups = Directory.GetFiles(
+                    Path.GetDirectoryName(primary),
+                    Path.GetFileName(backup) + ".corrupt-*");
+                retainedDamagedBackup = damagedBackups.Length == 1
+                    ? damagedBackups[0] : null;
+                Assert.That(damagedBackups.Length, Is.EqualTo(1),
+                    "Unreadable older backup must be quarantined once");
+                Assert.That(File.ReadAllBytes(retainedDamagedBackup),
+                            Is.EqualTo(unreadableBackup),
+                    "Rotation must preserve every byte of the old unreadable backup");
+                Assert.That(File.ReadAllBytes(backup),
+                            Is.EqualTo(committedBeforeRotation),
+                    "New backup must hold the previously valid primary checkpoint");
+                Assert.That(PrototypeSaveStore.Load(out _).CarryingCourierParcel,
+                            Is.True, "New primary must restore the successful courier save");
+                Assert.That(File.ReadAllBytes(retainedStagedCheckpoint),
+                            Is.EqualTo(uncommittedBytes),
+                    "Backup rotation must not destroy older uncommitted stage evidence");
+
                 // Reproduce a normal file write failure without touching an
                 // actual player's save or relying on machine permissions:
                 // an existing directory at the atomic .tmp path refuses
@@ -319,6 +349,8 @@ namespace Rabron.Prototype.Tests
                     File.Delete(retainedDamagedPrimary);
                 if (retainedStagedCheckpoint != null && File.Exists(retainedStagedCheckpoint))
                     File.Delete(retainedStagedCheckpoint);
+                if (retainedDamagedBackup != null && File.Exists(retainedDamagedBackup))
+                    File.Delete(retainedDamagedBackup);
                 // Do not leave a global write block affecting other tests.
                 PrototypeSaveStore.Load(out _);
             }
