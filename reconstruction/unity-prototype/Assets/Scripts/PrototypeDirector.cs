@@ -22,6 +22,7 @@ namespace Rabron.Prototype
         private CashPilePresenter _cashPile = null!;
         private CourierParcelPresenter _courierParcel = null!;
         private PrototypeHud _hud = null!;
+        private PrototypeAudioFeedback _audio = null!;
         private IReadOnlyList<InteractionMarker> _stations = null!;
         private string _notice = "";
         private float _noticeUntil;
@@ -29,6 +30,7 @@ namespace Rabron.Prototype
 
         private void Awake()
         {
+            _audio = gameObject.AddComponent<PrototypeAudioFeedback>();
             _balance = Resources.Load<PrototypeBalance>("DemoEconomy");
             if (_balance == null)
             {
@@ -62,6 +64,7 @@ namespace Rabron.Prototype
                 _session.LaunderingReadyAt <= now)
             {
                 _session.CompleteLaundering(now);
+                _audio.PlaySuccess();
                 // Any failed save notice must take precedence over completion.
                 Notice("Laundering complete. Leave the city to clear criminal status.");
                 SaveProgress();
@@ -72,6 +75,7 @@ namespace Rabron.Prototype
                 _guard.CanSee(_player.transform))
             {
                 _session.RaiseAlarm();
+                _audio.PlayAlarm();
                 SaveProgress();
                 Notice("ALARM RAISED! The guard spotted you. Escape with any loot.");
             }
@@ -86,6 +90,7 @@ namespace Rabron.Prototype
                 _guard.CanSee(_player.transform))
             {
                 _session.ArrestAfterAlarm();
+                _audio.PlayRejected();
                 _player.WarpTo(CustodySpawn);
                 SaveProgress();
                 Notice("ARRESTED. Carried loot and dirty cash confiscated. Release at custody desk.");
@@ -95,12 +100,16 @@ namespace Rabron.Prototype
             if (_player.InteractPressed)
             {
                 if (focused == null)
+                {
+                    _audio.PlayRejected();
                     Notice("Get closer to an available station.");
+                }
                 else
                 {
                     try
                     {
                         Perform(focused, now);
+                        _audio.PlaySuccess();
                         Notice("Completed: " + focused.Label);
                         SaveProgress();
                     }
@@ -108,6 +117,7 @@ namespace Rabron.Prototype
                                                   error is ArgumentException ||
                                                   error is OverflowException)
                     {
+                        _audio.PlayRejected();
                         Notice(error.Message);
                     }
                 }

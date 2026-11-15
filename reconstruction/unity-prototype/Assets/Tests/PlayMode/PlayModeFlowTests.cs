@@ -260,6 +260,33 @@ namespace Rabron.Prototype.Tests
             Assert.That(hud, Is.Not.Null, "No runtime HUD");
             Assert.That(hud.GetComponent<UIDocument>().rootVisualElement.childCount,
                         Is.GreaterThan(0), "HUD labels were not attached");
+
+            // Original procedural feedback must be part of the runtime scene.
+            // This checks sound data without claiming human audible playback.
+            var feedback = director.GetComponent<PrototypeAudioFeedback>();
+            Assert.That(feedback, Is.Not.Null, "No original action audio presenter");
+            var output = feedback.GetComponent<AudioSource>();
+            Assert.That(output, Is.Not.Null);
+            Assert.That(output.playOnAwake || output.loop, Is.False,
+                        "UI feedback must only play bounded one-shot cues");
+            foreach (string name in new[] { "_success", "_rejected", "_alarm" })
+            {
+                var clipField = typeof(PrototypeAudioFeedback).GetField(name, PrivateInstance);
+                Assert.That(clipField, Is.Not.Null);
+                var clip = (AudioClip)clipField.GetValue(feedback);
+                Assert.That(clip, Is.Not.Null, "Missing generated audio cue " + name);
+                Assert.That(clip.samples, Is.GreaterThan(1024));
+                Assert.That(clip.channels, Is.EqualTo(1));
+                Assert.That(clip.frequency, Is.EqualTo(24000));
+                var samples = new float[512];
+                Assert.That(clip.GetData(samples, clip.samples / 2 - 256), Is.True);
+                float energy = 0f;
+                foreach (float sample in samples)
+                    energy += Mathf.Abs(sample);
+                Assert.That(energy, Is.GreaterThan(0.1f),
+                            "Generated cue must contain non-silent PCM samples");
+            }
+
             Assert.That(guard, Is.Not.Null, "No guard sensor in runtime scene");
             Assert.That(cash, Is.Not.Null, "No collectible physical counter money");
             Assert.That(stations.Length, Is.EqualTo(21));
