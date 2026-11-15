@@ -86,6 +86,12 @@ class ResidualCityShapeTests(unittest.TestCase):
              patch("reconstruction.tools.city_residual_structure.TOTAL_OBJECTS", 4):
             report = scan_city(measured, EXPECTED_IDS, loader=loader)
             verify_report(report, EXPECTED_IDS)
+        # Synthetic source headers are small, but standalone reconciliation
+        # must use the actual immutable original source header count contract.
+        from reconstruction.tools.city_residual_structure import MONOS, TOTAL_OBJECTS
+        report["source_monobehaviours"] = MONOS
+        report["source_object_count"] = TOTAL_OBJECTS
+        verify_report(report, EXPECTED_IDS)
         return report, readers, measured, loader
 
     def test_bounded_three_scoped_ids_and_complete_header_count(self):
