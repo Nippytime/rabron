@@ -47,6 +47,25 @@ The local gameplay package still resolves because it also lives inside
    must be installed through Unity Hub; this repository does not contain
    a prebuilt EXE.
 
+## Original gameplay sound feedback
+
+The prototype now generates three short, **original sound cues** in memory
+when the procedural scene starts. A rising confirmation tone plays when a
+station action succeeds or laundering completes, a lower tone signals
+invalid or out-of-range interactions and custody consequences, and a distinct
+alarm sweep plays when the warehouse guard triggers security. The tones use
+Unity's built-in AudioSource, not copied reference-game music, sound effects,
+asset bundles, or external downloads. All PCM clips are synthesized once,
+played as non-looping one-shots at a restrained volume, and destroyed with
+their runtime presenter. Batch-mode acceptance does not play sound, so it
+does not need audio hardware.
+
+Existing Unity Play Mode source checks the three generated clips for nonzero
+samples, but **actual audible sound, level, timing and Windows device output
+remain unverified**. Verify those during the human Unity/Windows acceptance
+required by parent issue #9. There is no soundtrack, voice system or final
+audio mix in this early demo.
+
 ## Verifiable Unity Editor smoke test (Windows)
 
 The source-only CI cannot prove that Unity compiles or plays the project.
