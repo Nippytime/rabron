@@ -108,6 +108,12 @@ namespace Rabron.Prototype.Editor
                 Physics.SyncTransforms();
                 Check(!guard.CanSee(player.transform),
                       "Guard should not see a player directly behind him");
+                // A coincident position previously failed the forward-cone
+                // check because the direction vector has zero length.
+                player.transform.position = guard.transform.position;
+                Physics.SyncTransforms();
+                Check(guard.CanSee(player.transform),
+                      "Overlapping the guard must not grant invisibility");
                 player.transform.position = new Vector3(0f, 0.12f, -15f);
                 Physics.SyncTransforms();
 
