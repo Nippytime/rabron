@@ -11,7 +11,7 @@ namespace Rabron.Reconstruction
     public enum HeistPhase
     {
         Idle, Scouted, Robbing, Escaped, CashOnCounter,
-        DirtyCashCollected, Laundering, Laundered
+        DirtyCashCollected, Laundering, Laundered, Arrested
     }
 
     public sealed class HeistSession
@@ -92,6 +92,31 @@ namespace Rabron.Reconstruction
             _loot.Add(itemId);
         }
 
+        /// <summary>
+        /// Invented single-player guard consequence, not original police AI.
+        /// The confiscation changes no clean cash or already banked funds.
+        /// </summary>
+        public void ArrestAfterAlarm()
+        {
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Criminal &&
+                    Phase == HeistPhase.Robbing && AlarmRaised && !StaffControlled,
+                    "Only an alarmed criminal with an active guard can be arrested.");
+            _loot.Clear();
+            DirtyCash = 0;
+            Phase = HeistPhase.Arrested;
+        }
+
+        public void ReleaseFromCustody()
+        {
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Criminal &&
+                    Phase == HeistPhase.Arrested,
+                    "Release requires a criminal custody checkpoint.");
+            CurrentRole = PlayerRole.Civilian;
+            Phase = HeistPhase.Idle;
+            AlarmRaised = false;
+            StaffControlled = false;
+        }
+
         public void Escape()
         {
             Require(Phase == HeistPhase.Robbing, "No active robbery to escape.");
@@ -166,8 +191,9 @@ namespace Rabron.Reconstruction
 
         public void LeaveCity()
         {
-            Require(CurrentZone == Zone.City && !CarryingCourierParcel,
-                    "Deliver courier cargo before leaving the city.");
+            Require(CurrentZone == Zone.City && !CarryingCourierParcel &&
+                    Phase != HeistPhase.Arrested,
+                    "Custody must be released before leaving the city.");
             CurrentZone = Zone.Desert;
             if (CurrentRole == PlayerRole.Criminal)
                 CurrentRole = PlayerRole.Civilian; // Official status reset occurs on city exit.
@@ -316,6 +342,16 @@ namespace Rabron.Reconstruction
                 (snapshot.Zone != Zone.City || snapshot.Role != PlayerRole.Civilian ||
                  snapshot.Phase != HeistPhase.Idle))
                 throw new ArgumentException("Courier save contains an unreachable cargo state.", nameof(snapshot));
+
+            // Custody has exactly one reachable shape. Legacy v1 integer
+            // phases retain their previous meanings (Arrested is appended).
+            if (snapshot.Phase == HeistPhase.Arrested &&
+                (snapshot.Zone != Zone.City ||
+                 snapshot.Role != PlayerRole.Criminal ||
+                 !snapshot.AlarmRaised || snapshot.StaffControlled ||
+                 snapshot.CarryingCourierParcel || snapshot.DirtyCash != 0 ||
+                 snapshot.CounterCash != 0 || loot.Length != 0))
+                throw new ArgumentException("Save contains an unreachable arrest state.", nameof(snapshot));
 
             bool isLaundering = snapshot.Phase == HeistPhase.Laundering;
             bool validJob = isLaundering

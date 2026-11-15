@@ -98,7 +98,7 @@ namespace Rabron.Prototype.Tests
                         Is.GreaterThan(0), "HUD labels were not attached");
             Assert.That(guard, Is.Not.Null, "No guard sensor in runtime scene");
             Assert.That(cash, Is.Not.Null, "No collectible physical counter money");
-            Assert.That(stations.Length, Is.EqualTo(18));
+            Assert.That(stations.Length, Is.EqualTo(19));
             var parcel = motor.GetComponentInChildren<CourierParcelPresenter>(true);
             Assert.That(parcel, Is.Not.Null, "No physical courier cargo visual");
             Assert.That(parcel.GetComponent<Collider>().enabled, Is.False,
@@ -130,6 +130,9 @@ namespace Rabron.Prototype.Tests
             Assert.That(update, Is.Not.Null, "Director frame integration missing");
 
             var original = (HeistSession)field.GetValue(director);
+            var motor = UnityEngine.Object.FindFirstObjectByType<ThirdPersonMotor>();
+            Assert.That(motor, Is.Not.Null);
+            var originalPosition = motor.transform.position;
             var simulated = new HeistSession();
             var cash = FindCashPresenter();
             Assert.That(cash, Is.Not.Null);
@@ -185,6 +188,28 @@ namespace Rabron.Prototype.Tests
                 Interact(StationAction.Deposit);
                 Assert.That(courier.BankBalance, Is.GreaterThan(0L));
 
+                // Test actual guard sight/proximity -> core confiscation,
+                // then dispatch through the real custody release station.
+                var alarmed = new HeistSession();
+                alarmed.Scout();
+                alarmed.PutOnMask();
+                alarmed.StartHeist();
+                alarmed.TakeLoot("arrest-test-loot");
+                alarmed.RaiseAlarm();
+                field.SetValue(director, alarmed);
+                motor.WarpTo(new Vector3(0f, 0.12f, 31.5f));
+                Physics.SyncTransforms();
+                update.Invoke(director, null);
+                Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Arrested),
+                            "Visible close guard must cause confiscation after alarm");
+                Assert.That(alarmed.Loot.Count, Is.EqualTo(0));
+                Assert.That(alarmed.DirtyCash, Is.EqualTo(0L));
+                Assert.That(alarmed.CurrentRole, Is.EqualTo(PlayerRole.Criminal));
+                Interact(StationAction.ReleaseCustody);
+                Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(alarmed.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
+                Assert.That(alarmed.AlarmRaised, Is.False);
+
                 field.SetValue(director, simulated);
                 Interact(StationAction.Scout);
                 Interact(StationAction.Mask);
@@ -232,6 +257,7 @@ namespace Rabron.Prototype.Tests
             finally
             {
                 field.SetValue(director, original);
+                motor.WarpTo(originalPosition);
                 cash.SetAmount(original.CounterCash);
                 parcel.SetCarrying(original.CarryingCourierParcel);
             }

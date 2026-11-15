@@ -10,6 +10,9 @@ namespace Rabron.Prototype
     public sealed class PrototypeDirector : MonoBehaviour
     {
         private const float InteractionRadius = 3.8f;
+        private const float ArrestProximity = 2.5f;
+        private static readonly Vector3 CustodySpawn = new Vector3(16f, 0.12f, -41f);
+        private static readonly Vector3 CivilianSpawn = new Vector3(0f, 0.12f, -15f);
         private readonly RaycastHit[] _stationHits = new RaycastHit[24];
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
@@ -43,6 +46,8 @@ namespace Rabron.Prototype
             _hud.Initialize();
             if (_session.CurrentZone == Zone.Desert)
                 _player.WarpTo(new Vector3(0f, 0.12f, -45f));
+            else if (_session.Phase == HeistPhase.Arrested)
+                _player.WarpTo(CustodySpawn);
             _cashPile.SetAmount(_session.CounterCash);
             _courierParcel.SetCarrying(_session.CarryingCourierParcel);
             Notice(startupMessage);
@@ -66,6 +71,21 @@ namespace Rabron.Prototype
                 _session.RaiseAlarm();
                 SaveProgress();
                 Notice("ALARM RAISED! The guard spotted you. Escape with any loot.");
+            }
+
+            // A loud robbery has a real loss consequence only if the active
+            // guard sees and physically reaches the player. The state change
+            // and confiscation remain exclusively in the portable core.
+            if (_session.Phase == HeistPhase.Robbing && _session.AlarmRaised &&
+                !_session.StaffControlled &&
+                (_guard.transform.position - _player.transform.position).sqrMagnitude
+                    <= ArrestProximity * ArrestProximity &&
+                _guard.CanSee(_player.transform))
+            {
+                _session.ArrestAfterAlarm();
+                _player.WarpTo(CustodySpawn);
+                SaveProgress();
+                Notice("ARRESTED. Carried loot and dirty cash confiscated. Release at custody desk.");
             }
 
             var focused = FindNearbyStation();
@@ -136,6 +156,9 @@ namespace Rabron.Prototype
             bool criminal = _session.CurrentRole == PlayerRole.Criminal;
             return action switch
             {
+                StationAction.ReleaseCustody => city &&
+                    _session.Phase == HeistPhase.Arrested &&
+                    _session.CurrentRole == PlayerRole.Criminal,
                 StationAction.Scout => city && _session.Phase == HeistPhase.Idle &&
                                        !_session.CarryingCourierParcel,
                 StationAction.CourierPickup => city && civilian &&
@@ -179,6 +202,10 @@ namespace Rabron.Prototype
         {
             switch (marker.Action)
             {
+                case StationAction.ReleaseCustody:
+                    _session.ReleaseFromCustody();
+                    _player.WarpTo(CivilianSpawn);
+                    break;
                 case StationAction.CourierPickup:
                     _session.PickUpCourierParcel();
                     break;
@@ -249,6 +276,8 @@ namespace Rabron.Prototype
         {
             return _session.Phase switch
             {
+                HeistPhase.Arrested
+                    => "ARRESTED: belongings confiscated. Use the custody RELEASE marker to return.",
                 HeistPhase.Idle when _session.CarryingCourierParcel
                     => "Deliver the parcel at the eastern kiosk, or return it to dispatch without payment.",
                 HeistPhase.Idle when _session.CurrentRole == PlayerRole.Civilian

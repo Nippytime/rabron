@@ -14,7 +14,7 @@ namespace Rabron.Prototype
                                                                out CashPilePresenter cashPile,
                                                                out GuardSensor guard)
         {
-            var stations = new List<InteractionMarker>(18);
+            var stations = new List<InteractionMarker>(19);
             var asphalt = Hex("#242A34");
             var concrete = Hex("#56616F");
             var wall = Hex("#3E4858");
@@ -99,11 +99,16 @@ namespace Rabron.Prototype
                  new Vector3(2.5f, 1.4f, 3), Hex("#B18C5A"));
             Cube(parent, "Courier recipient kiosk", new Vector3(16, 0.7f, -17),
                  new Vector3(2.5f, 1.4f, 3), Hex("#79A98F"));
+            // Original small local custody waypoint, not reference-game police art.
+            Cube(parent, "Police custody desk", new Vector3(20, 0.65f, -39),
+                 new Vector3(2.5f, 1.3f, 2), Hex("#5D7192"));
             Cube(parent, "ATM booth", new Vector3(0, 1.35f, -24),
                  new Vector3(2, 2.7f, 1.1f), Hex("#367C9F"));
             Cube(parent, "ATM screen", new Vector3(0, 1.75f, -23.41f),
                  new Vector3(1.35f, 0.9f, 0.1f), Hex("#81DCFD"));
 
+            Station(parent, stations, StationAction.ReleaseCustody, "Leave police custody",
+                    new Vector3(16, 0, -38), "#98B6DD");
             Station(parent, stations, StationAction.CourierPickup, "Collect legal delivery parcel",
                     new Vector3(-12, 0, -17), "#B9D09A");
             Station(parent, stations, StationAction.CourierDropoff, "Deliver legal parcel",

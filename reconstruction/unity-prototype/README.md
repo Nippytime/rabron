@@ -78,7 +78,7 @@ a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
-The Editor smoke checks generated procedural geometry, all 18 station
+The Editor smoke checks generated procedural geometry, all 19 station
 types and trigger colliders, solid-wall interaction occlusion, near-wall
 camera placement, the 0.65m step offset needed to climb the fence platform,
 and the heist-to-bank behavior contract. The optional
@@ -139,7 +139,7 @@ CI pipelines:
 
 - Runtime bootstrap: live director, player controller, camera, UI Toolkit
   HUD, guard, cash presenter (including its intentionally inactive zero-cash
-  state) and 18 station markers
+  state) and 19 station markers
 - Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
@@ -266,7 +266,7 @@ configured in the existing `PrototypeBalance` ScriptableObject. This is a
 named local legal-job cash source, **not an original game reward formula, a
 server-authorized transaction or an anti-cheat system**. Earlier v1 saves
 without the optional parcel flag load with no parcel. The demo intentionally
-permits only one courier parcel at a time; the 18th world station is the
+permits only one courier parcel at a time; a dedicated station is the
 no-payout return marker. The parcel mesh is presentation-only and its collider
 is disabled. The route contains no vehicle logistics,
 item weight, routing algorithm or mission generator.
@@ -284,7 +284,13 @@ around the city.
    entrance. Stay outside his **demo-only** forward vision cone and
    approach the pink **Control guard** pillar from the side to prevent
    future alarms. You can also risk being seen, which raises the alarm.
-   Collect one or both loot objects.
+   If the alarm is active and you approach the still-active guard within
+   the small demo arrest radius while visible, the guard arrests you:
+   unsold loot and dirty cash are confiscated. Your legitimate clean cash
+   and bank balance remain intact. The game warps you to the simple
+   **police custody** desk in the southern district. Interact with the
+   **Leave police custody** marker to return as a civilian and restart.
+   Alternatively, evade the guard and collect one or both loot objects.
 5. Leave the building; use the **Escape** pillar on the road.
 6. Go **west** to the fence counter. Selling now reveals four original
    green cash-bundle meshes **on top of the counter**; they are visual only,
@@ -299,12 +305,13 @@ around the city.
    heist phase and retains account balances.
 
 The prototype has one stationary guard **placeholder** whose line-of-sight
-sensor raises the existing heist alarm if the player is seen. Controlling
+sensor raises an alarm when the player is seen. If the guard subsequently
+spots the nearby criminal while still active, it triggers the **invented
+single-player custody outcome**; release has no fee or duration. Controlling
 the guard prevents subsequent detection but cannot erase an existing alarm.
-This implements a small prototype of the official "keep staff controlled
-to prevent alarms" behavior, not the original NPC AI, detection distance,
-police dispatch, arrest or wanted-level rules. Patrol movement and police
-response are not implemented.
+This is **not** the original NPC AI, arrest formula, police dispatch,
+wanted-level system or any authoritative online gameplay. Police patrol
+movement, pursuit and server enforcement are not implemented.
 
 ### Physical access and camera
 

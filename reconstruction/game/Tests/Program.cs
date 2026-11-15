@@ -30,6 +30,8 @@ internal static class Program
             CourierCargoPersistsAndRejectsUnreachableSaves,
             CourierDeliveryOverflowIsAtomic,
             CourierCancellationNeverCreditsCash,
+            ArrestConfiscatesLootAndPreservesLegalMoney,
+            ArrestSnapshotCannotForgeRolesOrRewards,
         };
 
         foreach (Action test in tests)
@@ -628,6 +630,93 @@ internal static class Program
         courier.DeliverCourierParcel(20);
         Eq(20L, courier.CleanCash); // Only the completed second job pays.
         Throws<InvalidOperationException>(() => courier.CancelCourierParcel());
+    }
+
+    private static void ArrestConfiscatesLootAndPreservesLegalMoney()
+    {
+        var game = new HeistSession();
+        Throws<InvalidOperationException>(() => game.ArrestAfterAlarm());
+        Throws<InvalidOperationException>(() => game.ReleaseFromCustody());
+
+        game.OpenBankAccount();
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(90); // Independent fixture, not original game balance.
+        game.DepositCleanCash(40);
+        game.Scout();
+        game.PutOnMask();
+        game.StartHeist();
+        game.TakeLoot("artwork");
+
+        // Seeing a player raises an alarm, but cannot arrest until then.
+        Throws<InvalidOperationException>(() => game.ArrestAfterAlarm());
+        game.RaiseAlarm();
+        game.ArrestAfterAlarm();
+
+        Eq(HeistPhase.Arrested, game.Phase);
+        Eq(PlayerRole.Criminal, game.CurrentRole);
+        Eq(0, game.Loot.Count);
+        Eq(0L, game.CounterCash);
+        Eq(0L, game.DirtyCash);
+        Eq(50L, game.CleanCash);
+        Eq(40L, game.BankBalance);
+        True(game.AlarmRaised);
+        Throws<InvalidOperationException>(() => game.ArrestAfterAlarm());
+        Throws<InvalidOperationException>(() => game.LeaveCity());
+        Throws<InvalidOperationException>(() => game.Escape());
+        Throws<InvalidOperationException>(() => game.Scout());
+
+        // Save/reload during custody never revives confiscated loot.
+        var restored = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Eq(HeistPhase.Arrested, restored.Phase);
+        Eq(0, restored.Loot.Count);
+        restored.ReleaseFromCustody();
+        Eq(HeistPhase.Idle, restored.Phase);
+        Eq(PlayerRole.Civilian, restored.CurrentRole);
+        True(!restored.AlarmRaised && !restored.StaffControlled);
+        Eq(50L, restored.CleanCash);
+        Eq(40L, restored.BankBalance);
+        Throws<InvalidOperationException>(() => restored.ReleaseFromCustody());
+        restored.Scout();
+        restored.PutOnMask();
+        restored.StartHeist();
+        Eq(HeistPhase.Robbing, restored.Phase);
+
+        // A controlled guard cannot initiate the arrest outcome.
+        var guarded = StartHeistWithOneItem();
+        guarded.RaiseAlarm();
+        guarded.ControlStaff();
+        Throws<InvalidOperationException>(() => guarded.ArrestAfterAlarm());
+        Eq(HeistPhase.Robbing, guarded.Phase);
+        Eq(1, guarded.Loot.Count);
+    }
+
+    private static void ArrestSnapshotCannotForgeRolesOrRewards()
+    {
+        var game = StartHeistWithOneItem();
+        game.RaiseAlarm();
+        game.ArrestAfterAlarm();
+
+        void Reject(Action<HeistSessionSnapshot> mutate)
+        {
+            var forged = game.ExportSnapshot();
+            mutate(forged);
+            Throws<ArgumentException>(() => HeistSession.FromSnapshot(forged));
+        }
+
+        Reject(data => data.Zone = Zone.Desert);
+        Reject(data => data.Role = PlayerRole.Civilian);
+        Reject(data => data.Role = PlayerRole.Police);
+        Reject(data => data.AlarmRaised = false);
+        Reject(data => data.StaffControlled = true);
+        Reject(data => data.LootIds = new[] { "resurrected-loot" });
+        Reject(data => data.CounterCash = 1);
+        Reject(data => data.DirtyCash = 1);
+        Reject(data => data.CarryingCourierParcel = true);
+
+        var valid = HeistSession.FromSnapshot(game.ExportSnapshot());
+        valid.ReleaseFromCustody();
+        True(!valid.AlarmRaised);
+        Throws<InvalidOperationException>(() => valid.ArrestAfterAlarm());
     }
 
     private static HeistSession StartHeistWithOneItem()

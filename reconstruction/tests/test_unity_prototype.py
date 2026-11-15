@@ -66,7 +66,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertEqual(enum_cases, dispatch)
         self.assertEqual(enum_cases, available)
         self.assertEqual(enum_cases, placed)
-        self.assertEqual(len(enum_cases), 18)
+        self.assertEqual(len(enum_cases), 19)
 
     def test_play_mode_bootstrap_and_editor_scene(self):
         boot = read("PrototypeBoot.cs")
@@ -305,7 +305,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("StationAction.Deposit", tests)
         self.assertIn("Is.EqualTo(HeistPhase.Idle)", tests)
         self.assertIn("field.SetValue(director, original)", tests)
-        self.assertIn("Is.EqualTo(18)", tests)
+        self.assertIn("Is.EqualTo(19)", tests)
 
         self.assertIn("'-runTests'", runner)
         self.assertIn("'-testPlatform', 'PlayMode'", runner)
@@ -349,7 +349,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("snapshot.CarryingCourierParcel", core)
         self.assertIn("StationAction.CourierPickup", world)
         self.assertIn("StationAction.CourierDropoff", world)
-        self.assertIn("new List<InteractionMarker>(18)", world)
+        self.assertIn("new List<InteractionMarker>(19)", world)
         self.assertIn("_session.PickUpCourierParcel()", director)
         self.assertIn("_session.DeliverCourierParcel(_balance.CourierReward)", director)
         self.assertIn("public int CourierReward = 35", balance)
@@ -471,6 +471,42 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Stale green Unity acceptance evidence survived", fixture)
         self.assertIn("Test-AcceptanceGate.ps1", workflow)
         self.assertIn("Verify-Acceptance.ps1", workflow)
+
+    def test_guard_alarm_has_confiscation_custody_and_recoverable_release(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8")
+        world = read("PrototypeWorld.cs")
+        director = read("PrototypeDirector.cs")
+        marker = read("InteractionMarker.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("Laundered, Arrested", core)
+        self.assertIn("public void ArrestAfterAlarm()", core)
+        self.assertIn("public void ReleaseFromCustody()", core)
+        self.assertIn("_loot.Clear();", core)
+        self.assertIn("DirtyCash = 0;", core)
+        self.assertIn("Phase = HeistPhase.Arrested;", core)
+        self.assertIn("snapshot.Phase == HeistPhase.Arrested", core)
+        self.assertIn("unreachable arrest state", core)
+        self.assertIn("Phase != HeistPhase.Arrested", core)
+        self.assertIn("ReleaseCustody", marker)
+        self.assertIn("StationAction.ReleaseCustody", world)
+        self.assertIn('new List<InteractionMarker>(19)', world)
+        self.assertIn("_session.ArrestAfterAlarm();", director)
+        self.assertIn("_session.ReleaseFromCustody();", director)
+        self.assertIn("_guard.CanSee(_player.transform)", director)
+        self.assertIn("ArrestProximity", director)
+        self.assertIn("HeistPhase.Arrested", director)
+        self.assertIn("Unity JSON lost the alarm/custody confiscation", editor)
+        self.assertIn("Interact(StationAction.ReleaseCustody)", playmode)
+        self.assertIn('"Visible close guard must cause confiscation', playmode)
+        self.assertIn("police custody", guide.lower())
+        self.assertNotIn("BankBalance =", director)
+        self.assertNotIn("DirtyCash =", director)
 
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
