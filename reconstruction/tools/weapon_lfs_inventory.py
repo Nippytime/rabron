@@ -26,6 +26,7 @@ AI_EVIDENCE = "GitHub Actions W1-AI original sector-center common LFS source inv
 AJ_EVIDENCE = "GitHub Actions W1-AJ original shared-characters legacy-props LFS source inventory artifact"
 AK_EVIDENCE = "GitHub Actions W1-AK original material-library desert LFS source inventory artifact"
 AL_EVIDENCE = "GitHub Actions W1-AL original Wwise Windows LFS source inventory artifact"
+AM_EVIDENCE = "GitHub Actions W1-AM original city-scene LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
@@ -38,6 +39,7 @@ AI_NAMES = {"location-sectorcenter-standalone_scenes_all.bundle", "shared-enviro
 AJ_NAMES = {"shared-characters_assets_all.bundle", "environment-props-legacy_assets_all.bundle"}
 AK_NAMES = {"environment-materiallibrary-legacy_assets_all.bundle", "shared-environment-desert_assets_all.bundle"}
 AL_NAMES = {"wwisedata_windows_assets_all.bundle"}
+AM_NAMES = {"location-city-standalone_scenes_city_standalone.unity.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -51,10 +53,11 @@ def load_targets(path):
     pairs = (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES,
              AH_NAMES, AI_NAMES, AJ_NAMES, AK_NAMES)
     if not ((len(sources) == 2 and names in pairs)
-            or (len(sources) == 1 and names == AL_NAMES)):
+            or (len(sources) == 1 and names in (AL_NAMES, AM_NAMES))):
         raise ValueError("Unexpected original LFS source scope")
     # Bounds are exact-scope allowances, never a global binary size relaxation.
     max_source_bytes = (
+        565_000_000 if names == AM_NAMES else
         175_000_000 if names == AL_NAMES else
         245_000_000 if names == AK_NAMES else
         185_000_000 if names == AJ_NAMES else
@@ -85,7 +88,7 @@ def verify_pointer(entry):
 def source_plan(sources, ledger, entries, *, expected_tracked=330,
                 scan_evidence=EVIDENCE):
     names = {e["bundle"].removeprefix(PREFIX) for e in sources}
-    if len(sources) != (1 if names == AL_NAMES else 2):
+    if len(sources) != (1 if names in (AL_NAMES, AM_NAMES) else 2):
         raise ValueError("Unapproved original source count")
     if len(entries) != expected_tracked:
         raise ValueError("Tracked original Git bundle count changed")
@@ -123,6 +126,15 @@ def scan(entry, run_url, *, scan_evidence=EVIDENCE):
         with streamed_unityfs():
             raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
                               expected_sha256=verified["sha256"])
+    elif path.name in AM_NAMES:
+        from reconstruction.tools.streamed_unityfs import (
+            MAX_CITY_MONO_OBJECT_BYTES, streamed_unityfs,
+        )
+        # Use an independent city budget and retain original scene indexes.
+        with streamed_unityfs(mono_budget_bytes=MAX_CITY_MONO_OBJECT_BYTES,
+                              scope="CITY", skip_container_index=False):
+            raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
+                              expected_sha256=verified["sha256"])
     else:
         raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
                           expected_sha256=verified["sha256"])
@@ -158,7 +170,7 @@ def reconcile(plan, records, ledger, run_url, tracked, *,
     names = {e["bundle"].removeprefix(PREFIX)
              for e in plan.get("sources", [])}
     if (source_count not in (1, 2) or
-            (source_count == 1 and names != AL_NAMES) or
+            (source_count == 1 and names not in (AL_NAMES, AM_NAMES)) or
             plan["tracked_bundles"] != len(tracked) or
             plan["documented_before"] != len(ledger["scans"]) or
             len(records) != source_count or
@@ -272,6 +284,8 @@ def main():
         evidence, log_prefix = AK_EVIDENCE, "W1AK"
     elif names == AL_NAMES:
         evidence, log_prefix = AL_EVIDENCE, "W1AL"
+    elif names == AM_NAMES:
+        evidence, log_prefix = AM_EVIDENCE, "W1AM"
     else:
         evidence, log_prefix = EVIDENCE, "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))

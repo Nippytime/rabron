@@ -1,0 +1,193 @@
+name: W1-AM verify original City-scene Git LFS UnityFS sources
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/extract-city-scene-lfs-sources.yml"
+      - "reconstruction/data/city_scene_lfs_source_target.json"
+      - "reconstruction/data/extraction_coverage.json"
+      - "reconstruction/tools/weapon_lfs_inventory.py"
+      - "reconstruction/tools/verify_priority_lfs.py"
+      - "reconstruction/tools/small_bundle_inventory.py"
+      - "reconstruction/tools/extract_unity_bundle.py"
+      - "reconstruction/tools/validate_source_inventory.py"
+      - "reconstruction/tools/summarize_numeric_evidence.py"
+      - "reconstruction/tools/streamed_unityfs.py"
+      - "reconstruction/tests/test_streamed_unityfs.py"
+      - "reconstruction/tests/test_city_scene_lfs_inventory.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    outputs:
+      matrix: ${{ steps.matrix.outputs.value }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify exact city-scene singleton pointer against complete original Git tree and ledger
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.weapon_lfs_inventory plan \
+            --manifest reconstruction/data/city_scene_lfs_source_target.json \
+            --ledger reconstruction/data/extraction_coverage.json \
+            --output "$RUNNER_TEMP/w1am-plan.json" --matrix "$RUNNER_TEMP/matrix.json"
+          python -m unittest discover -s reconstruction/tests -p test_city_scene_lfs_inventory.py -v
+      - id: matrix
+        shell: bash
+        run: echo "value=$(cat "$RUNNER_TEMP/matrix.json")" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: city-scene-lfs-source-plan
+          path: ${{ runner.temp }}/w1am-plan.json
+          if-no-files-found: error
+          retention-days: 30
+
+  inspect:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix: ${{ fromJSON(needs.plan.outputs.matrix) }}
+    name: City-scene original LFS / ${{ matrix.name }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/${{ matrix.name }}
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify original Git LFS pointer before fetching bytes
+        env:
+          BUNDLE: ${{ matrix.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.weapon_lfs_inventory pointer \
+            --manifest reconstruction/data/city_scene_lfs_source_target.json \
+            --ledger reconstruction/data/extraction_coverage.json \
+            --bundle "StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+      - name: Fetch only selected original LFS bytes
+        env:
+          BUNDLE: ${{ matrix.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          asset="StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+          git lfs install --local
+          git lfs pull --include="$asset" --exclude=""
+          git lfs checkout "$asset"
+      - name: Verify downloaded UnityFS byte count and LFS SHA-256
+        env:
+          BUNDLE: ${{ matrix.name }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.weapon_lfs_inventory bytes \
+            --manifest reconstruction/data/city_scene_lfs_source_target.json \
+            --ledger reconstruction/data/extraction_coverage.json \
+            --bundle "StreamingAssets/aa/StandaloneWindows64/$BUNDLE"
+      - name: Install pinned, read-only UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: Bounded original-byte Unity object and MonoBehaviour inventory
+        env:
+          BUNDLE: ${{ matrix.name }}
+          SOURCE_RUN: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Capture process memory and cgroup OOM signals while the original
+          # full-source scan runs. The scan must still complete successfully;
+          # diagnostics never substitute for evidence or swallow a nonzero exit.
+          python -m reconstruction.tools.weapon_lfs_inventory scan \
+            --manifest reconstruction/data/city_scene_lfs_source_target.json \
+            --ledger reconstruction/data/extraction_coverage.json \
+            --bundle "StreamingAssets/aa/StandaloneWindows64/$BUNDLE" \
+            --run-url "$SOURCE_RUN" --output "$RUNNER_TEMP/$BUNDLE.json" &
+          scan_pid=$!
+          trap 'kill "$scan_pid" 2>/dev/null || true' EXIT
+          while kill -0 "$scan_pid" 2>/dev/null; do
+            echo "SOURCE_SCAN_DIAGNOSTICS bundle=$BUNDLE utc=$(date -u +%FT%TZ)"
+            if [[ -r "/proc/$scan_pid/status" ]]; then
+              grep -E '^(VmRSS|VmHWM|VmPeak):' "/proc/$scan_pid/status" || true
+            fi
+            if [[ -r /sys/fs/cgroup/memory.events ]]; then
+              grep -E '^(oom|oom_kill|oom_group_kill) ' /sys/fs/cgroup/memory.events || true
+            fi
+            sleep 10
+          done
+          wait "$scan_pid"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: city-scene-lfs-source-${{ matrix.name }}
+          path: ${{ runner.temp }}/${{ matrix.name }}.json
+          if-no-files-found: error
+          retention-days: 30
+
+  reconcile:
+    needs: [plan, inspect]
+    if: ${{ needs.plan.result == 'success' && needs.inspect.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          name: city-scene-lfs-source-plan
+          path: ${{ runner.temp }}
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: city-scene-lfs-source-*.bundle
+          path: ${{ runner.temp }}/w1am-evidence
+          merge-multiple: true
+      - name: Strict single original city-scene source evidence reconciliation
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          SOURCE_RUN: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.weapon_lfs_inventory reconcile \
+            --manifest reconstruction/data/city_scene_lfs_source_target.json \
+            --ledger reconstruction/data/extraction_coverage.json \
+            --plan "$RUNNER_TEMP/w1am-plan.json" \
+            --evidence-dir "$RUNNER_TEMP/w1am-evidence" \
+            --run-url "$SOURCE_RUN" --output "$RUNNER_TEMP/w1am-measured.json"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: city-scene-lfs-measured-ledger
+          path: ${{ runner.temp }}/w1am-measured.json
+          if-no-files-found: error
+          retention-days: 30
