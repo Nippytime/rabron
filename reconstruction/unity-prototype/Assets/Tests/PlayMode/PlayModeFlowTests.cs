@@ -201,6 +201,26 @@ namespace Rabron.Prototype.Tests
                     new object[] { StationAction.VehicleEnter }), Is.True);
                 Interact(StationAction.VehicleEnter);
                 Assert.That(motor.IsDriving && car.Occupied, Is.True);
+                // Director and motor Update order is unspecified. The E/A
+                // press that boarded this frame may not also exit this frame.
+                var boardFrameField = typeof(ThirdPersonMotor).GetField(
+                    "_boardedVehicleFrame", PrivateInstance);
+                var exitPredicate = typeof(ThirdPersonMotor).GetMethod(
+                    "ExitPressAfterBoard", BindingFlags.NonPublic | BindingFlags.Static);
+                Assert.That(boardFrameField, Is.Not.Null);
+                Assert.That(exitPredicate, Is.Not.Null);
+                int boardFrame = (int)boardFrameField.GetValue(motor);
+                Assert.That(boardFrame, Is.EqualTo(Time.frameCount));
+                Assert.That((bool)exitPredicate.Invoke(null,
+                    new object[] { boardFrame, boardFrame, true }), Is.False,
+                    "Boarding press must never immediately exit the car");
+                Assert.That((bool)exitPredicate.Invoke(null,
+                    new object[] { boardFrame, boardFrame + 1, false }), Is.False,
+                    "A later frame without a fresh press must not exit");
+                Assert.That((bool)exitPredicate.Invoke(null,
+                    new object[] { boardFrame, boardFrame + 1, true }), Is.True,
+                    "A fresh later-frame press must allow a stopped-car exit");
+                Assert.That(motor.IsDriving && car.Occupied, Is.True);
                 var onFootVisual = motor.transform.Find("Player mesh").GetComponent<Renderer>();
                 Assert.That(onFootVisual.enabled, Is.False,
                             "Seated on-foot mesh must not obstruct the car camera");

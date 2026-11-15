@@ -662,6 +662,26 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("drive", guide.lower())
         self.assertIn("vehicle position", guide.lower())
 
+    def test_car_board_press_cannot_same_frame_exit(self):
+        motor = read("ThirdPersonMotor.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("private int _boardedVehicleFrame = -1;", motor)
+        self.assertIn("_boardedVehicleFrame = Time.frameCount;", motor)
+        self.assertIn("ExitPressAfterBoard(_boardedVehicleFrame, Time.frameCount,", motor)
+        self.assertIn("private static bool ExitPressAfterBoard", motor)
+        self.assertIn("=> pressed && boardFrame != frame;", motor)
+        self.assertIn("_exitInteractFrame != Time.frameCount", motor)
+        self.assertIn("TryExitVehicle();", motor)
+        self.assertIn('"Boarding press must never immediately exit the car"', playmode)
+        self.assertIn('"A later frame without a fresh press must not exit"', playmode)
+        self.assertIn('"A fresh later-frame press must allow a stopped-car exit"', playmode)
+        self.assertIn("boardFrame, Is.EqualTo(Time.frameCount)", playmode)
+        self.assertIn("release and press", guide.lower())
+        self.assertIn("same-frame", guide.lower())
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")

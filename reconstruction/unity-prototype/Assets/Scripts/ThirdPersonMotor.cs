@@ -25,6 +25,13 @@ namespace Rabron.Prototype
         private readonly List<Renderer> _hiddenRenderers = new List<Renderer>();
         private readonly RaycastHit[] _cameraHits = new RaycastHit[24];
         private int _exitInteractFrame = -1;
+        private int _boardedVehicleFrame = -1;
+
+        // Both director and motor consume the same press in Update, whose
+        // relative execution order is unspecified. Only a fresh later-frame
+        // press may leave the newly boarded car.
+        private static bool ExitPressAfterBoard(int boardFrame, int frame, bool pressed)
+            => pressed && boardFrame != frame;
 
         public bool IsDriving => _vehicle != null;
         public bool InteractPressed => _vehicle == null && _interact != null &&
@@ -36,6 +43,7 @@ namespace Rabron.Prototype
                 throw new InvalidOperationException("Car is already occupied.");
 
             _vehicle = vehicle;
+            _boardedVehicleFrame = Time.frameCount;
             _character.enabled = false;
             foreach (Renderer visual in GetComponentsInChildren<Renderer>(true))
             {
@@ -165,7 +173,8 @@ namespace Rabron.Prototype
 
             if (_vehicle != null)
             {
-                if (_interact.WasPressedThisFrame())
+                if (ExitPressAfterBoard(_boardedVehicleFrame, Time.frameCount,
+                                        _interact.WasPressedThisFrame()))
                     TryExitVehicle();
                 if (_vehicle != null)
                 {

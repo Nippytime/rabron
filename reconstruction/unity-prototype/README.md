@@ -278,9 +278,12 @@ as a **Civilian** in **Idle** with no courier cargo and press E / gamepad A.
 The actor's walking collider and visual are hidden while boarded; the same
 third-person camera follows the car. W/S and left-stick throttle drive forward
 or reverse, A/D and the stick steer, and Space/Y brakes. Once nearly stopped,
-press E / A to exit on a collision-clear side. If both sides are blocked or
-the car is moving too quickly, exit is refused instead of placing the avatar
-inside a wall. No cash is paid for entering, driving or exiting.
+**release and press E / A again on a later frame** to exit on a collision-clear
+side. The boarding press is not also an exit press, regardless of Unity's
+component Update order; this protects against an immediate **same-frame**
+enter/exit input race. If both sides are blocked or the car is moving too
+quickly, exit is refused instead of placing the avatar inside a wall.
+No cash is paid for entering, driving or exiting.
 
 This uses an invented, low-speed **CharacterController** car with a simple
 original cube body and wheels. It is not a professional wheel/suspension
