@@ -1,0 +1,127 @@
+{
+  "adaptive_depth": 48,
+  "adaptive_limit": 16384,
+  "adaptive_retried": 5,
+  "first_retry_depth": 32,
+  "first_retry_limit": 8192,
+  "full_bundle_numeric_extraction_complete": false,
+  "historical_depth_limit": 32,
+  "historical_field_limit": 2048,
+  "outcomes": [
+    {
+      "adaptive_retried": true,
+      "numeric_field_count": 16384,
+      "numeric_path_sha256": "5fd21df7c8e947cfed4f7d8309c25b17decce9eddaf989919657ee4c6f48f39f",
+      "parse_error_type": "",
+      "path_id": "344196",
+      "sample_numeric_field_paths": [
+        "$.<HidingObjectRenderers>k__BackingField[0].m_FileID",
+        "$.<HidingObjectRenderers>k__BackingField[0].m_PathID",
+        "$.<HidingObjectRenderers>k__BackingField[1000].m_FileID",
+        "$.<HidingObjectRenderers>k__BackingField[1000].m_PathID",
+        "$.<HidingObjectRenderers>k__BackingField[1001].m_FileID",
+        "$.<HidingObjectRenderers>k__BackingField[1001].m_PathID",
+        "$.<HidingObjectRenderers>k__BackingField[1002].m_FileID",
+        "$.<HidingObjectRenderers>k__BackingField[1002].m_PathID"
+      ],
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "still_capped",
+      "truncation_reasons": [
+        "field_limit"
+      ]
+    },
+    {
+      "adaptive_retried": true,
+      "numeric_field_count": 11824,
+      "numeric_path_sha256": "3356b1b579bc787f5fe49f05ca15bed772ae747c9a3d213d16962841be7ad4da",
+      "parse_error_type": "",
+      "path_id": "344216",
+      "sample_numeric_field_paths": [
+        "$.<AkEvents>k__BackingField[0].m_FileID",
+        "$.<AkEvents>k__BackingField[0].m_PathID",
+        "$.<AkEvents>k__BackingField[10].m_FileID",
+        "$.<AkEvents>k__BackingField[10].m_PathID",
+        "$.<AkEvents>k__BackingField[11].m_FileID",
+        "$.<AkEvents>k__BackingField[11].m_PathID",
+        "$.<AkEvents>k__BackingField[12].m_FileID",
+        "$.<AkEvents>k__BackingField[12].m_PathID"
+      ],
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "resolved",
+      "truncation_reasons": []
+    },
+    {
+      "adaptive_retried": true,
+      "numeric_field_count": 16384,
+      "numeric_path_sha256": "a25cf4c90695c375dbe92f1235ba44e6a74f5225585f9619b87d4079641b0500",
+      "parse_error_type": "",
+      "path_id": "344248",
+      "sample_numeric_field_paths": [
+        "$.<MeshRenderers>k__BackingField[0].m_FileID",
+        "$.<MeshRenderers>k__BackingField[0].m_PathID",
+        "$.<MeshRenderers>k__BackingField[1000].m_FileID",
+        "$.<MeshRenderers>k__BackingField[1000].m_PathID",
+        "$.<MeshRenderers>k__BackingField[1001].m_FileID",
+        "$.<MeshRenderers>k__BackingField[1001].m_PathID",
+        "$.<MeshRenderers>k__BackingField[1002].m_FileID",
+        "$.<MeshRenderers>k__BackingField[1002].m_PathID"
+      ],
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "still_capped",
+      "truncation_reasons": [
+        "field_limit"
+      ]
+    },
+    {
+      "adaptive_retried": true,
+      "numeric_field_count": 10863,
+      "numeric_path_sha256": "2d15801c66cf122d5a989451c1136d0a198bcc9efb6c996f15333de21be21420",
+      "parse_error_type": "",
+      "path_id": "344310",
+      "sample_numeric_field_paths": [
+        "$.LightmappedRenderersData.LightmapIndex[0]",
+        "$.LightmappedRenderersData.LightmapIndex[1000]",
+        "$.LightmappedRenderersData.LightmapIndex[1001]",
+        "$.LightmappedRenderersData.LightmapIndex[1002]",
+        "$.LightmappedRenderersData.LightmapIndex[1003]",
+        "$.LightmappedRenderersData.LightmapIndex[1004]",
+        "$.LightmappedRenderersData.LightmapIndex[1005]",
+        "$.LightmappedRenderersData.LightmapIndex[1006]"
+      ],
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf",
+      "status": "resolved",
+      "truncation_reasons": []
+    },
+    {
+      "adaptive_retried": true,
+      "numeric_field_count": 16384,
+      "numeric_path_sha256": "3197e630e21d233bf2ee3bacb8c9f6a52f501032e5005536de48f08cc4654c27",
+      "parse_error_type": "",
+      "path_id": "7968",
+      "sample_numeric_field_paths": [
+        "$.Nodes[0].Count",
+        "$.Nodes[0].Deepness",
+        "$.Nodes[0].MaxWorldPosition.x",
+        "$.Nodes[0].MaxWorldPosition.y",
+        "$.Nodes[0].MinWorldPosition.x",
+        "$.Nodes[0].MinWorldPosition.y",
+        "$.Nodes[0].Node0",
+        "$.Nodes[0].Node1"
+      ],
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf.sharedAssets",
+      "status": "still_capped",
+      "truncation_reasons": [
+        "field_limit"
+      ]
+    }
+  ],
+  "resolved": 2,
+  "schema_version": 1,
+  "scope": "client numeric path metadata only; no numeric values, original game formulas or media",
+  "selected_count": 5,
+  "size_bytes": 549566135,
+  "source": "StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle",
+  "source_sha256": "5c06c4527fa48871b842e76d8dab5e37f9fde91da9b99a806270a763becadc7f",
+  "targeted_numeric_extraction_complete": false,
+  "unresolved": 3
+}

@@ -1338,7 +1338,7 @@ class ExtractionCoverageTests(unittest.TestCase):
                      LEDGER["known_lfs_not_yet_scanned"])
         planned = plan_scans(paths, LEDGER)
         self.assertEqual(planned["historic_field_capped_records"], 355)
-        self.assertEqual(planned["remaining_historic_field_capped_records"], 325)
+        self.assertEqual(planned["remaining_historic_field_capped_records"], 323)
         statuses = {entry["bundle"]: entry["status"] for entry
                     in planned["backlog"]}
         self.assertEqual(
@@ -1348,6 +1348,19 @@ class ExtractionCoverageTests(unittest.TestCase):
         self.assertEqual(planned["statuses"]["partial_field_cap"], 24)
         self.assertEqual(planned["statuses"][
             "historic_caps_resolved_scope_partial"], 1)
+
+    def test_city_five_original_targeted_retry_is_source_scoped_and_partial(self):
+        city = next(entry for entry in LEDGER["scans"] if
+                    entry["bundle"].endswith(
+                        "/location-city-standalone_scenes_city_standalone.unity.bundle"))
+        retry = city["targeted_rescan"]
+        self.assertEqual(city["numeric_field_cap_records"], 5)
+        self.assertEqual(retry["resolved_count"], 2)
+        self.assertEqual(retry["unresolved_count"], 3)
+        self.assertEqual(retry["adaptive_retried_count"], 5)
+        self.assertEqual(retry["source_ref"],
+                         "reconstruction/data/city_scene_targeted_numeric_retry.json")
+        self.assertIs(retry["complete_historical_field_caps"], False)
 
     def test_queue_does_not_call_any_historical_scan_complete(self):
         report = plan_scans(
