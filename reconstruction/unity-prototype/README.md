@@ -181,12 +181,23 @@ Logs/playmode-tests.log. It removes stale results and requires a successful
 process exit, passing NUnit result, at least two passed cases, zero failed
 cases, and both named acceptance methods. Zero-test runs fail.
 
-During batchmode Unity test runs, demo checkpoints use an isolated
-Application.temporaryCachePath/rabron-playmode-tests/ directory rather
-than the developer's real save. Source-level CI only syntax-lints the
-PowerShell runner and checks structural test coverage; it **does not**
-execute Unity. A real NUnit report is needed before reporting an actual
-Play Mode pass.
+During command-line `-runTests` Unity test runs, demo checkpoints use
+an isolated **per-invocation** folder under
+`Application.temporaryCachePath/rabron-playmode-tests/<random-run-id>/`,
+rather than the developer's normal save. The random folder is generated
+once per loaded Editor domain and remains stable for all checkpoint reads,
+atomic writes and backups in that run; the following test invocation receives
+a different folder and cannot inherit an earlier run's arrest, courier or
+bank state. Temporary Unity test files may remain in the OS cache until
+removed by normal cache cleanup, but they are not player progress. Regular
+Editor Play Mode and Windows EXE sessions still use
+`Application.persistentDataPath`. The isolation assertion specifically
+checks command-line `-runTests` invocations; GUI test runs are not covered
+by this batch-mode condition.
+
+Source-level CI only syntax-lints the PowerShell runner and checks structural
+test coverage; it **does not** execute Unity. A real NUnit report is needed
+before reporting an actual Play Mode pass.
 
 Unity reference:
 https://docs.unity.com/en-us/engine/6000.3/manual/programming-environment/test-framework-introduction/running-tests/run-tests-from-command-line
