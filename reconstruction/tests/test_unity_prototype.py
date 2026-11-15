@@ -66,7 +66,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertEqual(enum_cases, dispatch)
         self.assertEqual(enum_cases, available)
         self.assertEqual(enum_cases, placed)
-        self.assertEqual(len(enum_cases), 17)
+        self.assertEqual(len(enum_cases), 18)
 
     def test_play_mode_bootstrap_and_editor_scene(self):
         boot = read("PrototypeBoot.cs")
@@ -283,7 +283,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("StationAction.Deposit", tests)
         self.assertIn("Is.EqualTo(HeistPhase.Idle)", tests)
         self.assertIn("field.SetValue(director, original)", tests)
-        self.assertIn("Is.EqualTo(17)", tests)
+        self.assertIn("Is.EqualTo(18)", tests)
 
         self.assertIn("'-runTests'", runner)
         self.assertIn("'-testPlatform', 'PlayMode'", runner)
@@ -327,7 +327,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("snapshot.CarryingCourierParcel", core)
         self.assertIn("StationAction.CourierPickup", world)
         self.assertIn("StationAction.CourierDropoff", world)
-        self.assertIn("new List<InteractionMarker>(17)", world)
+        self.assertIn("new List<InteractionMarker>(18)", world)
         self.assertIn("_session.PickUpCourierParcel()", director)
         self.assertIn("_session.DeliverCourierParcel(_balance.CourierReward)", director)
         self.assertIn("public int CourierReward = 35", balance)
@@ -335,9 +335,45 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("JsonUtility.ToJson(courier.ExportSnapshot())", editor)
         self.assertIn("Interact(StationAction.CourierPickup)", playmode)
         self.assertIn("Interact(StationAction.CourierDropoff)", playmode)
+        self.assertIn("Interact(StationAction.CourierCancel)", playmode)
         self.assertIn("Interact(StationAction.Deposit)", playmode)
         self.assertNotIn("CleanCash =", director)
         self.assertNotIn("BankBalance =", director)
+
+    def test_courier_recovery_has_physical_feedback_and_no_duplicate_faucet(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8")
+        presenter = read("CourierParcelPresenter.cs")
+        world = read("PrototypeWorld.cs")
+        director = read("PrototypeDirector.cs")
+        hud = read("PrototypeHud.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+
+        self.assertIn("public void CancelCourierParcel()", core)
+        self.assertIn("CarryingCourierParcel = false;", core)
+        self.assertIn("CourierCancel", read("InteractionMarker.cs"))
+        self.assertIn("StationAction.CourierCancel", world)
+        self.assertIn("_session.CancelCourierParcel()", director)
+        self.assertIn("GetComponentInChildren<CourierParcelPresenter>(true)", director)
+        self.assertEqual(director.count(
+            "_courierParcel.SetCarrying(_session.CarryingCourierParcel);"), 2)
+        self.assertIn("Courier: ", hud)
+        self.assertIn("state.CarryingCourierParcel", hud)
+        self.assertIn("parcel.GetComponent<Collider>().enabled = false;", world)
+        self.assertIn('parcel.name = "Carried courier parcel (visual only)"', world)
+        self.assertIn("parcel.AddComponent<CourierParcelPresenter>()", world)
+        self.assertIn("public void SetCarrying(bool carrying)", presenter)
+        self.assertNotIn("CleanCash", presenter)
+        self.assertNotIn("BankBalance", presenter)
+        self.assertNotIn("PickUpCourierParcel()", presenter)
+        self.assertIn("parcel.SetCarrying(true);", editor)
+        self.assertIn("courier.CancelCourierParcel();", editor)
+        self.assertIn("Interact(StationAction.CourierCancel)", playmode)
+        self.assertIn("parcel.IsVisible, Is.True", playmode)
+        self.assertIn("parcel.IsVisible, Is.False", playmode)
 
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
