@@ -161,17 +161,22 @@ actual freshly built Windows player** after the Unity build:
 
 The combined gate refuses a missing Editor, non-Windows host, **incorrect
 actual Unity Editor version**, dirty tracked reconstruction files, **unexpected
-untracked Unity acceptance inputs**
-(any authored Assets, Packages, ProjectSettings, Tools or C# files in the linked
-`reconstruction/game/Core` package), missing Play Mode results, stale
-executable, empty build data, missing/failed/timed-out Windows Player startup,
-or a missing fresh runtime pass marker. Normal Unity-generated `.meta`
-files **inside Assets only** and the single auto-created
-`Assets/Scenes/Prototype.unity` are exceptions. Ignored Unity Library, Temp,
-build logs and IDE files remain excluded. Commit or remove unexpected inputs
-before producing evidence for a particular tracked Git revision. The generated scene must be
-nonempty after the Editor smoke gate and retain the exact same SHA-256 through
-Play Mode and the Windows build; a changed scene fails acceptance.
+untracked authored Unity inputs** (C# scripts, custom Assets, Packages,
+ProjectSettings, Tools or linked core source). Unity 6000.5 normally creates
+`Packages/packages-lock.json`, known standard
+`ProjectSettings/*.asset` files, and `.meta` files for the tracked
+`reconstruction/game/Core` package during first import. These are now
+recognized by an **exact path or tracked-source allowlist**, not ignored:
+after the first Editor smoke, each accepted untracked generated input is
+recorded with its path, byte count and SHA-256 in the local evidence manifest.
+Its file set and content must remain unchanged through Play Mode and the
+Windows build. New or edited generated files after smoke **fail acceptance**.
+Only known `Assets/*.meta` and `Assets/Scenes/Prototype.unity` remain
+eligible for special treatment; the scene retains its independent SHA-256
+freeze. Never delete your Unity settings/lockfile just to bypass the gate.
+Ignored Library, Temp, build logs and IDE files remain excluded. Missing
+Play Mode results, stale EXE, empty build data, Windows Player startup failure
+or missing runtime marker still fail closed.
 
 Before the Editor smoke, the preflight invokes the supplied **actual Unity
 Editor executable** with its officially documented `-version` flag, requiring
@@ -188,8 +193,8 @@ The gate writes a **new, local-only** `Logs/unity-acceptance.json` only after
 all four actual validations succeed. The ignored `Logs/` folder contains
 Editor smoke, Play Mode, build and Windows Player startup logs plus NUnit XML;
 the manifest records the tested Git HEAD, generated scene SHA-256, configured
-Editor version, test count, executable SHA-256, and SHA-256 for each log/result
-file. The Windows Player smoke requires a clean exit code and a runtime marker
+Editor version, untracked generated input paths/SHA-256 after import, test
+count, executable SHA-256, and SHA-256 for each log/result file. The Windows Player smoke requires a clean exit code and a runtime marker
 written only after the actual packaged Player boots its procedural
 director, movement motor, follow camera, guard, collider-backed vehicle,
 physical cash and courier presenters, HUD, original generated audio and
@@ -743,3 +748,17 @@ uses provisional restrictions and is **not claimed to match ROB RUN exactly**.
 
 The shipped original Unity player files are only evidence, not redistributed
 game assets. Do not publish the original game resources without rights.
+
+
+## Unity CLI development tools (optional)
+
+The user-provided Unity CLI command reference lists `unity status`,
+`unity recompile`, `unity command`, `unity test`, `unity build` and
+`unity mcp`. Use `unity help <command>` to check flags installed on the
+Windows development machine, and `unity status --json` to inspect a local
+connected Editor. The working directory is the **current repository root**;
+the CLI's project target is `reconstruction/unity-prototype`, regardless
+of where the repository was cloned. There is no requirement to retain a
+nested `rabron/rabron` directory. The real Editor and Play Mode acceptance
+manifest remains governed by `Tools/Verify-Acceptance.ps1`; a successful
+CLI command alone is not evidence that all native acceptance gates ran.

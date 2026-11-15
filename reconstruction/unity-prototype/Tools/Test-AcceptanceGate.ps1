@@ -237,6 +237,82 @@ if ($ExitCode -ne 0) { exit $ExitCode }
             Remove-Item -LiteralPath $sceneFolder -Force -ErrorAction SilentlyContinue
         }
     }
+
+    # Create a disposable Git repository to emulate files Unity 6.5 creates
+    # on first import. Never delete or alter a developer's actual Unity files.
+    $fakeRepo = Join-Path $temp 'unity-generated-inputs-fixture'
+    foreach ($part in @('reconstruction/unity-prototype/Assets',
+                        'reconstruction/unity-prototype/Packages',
+                        'reconstruction/unity-prototype/ProjectSettings',
+                        'reconstruction/game/Core')) {
+        [System.IO.Directory]::CreateDirectory((Join-Path $fakeRepo $part)) | Out-Null
+    }
+    & git -C $fakeRepo init -q
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot initialize generated-input test repository.' }
+    & git -C $fakeRepo config user.email 'rabron-tests@example.invalid'
+    & git -C $fakeRepo config user.name 'Rabron synthetic test'
+    $coreSource = Join-Path $fakeRepo 'reconstruction/game/Core/HeistSession.cs'
+    Set-Content -LiteralPath $coreSource -Value '// tracked test core'
+    & git -C $fakeRepo add -- reconstruction/game/Core/HeistSession.cs
+    & git -C $fakeRepo commit -q -m 'synthetic tracked Unity core'
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot commit synthetic tracked core.' }
+    $fakeHead = (& git -C $fakeRepo rev-parse --verify HEAD)
+    $projectSettings = Join-Path $fakeRepo 'reconstruction/unity-prototype/ProjectSettings'
+    $packages = Join-Path $fakeRepo 'reconstruction/unity-prototype/Packages'
+    $coreMeta = $coreSource + '.meta'
+    $lock = Join-Path $packages 'packages-lock.json'
+    $settings = Join-Path $projectSettings 'AudioManager.asset'
+    $assetMeta = Join-Path $fakeRepo 'reconstruction/unity-prototype/Assets/Generated.cs.meta'
+    foreach ($item in @($coreMeta, $lock, $settings, $assetMeta)) {
+        Set-Content -LiteralPath $item -Value ('synthetic generated input ' + $item)
+    }
+    $baseline = @(& $provenance -RepoRoot $fakeRepo -ExpectedRevision $fakeHead `
+        -CaptureGeneratedInputs)
+    if ($baseline.Count -ne 4 -or @($baseline | Where-Object {
+            -not $_.sha256 -or $_.sha256.Length -ne 64
+        }).Count -gt 0) {
+        throw 'Unity-generated inputs did not produce a complete four-file SHA-256 snapshot.'
+    }
+    & $provenance -RepoRoot $fakeRepo -ExpectedRevision $fakeHead `
+        -ExpectedGeneratedInputs $baseline | Out-Null
+    Write-Host 'PASS accepted: known Unity-generated settings, lock, linked core .meta and asset .meta with SHA-256'
+
+    $originalSettings = Get-Content -LiteralPath $settings -Raw
+    Set-Content -LiteralPath $settings -Value 'changed settings contents'
+    $rejected = $false
+    try {
+        & $provenance -RepoRoot $fakeRepo -ExpectedGeneratedInputs $baseline | Out-Null
+    }
+    catch { $rejected = $_.Exception.Message -like '*SHA-256 changed*' }
+    if (-not $rejected) { throw 'Edited generated Unity settings escaped SHA-256 provenance.' }
+    Set-Content -LiteralPath $settings -Value $originalSettings -NoNewline
+
+    $extraAllowed = Join-Path $projectSettings 'QualitySettings.asset'
+    Set-Content -LiteralPath $extraAllowed -Value 'new default settings'
+    $rejected = $false
+    try {
+        & $provenance -RepoRoot $fakeRepo -ExpectedGeneratedInputs $baseline | Out-Null
+    }
+    catch { $rejected = $_.Exception.Message -like '*SHA-256 changed*' }
+    if (-not $rejected) { throw 'New generated Unity settings escaped file-set provenance.' }
+    Remove-Item -LiteralPath $extraAllowed -Force
+    Write-Host 'PASS rejected: edited or added Unity-generated input after fingerprint'
+
+    foreach ($bad in @(
+        (Join-Path $projectSettings 'CustomSettings.asset'),
+        (Join-Path $packages 'custom.json'),
+        (Join-Path $fakeRepo 'reconstruction/game/Core/Untracked.cs.meta')
+    )) {
+        Set-Content -LiteralPath $bad -Value 'unknown untracked content'
+        $rejected = $false
+        try { & $provenance -RepoRoot $fakeRepo | Out-Null }
+        catch { $rejected = $_.Exception.Message -like '*not covered by Git HEAD*' }
+        Remove-Item -LiteralPath $bad -Force
+        if (-not $rejected) {
+            throw "Unknown generated-like Unity acceptance input was allowed: $bad"
+        }
+    }
+    Write-Host 'PASS rejected: unknown Unity project settings, package files and orphan core .meta'
 }
 finally {
     Remove-Item -LiteralPath $temp -Recurse -Force
