@@ -51,7 +51,8 @@ namespace Rabron.Prototype
 
             // Do not touch the filesystem at all unless the expected world
             // exists. The checkpoint probe itself enforces a unique temp path.
-            bool saved = booted && VerifyIsolatedCheckpoint(out string saveError);
+            string saveError = "";
+            bool saved = booted && VerifyIsolatedCheckpoint(out saveError);
             if (saved)
                 Debug.Log("RABRON_WINDOWS_PLAYER_SMOKE_PASS");
             else
