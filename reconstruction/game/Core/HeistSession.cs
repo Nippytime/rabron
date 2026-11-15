@@ -280,9 +280,13 @@ namespace Rabron.Reconstruction
 
         public void BeginAnotherHeist()
         {
-            Require(Phase == HeistPhase.Laundered && CounterCash == 0 &&
+            // A completed heist must still clear criminal status by leaving
+            // the city and returning as a civilian before another cycle.
+            // The Unity NEXT HEIST marker already enforces this same rule.
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&
+                    Phase == HeistPhase.Laundered && CounterCash == 0 &&
                     _laundering == null && _loot.Count == 0,
-                    "Finish the current heist and laundering first.");
+                    "Return to the city as a civilian after laundering before restarting.");
             Phase = HeistPhase.Idle;
             AlarmRaised = false;
             StaffControlled = false;
