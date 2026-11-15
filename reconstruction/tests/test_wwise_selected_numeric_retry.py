@@ -87,6 +87,20 @@ class WwiseSelectedNumericRetryTests(unittest.TestCase):
             cls.index["capped_objects"][position]["numeric_path_sha256"] = digest
         verify_index(cls.index, cls.measured)
 
+    def test_workflow_uses_wwise_scanner_not_city(self):
+        import subprocess
+        path = ".github/workflows/retry-wwise-selected-numeric.yml"
+        workflow = subprocess.check_output(
+            ["git", "show", f"HEAD:{path}"], text=True,
+        )
+        self.assertEqual(
+            workflow.count("python -m reconstruction.tools.wwise_selected_numeric_retry "),
+            4,
+        )
+        self.assertNotIn("python -m reconstruction.tools.city_targeted_numeric_retry ",
+                         workflow)
+        self.assertIn("wwisedata_windows_assets_all.bundle", workflow)
+
     def test_uses_only_original_five_and_bounded_three_stages(self):
         scanner = Scanner(self.measured, self.index)
         with patch("reconstruction.tools.streamed_unityfs.streamed_unityfs"):

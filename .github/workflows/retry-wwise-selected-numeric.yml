@@ -33,7 +33,7 @@ jobs:
       - name: Verify original Wwise source and exact selected three sample IDs/pointer
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_targeted_numeric_retry plan --ledger reconstruction/data/extraction_coverage.json
+          python -m reconstruction.tools.wwise_selected_numeric_retry plan --ledger reconstruction/data/extraction_coverage.json
           python -m unittest discover -s reconstruction/tests -p test_wwise_selected_numeric_retry.py -v
 
   inspect:
@@ -55,7 +55,7 @@ jobs:
       - name: Check Git pointer before downloading original
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_targeted_numeric_retry plan --ledger reconstruction/data/extraction_coverage.json
+          python -m reconstruction.tools.wwise_selected_numeric_retry plan --ledger reconstruction/data/extraction_coverage.json
       - name: Download exact original 170 MB Wwise bundle
         run: |
           set -euo pipefail
@@ -68,7 +68,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_targeted_numeric_retry scan --ledger reconstruction/data/extraction_coverage.json --output "$RUNNER_TEMP/wwise-selected-retry.json" &
+          python -m reconstruction.tools.wwise_selected_numeric_retry scan --ledger reconstruction/data/extraction_coverage.json --output "$RUNNER_TEMP/wwise-selected-retry.json" &
           scan_pid=$!
           trap 'kill "$scan_pid" 2>/dev/null || true' EXIT
           while kill -0 "$scan_pid" 2>/dev/null; do
@@ -112,4 +112,4 @@ jobs:
       - name: Strict original Wwise three-ID scoped retry reconciliation
         run: |
           set -euo pipefail
-          python -m reconstruction.tools.city_targeted_numeric_retry reconcile --ledger reconstruction/data/extraction_coverage.json --result "$RUNNER_TEMP/wwise-selected-retry.json"
+          python -m reconstruction.tools.wwise_selected_numeric_retry reconcile --ledger reconstruction/data/extraction_coverage.json --result "$RUNNER_TEMP/wwise-selected-retry.json"
