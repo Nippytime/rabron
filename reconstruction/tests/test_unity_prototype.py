@@ -1114,6 +1114,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("uncommitted", guide.lower())
         self.assertIn("not executed", guide.lower())
 
+    def test_unreadable_backup_survives_valid_primary_rotation(self):
+        store = read("PrototypeSaveStore.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        saving = store.split("public static bool TrySave(", 1)[1].split(
+            "private static bool TryRead(", 1
+        )[0]
+        self.assertIn('string backup = target + ".bak";', saving)
+        self.assertIn("File.Exists(target) && File.Exists(backup)", saving)
+        self.assertIn("!TryRead(backup, out _)", saving)
+        self.assertIn('backup + ".corrupt-" + Guid.NewGuid().ToString("N")', saving)
+        self.assertIn("File.Move(backup, damaged);", saving)
+        self.assertLess(
+            saving.index("File.Move(backup, damaged);"),
+            saving.index("File.WriteAllText(temporary, json);"),
+        )
+        self.assertIn('File.Replace(temporary, target, target + ".bak")', saving)
+        self.assertIn("LastWriteFailed = true;", saving)
+        self.assertIn("committedBeforeRotation = File.ReadAllBytes(primary)", playmode)
+        self.assertIn("unreadableBackup = File.ReadAllBytes(backup)", playmode)
+        self.assertIn('Path.GetFileName(backup) + ".corrupt-*"', playmode)
+        self.assertIn("File.ReadAllBytes(retainedDamagedBackup)", playmode)
+        self.assertIn("Is.EqualTo(unreadableBackup)", playmode)
+        self.assertIn("Is.EqualTo(committedBeforeRotation)", playmode)
+        self.assertIn("File.Delete(retainedDamagedBackup)", playmode)
+        self.assertIn("previously valid primary checkpoint", playmode)
+        self.assertIn("unreadable backup", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
     def test_unsaved_checkpoint_warning_remains_visible_in_live_hud(self):
         store = read("PrototypeSaveStore.cs")
         director = read("PrototypeDirector.cs")
