@@ -76,8 +76,9 @@ namespace Rabron.Prototype
             {
                 _session.RaiseAlarm();
                 _audio.PlayAlarm();
-                SaveProgress();
+                // Preserve the disk error if the alarm checkpoint cannot be saved.
                 Notice("ALARM RAISED! The guard spotted you. Escape with any loot.");
+                SaveProgress();
             }
 
             // A loud robbery has a real loss consequence only if the active
@@ -92,8 +93,9 @@ namespace Rabron.Prototype
                 _session.ArrestAfterAlarm();
                 _audio.PlayRejected();
                 _player.WarpTo(CustodySpawn);
-                SaveProgress();
+                // A write error must not be masked by the custody notice.
                 Notice("ARRESTED. Carried loot and dirty cash confiscated. Release at custody desk.");
+                SaveProgress();
             }
 
             var focused = FindNearbyStation();
