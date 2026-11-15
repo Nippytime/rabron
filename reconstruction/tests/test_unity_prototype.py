@@ -876,15 +876,28 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("if (_preserveUnreadableSaves)", store)
         self.assertIn("Autosave disabled to preserve unreadable checkpoints.", store)
         self.assertIn("copy or move the existing save and backup files", store)
-        self.assertIn('File.Copy(backup, primary, overwrite: true)', store)
+        self.assertIn('primary + ".corrupt-" + Guid.NewGuid().ToString("N")', store)
+        self.assertIn("File.Move(primary, damaged);", store)
+        self.assertIn("File.Copy(backup, primary, overwrite: false)", store)
+        self.assertNotIn("File.Copy(backup, primary, overwrite: true)", store)
+        self.assertLess(
+            store.index("File.Move(primary, damaged);"),
+            store.index("File.Copy(backup, primary, overwrite: false)"),
+        )
         self.assertIn('File.Replace(temporary, target, target + ".bak")', store)
         self.assertIn("public void UnreadableCheckpointsMustSurviveLaterAutosaves()", playmode)
         self.assertIn('"-runTests"', playmode)
         self.assertIn("File.ReadAllBytes(primary), Is.EqualTo(brokenPrimary)", playmode)
         self.assertIn("File.ReadAllBytes(backup), Is.EqualTo(brokenBackup)", playmode)
+        self.assertIn('Path.GetFileName(primary) + ".corrupt-*"', playmode)
+        self.assertIn("Is.EqualTo(brokenPrimary)", playmode)
+        self.assertIn("File.ReadAllBytes(retainedDamagedPrimary)", playmode)
+        self.assertIn("File.ReadAllText(primary), Is.EqualTo(File.ReadAllText(backup))", playmode)
+        self.assertIn("File.Delete(retainedDamagedPrimary)", playmode)
         self.assertIn('"Auto-save must fail closed on corruption"', playmode)
         self.assertIn("PrototypeSaveStore.Load(out _);", playmode)
         self.assertIn("move the save", guide.lower())
+        self.assertIn("quarantine", guide.lower())
         self.assertIn("autosave", guide.lower())
 
     def test_unsaved_checkpoint_warning_remains_visible_in_live_hud(self):
