@@ -490,6 +490,20 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   **44** unresolved historic+new numeric caps. See
   reconstruction/docs/global-hub-lfs-source-batch.md.
 
+- W1-AH verified exact original shared-props and Wwise battle LFS binary
+  identities (**222,568,838** original bytes), with **5,782** typed
+  Unity objects across the pair. The shared-props original contains **5,780**
+  Unity objects, **zero** MonoBehaviours. Wwise contains **2** Unity
+  objects, including **one 116,892,416-byte MonoBehaviour** left
+  **explicitly unparsed** under the 8 MiB memory safety limit:
+  `bounded_numeric_scan_complete=false`. Both original source scan
+  workers and their strict two-source reconciliation succeeded at
+  https://github.com/Nippytime/rabron/actions/runs/43660706725; no recovered Wwise numeric formulas are claimed.
+  Measured source-inventory coverage advances to **322/330** originals;
+  **8** still unscanned, **44** older numeric field caps remain, plus the
+  separate **1 Wwise unparsed** MonoBehaviour. See
+  reconstruction/docs/shared-props-wwise-lfs-source-audit.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file

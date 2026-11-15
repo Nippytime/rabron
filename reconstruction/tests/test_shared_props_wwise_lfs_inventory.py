@@ -1,5 +1,6 @@
 """Source-integrity regression tests for two original shared environment props and Wwise battle LFS bundles."""
 import copy
+import json
 import hashlib
 import subprocess
 import tempfile
@@ -41,6 +42,42 @@ class SharedPropsWwiseLfsTests(unittest.TestCase):
         ):
             with self.subTest(dependency=dependency):
                 self.assertIn(f'      - "{dependency}"', paths)
+
+    def test_original_w1ah_ledger_preserves_oversized_wwise_numeric_gap(self):
+        ledger = json.loads((ROOT / "data/extraction_coverage.json").read_text(
+            encoding="utf-8"
+        ))
+        records = {item["bundle"]: item for item in ledger["scans"]
+                   if item["bundle"] in {src["bundle"] for src in TARGETS}}
+        self.assertEqual(len(records), 2)
+        self.assertGreaterEqual(len(ledger["scans"]), 322)
+        wwise = next(item for path, item in records.items()
+                     if path.endswith("wwisedata_windows_battle_assets_all.bundle"))
+        props = next(item for path, item in records.items()
+                     if path.endswith("shared-environment-props_assets_all.bundle"))
+        for entry in TARGETS:
+            rec = records[entry["bundle"]]
+            self.assertEqual(rec["sha256"], entry["lfs_oid_sha256"])
+            self.assertEqual(rec["size_bytes"], entry["size_bytes"])
+            self.assertEqual(rec["git_blob_sha"], entry["git_blob_sha"])
+            self.assertEqual(rec["scan_evidence"], AH_EVIDENCE)
+            self.assertEqual(rec["numeric_field_limit"], 2048)
+            self.assertEqual(rec["numeric_depth_limit"], 32)
+            self.assertEqual(rec["status"], "documented_scan_not_fully_verified")
+        self.assertEqual(sum(props["objects_by_type"].values()), 5780)
+        self.assertEqual(props["monobehaviours_total"], 0)
+        self.assertTrue(props["bounded_numeric_scan_complete"])
+        self.assertEqual(wwise["objects_by_type"],
+                         {"AssetBundle": 1, "MonoBehaviour": 1})
+        self.assertEqual(wwise["monobehaviours_total"], 1)
+        self.assertEqual(wwise["monobehaviours_parsed"], 0)
+        self.assertEqual(wwise["unparsed_records"], 1)
+        self.assertFalse(wwise["bounded_numeric_scan_complete"])
+        self.assertEqual(wwise["numeric_field_cap_records"], 0)
+        self.assertEqual({name: value for name, value in
+                          wwise["candidate_field_counts"].items()},
+                         {"combat": 0, "economy": 0,
+                          "progression": 0, "timing_and_world": 0})
 
     def test_original_pointer_pins_and_two_source_plan(self):
         self.assertEqual(len(TARGETS), 2)
