@@ -78,7 +78,7 @@ a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
-The Editor smoke checks generated procedural geometry, all 19 station
+The Editor smoke checks generated procedural geometry, all 20 station
 types and trigger colliders, solid-wall interaction occlusion, near-wall
 camera placement, the 0.65m step offset needed to climb the fence platform,
 and the heist-to-bank behavior contract. The optional
@@ -153,7 +153,7 @@ CI pipelines:
 
 - Runtime bootstrap: live director, player controller, camera, UI Toolkit
   HUD, guard, cash presenter (including its intentionally inactive zero-cash
-  state) and 19 station markers
+  state) and 20 station markers
 - Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
@@ -316,7 +316,13 @@ around the city.
    **police custody** desk in the southern district. Interact with the
    **Leave police custody** marker to return as a civilian and restart.
    Alternatively, evade the guard and collect one or both loot objects.
-5. Leave the building; use the **Escape** pillar on the road.
+5. Leave the building; use the **Escape** pillar on the road **after
+   collecting at least one loot item**. If you choose not to take anything,
+   use the neighboring **Withdraw from heist without payment** pillar
+   instead. This returns you to civilian/idle with **no reward** and no
+   change to existing account or cash balances; it clears the heist alarm
+   and guard status so you may scout another attempt or take a courier job.
+   The guard can still arrest you if you stay visible nearby during an alarm.
 6. Go **west** to the fence counter. Selling now reveals four original
    green cash-bundle meshes **on top of the counter**; they are visual only,
    with no collision. None of the cash is added to your wallet yet.
