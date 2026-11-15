@@ -29,6 +29,7 @@ internal static class Program
             CourierDeliveryPaysOnceAndDepositsCleanCash,
             CourierCargoPersistsAndRejectsUnreachableSaves,
             CourierDeliveryOverflowIsAtomic,
+            CourierCancellationNeverCreditsCash,
         };
 
         foreach (Action test in tests)
@@ -592,6 +593,41 @@ internal static class Program
         Eq(1L, game.CleanCash);
         Eq(long.MaxValue, game.BankBalance);
         True(!game.CarryingCourierParcel);
+    }
+
+    private static void CourierCancellationNeverCreditsCash()
+    {
+        var session = new HeistSession();
+        Throws<InvalidOperationException>(() => session.CancelCourierParcel());
+        session.PickUpCourierParcel();
+
+        // Cargo survives a checkpoint; the return must not pay a reward.
+        var resumed = HeistSession.FromSnapshot(session.ExportSnapshot());
+        True(resumed.CarryingCourierParcel);
+        resumed.CancelCourierParcel();
+        True(!resumed.CarryingCourierParcel);
+        Eq(0L, resumed.CleanCash);
+        Eq(0L, resumed.BankBalance);
+        Eq(0L, resumed.DirtyCash);
+        Eq(0L, resumed.CounterCash);
+        Throws<InvalidOperationException>(() => resumed.CancelCourierParcel());
+        Throws<InvalidOperationException>(() => resumed.DeliverCourierParcel(20));
+
+        // Returning the parcel unlocks the criminal path without a payout.
+        resumed.Scout();
+        resumed.PutOnMask();
+        resumed.StartHeist();
+        Eq(HeistPhase.Robbing, resumed.Phase);
+        Eq(PlayerRole.Criminal, resumed.CurrentRole);
+        True(!HeistSession.FromSnapshot(resumed.ExportSnapshot()).CarryingCourierParcel);
+
+        var courier = new HeistSession();
+        courier.PickUpCourierParcel();
+        courier.CancelCourierParcel();
+        courier.PickUpCourierParcel();
+        courier.DeliverCourierParcel(20);
+        Eq(20L, courier.CleanCash); // Only the completed second job pays.
+        Throws<InvalidOperationException>(() => courier.CancelCourierParcel());
     }
 
     private static HeistSession StartHeistWithOneItem()
