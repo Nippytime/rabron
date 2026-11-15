@@ -85,16 +85,21 @@ namespace Rabron.Prototype
         }
 
         public void Render(HeistSession state, string objective, string prompt,
-                           string message, bool savingDisabled)
+                           string message, bool savingDisabled, bool lastWriteFailed)
         {
-            // The normal notice expires after 4.5 seconds; unsafe save state
-            // must remain visible until a new valid session is loaded.
-            SaveWarningVisible = savingDisabled;
-            _saveWarning.style.display = savingDisabled ? DisplayStyle.Flex : DisplayStyle.None;
+            // A temporary notice cannot hide an unsaved state. Corrupted
+            // checkpoints require manual recovery; ordinary disk errors can
+            // clear after a subsequent confirmed successful write.
+            SaveWarningVisible = savingDisabled || lastWriteFailed;
+            _saveWarning.style.display = SaveWarningVisible ? DisplayStyle.Flex : DisplayStyle.None;
             _saveWarning.text = savingDisabled
                 ? "SAVING DISABLED — THIS SESSION WILL NOT BE SAVED. " +
                   "Copy or move damaged save and .bak files to safety, then restart."
-                : "";
+                : lastWriteFailed
+                    ? "LAST SAVE FAILED — RECENT PROGRESS IS NOT SAVED. " +
+                      "Check free space and folder permissions; retry saving. " +
+                      "This warning clears only after a successful checkpoint."
+                    : "";
             _state.text = "Role: " + state.CurrentRole
                           + "   |   Zone: " + state.CurrentZone
                           + "   |   Stage: " + state.Phase;
