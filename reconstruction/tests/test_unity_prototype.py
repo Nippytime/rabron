@@ -563,6 +563,30 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("move the save", guide.lower())
         self.assertIn("autosave", guide.lower())
 
+    def test_unsaved_checkpoint_warning_remains_visible_in_live_hud(self):
+        store = read("PrototypeSaveStore.cs")
+        director = read("PrototypeDirector.cs")
+        hud = read("PrototypeHud.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("public static bool SavingDisabled => _preserveUnreadableSaves", store)
+        self.assertIn("PrototypeSaveStore.SavingDisabled);", director)
+        self.assertIn("bool savingDisabled)", hud)
+        self.assertIn("public bool SaveWarningVisible { get; private set; }", hud)
+        self.assertIn("_saveWarning.style.display = savingDisabled", hud)
+        self.assertIn("SAVING DISABLED — THIS SESSION WILL NOT BE SAVED", hud)
+        self.assertIn("Copy or move damaged save and .bak files", hud)
+        self.assertIn("SaveWarningVisible = savingDisabled;", hud)
+        self.assertIn("Temporary notices must not clear the unsaved-session warning", playmode)
+        self.assertIn("Blocked autosave must have a persistent HUD warning", playmode)
+        self.assertIn("Valid backup recovery must clear the persistent warning", playmode)
+        self.assertIn("PrototypeSaveStore.SavingDisabled, Is.True", playmode)
+        self.assertIn("PrototypeSaveStore.SavingDisabled, Is.False", playmode)
+        self.assertIn("persistent", guide.lower())
+        self.assertIn("saving disabled", guide.lower())
+
     def test_batch_playmode_checkpoints_are_unique_per_editor_invocation(self):
         store = read("PrototypeSaveStore.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
