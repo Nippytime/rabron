@@ -65,6 +65,10 @@ namespace Rabron.Prototype.Tests
             float launched = (float)integrate.Invoke(null,
                 new object[] { 0f, true, true, 0f });
             Assert.That(launched, Is.GreaterThan(0f), "Grounded jump must launch upward");
+            float noAutoJump = (float)integrate.Invoke(null,
+                new object[] { launched, true, false, 0f });
+            Assert.That(noAutoJump, Is.LessThan(0f),
+                        "Ground contact without a new press must not relaunch");
             float airborne = (float)integrate.Invoke(null,
                 new object[] { 0f, false, true, 0.1f });
             Assert.That(airborne, Is.LessThan(0f), "No airborne double-jump");
