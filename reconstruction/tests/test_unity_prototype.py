@@ -399,7 +399,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("ResolveCeiling(_verticalVelocity, collision)", motor)
         self.assertIn("(collision & CollisionFlags.Above) != 0", motor)
         self.assertIn("_verticalVelocity = 0f;", motor)  # Warp resets velocity.
-        self.assertNotRegex(motor, r"\\bInput\\.Get(?:Button|Key|Axis)")
+        self.assertNotRegex(motor, r"\bInput\.Get(?:Button|Key|Axis)")
         self.assertIn("Space / Y: jump", hud)
         self.assertIn("Jump (grounded only)", guide)
         self.assertIn("IntegrateVertical", editor)
