@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $project = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..')).Path
-$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '..\..\..')).Path
+$repoRoot = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot '../../..')).Path
 $logs = Join-Path $project 'Logs'
 [System.IO.Directory]::CreateDirectory($logs) | Out-Null
 if (-not $EvidencePath) {
