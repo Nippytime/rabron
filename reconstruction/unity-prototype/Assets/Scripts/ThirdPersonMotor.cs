@@ -20,6 +20,7 @@ namespace Rabron.Prototype
         private const float DemoGravity = 20f;
         private const float DemoJumpHeight = 1.15f;
         private float _pitch = 18f;
+        private float _drivingLookYaw;
         private float _verticalVelocity;
         private PrototypeVehicle? _vehicle;
         private readonly List<Renderer> _hiddenRenderers = new List<Renderer>();
@@ -43,6 +44,7 @@ namespace Rabron.Prototype
                 throw new InvalidOperationException("Car is already occupied.");
 
             _vehicle = vehicle;
+            _drivingLookYaw = 0f;
             _boardedVehicleFrame = Time.frameCount;
             _character.enabled = false;
             foreach (Renderer visual in GetComponentsInChildren<Renderer>(true))
@@ -60,9 +62,12 @@ namespace Rabron.Prototype
             if (_vehicle == null || !_vehicle.TryFindExit(transform, out Vector3 position))
                 return false;
 
-            _vehicle.EndDriving();
+            PrototypeVehicle parkedCar = _vehicle;
+            parkedCar.EndDriving();
             _vehicle = null;
             transform.position = position;
+            transform.rotation = Quaternion.Euler(0f, parkedCar.transform.eulerAngles.y, 0f);
+            _drivingLookYaw = 0f;
             _verticalVelocity = 0f;
             _character.enabled = true;
             RestoreVisuals();
@@ -136,6 +141,7 @@ namespace Rabron.Prototype
             {
                 _vehicle.EndDriving();
                 _vehicle = null;
+                _drivingLookYaw = 0f;
                 _character.enabled = true;
                 RestoreVisuals();
             }
@@ -171,6 +177,15 @@ namespace Rabron.Prototype
                 Cursor.visible = false;
             }
 
+            // Look must run before the occupied-car branch returns. Camera
+            // orbit changes neither the car's steering nor the actor's yaw.
+            if (Cursor.lockState == CursorLockMode.Locked)
+            {
+                Vector2 look = _mouse.ReadValue<Vector2>() * 0.12f
+                    + _stick.ReadValue<Vector2>() * (120f * Time.deltaTime);
+                ApplyLookDelta(look);
+            }
+
             if (_vehicle != null)
             {
                 if (ExitPressAfterBoard(_boardedVehicleFrame, Time.frameCount,
@@ -185,14 +200,6 @@ namespace Rabron.Prototype
                 }
             }
 
-            if (Cursor.lockState == CursorLockMode.Locked)
-            {
-                Vector2 look = _mouse.ReadValue<Vector2>() * 0.12f
-                    + _stick.ReadValue<Vector2>() * (120f * Time.deltaTime);
-                transform.Rotate(0f, look.x, 0f);
-                _pitch = Mathf.Clamp(_pitch - look.y, -45f, 70f);
-            }
-
             Vector2 axis = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
             Vector3 planar = transform.right * axis.x + transform.forward * axis.y;
             float speed = _sprint.IsPressed() ? 7f : 4.5f;
@@ -201,6 +208,16 @@ namespace Rabron.Prototype
             CollisionFlags collision = _character.Move(
                 (planar * speed + Vector3.up * _verticalVelocity) * Time.deltaTime);
             _verticalVelocity = ResolveCeiling(_verticalVelocity, collision);
+        }
+
+        private void ApplyLookDelta(Vector2 look)
+        {
+            if (_vehicle == null)
+                transform.Rotate(0f, look.x, 0f);
+            else
+                _drivingLookYaw = Mathf.Repeat(_drivingLookYaw + look.x + 180f, 360f) - 180f;
+
+            _pitch = Mathf.Clamp(_pitch - look.y, -45f, 70f);
         }
 
         // Pure steps are shared by the motor and its real Unity test source.
@@ -227,7 +244,8 @@ namespace Rabron.Prototype
         private void LateUpdate()
         {
             Transform focus = _vehicle != null ? _vehicle.transform : transform;
-            Quaternion yaw = Quaternion.Euler(0f, focus.eulerAngles.y, 0f);
+            Quaternion yaw = Quaternion.Euler(0f,
+                focus.eulerAngles.y + (_vehicle != null ? _drivingLookYaw : 0f), 0f);
             Quaternion pitch = Quaternion.Euler(_pitch, 0f, 0f);
             Vector3 pivot = focus.position + Vector3.up * 1.6f;
             Vector3 target = pivot + yaw * pitch * new Vector3(0f, 0.9f, -5.5f);
