@@ -222,6 +222,45 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Guard should not see a player directly behind", smoke)
         self.assertIn("session.ControlStaff();", smoke)
 
+    def test_alarm_is_single_shot_and_requires_uncontrolled_staff(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8"
+        )
+        tests = (ROOT / "game/Tests/Program.cs").read_text(
+            encoding="utf-8"
+        )
+        director = read("PrototypeDirector.cs")
+        guide = (ROOT / "game/README.md").read_text(encoding="utf-8")
+
+        alarm = core.split("public void RaiseAlarm()", 1)[1].split(
+            "public void ControlStaff()", 1
+        )[0]
+        self.assertIn("Phase == HeistPhase.Robbing", alarm)
+        self.assertIn("!AlarmRaised && !StaffControlled", alarm)
+        self.assertIn("AlarmRaised = true;", alarm)
+        self.assertIn(
+            "!_session.StaffControlled && !_session.AlarmRaised &&",
+            director,
+        )
+        self.assertIn("GuardAlarmIsSingleShotAndRequiresActiveStaff,", tests)
+        self.assertIn(
+            "Throws<InvalidOperationException>(() => controlled.RaiseAlarm())",
+            tests,
+        )
+        self.assertIn(
+            "Throws<InvalidOperationException>(() => alerted.RaiseAlarm())",
+            tests,
+        )
+        self.assertIn(
+            "Throws<InvalidOperationException>(() => restored.RaiseAlarm())",
+            tests,
+        )
+        self.assertIn(
+            "game.RaiseAlarm();\n        game.ControlStaff();", tests,
+        )
+        self.assertIn("single-shot", guide.lower())
+        self.assertIn("controlled staff", guide.lower())
+
     def test_guard_overlap_cannot_bypass_visibility_and_arrest(self):
         sensor = read("GuardSensor.cs")
         director = read("PrototypeDirector.cs")
