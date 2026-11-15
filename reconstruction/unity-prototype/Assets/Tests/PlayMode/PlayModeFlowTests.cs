@@ -126,7 +126,7 @@ namespace Rabron.Prototype.Tests
                         Is.GreaterThan(0), "HUD labels were not attached");
             Assert.That(guard, Is.Not.Null, "No guard sensor in runtime scene");
             Assert.That(cash, Is.Not.Null, "No collectible physical counter money");
-            Assert.That(stations.Length, Is.EqualTo(19));
+            Assert.That(stations.Length, Is.EqualTo(20));
             var parcel = motor.GetComponentInChildren<CourierParcelPresenter>(true);
             Assert.That(parcel, Is.Not.Null, "No physical courier cargo visual");
             Assert.That(parcel.GetComponent<Collider>().enabled, Is.False,
@@ -215,6 +215,30 @@ namespace Rabron.Prototype.Tests
                 Interact(StationAction.OpenBank);
                 Interact(StationAction.Deposit);
                 Assert.That(courier.BankBalance, Is.GreaterThan(0L));
+
+                // Recover an empty-handed robbery using the production
+                // station dispatcher and its real availability predicate.
+                var empty = new HeistSession();
+                field.SetValue(director, empty);
+                Interact(StationAction.Scout);
+                Interact(StationAction.Mask);
+                Interact(StationAction.BeginRobbery);
+                MethodInfo available = typeof(PrototypeDirector).GetMethod(
+                    "Available", PrivateInstance);
+                Assert.That(available, Is.Not.Null);
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.WithdrawEmptyHanded }), Is.True);
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.Escape }), Is.False);
+                Interact(StationAction.WithdrawEmptyHanded);
+                Assert.That(empty.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(empty.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
+                Assert.That(empty.CounterCash, Is.EqualTo(0L));
+                Assert.That(empty.DirtyCash, Is.EqualTo(0L));
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.WithdrawEmptyHanded }), Is.False);
+                Assert.That(HeistSession.FromSnapshot(empty.ExportSnapshot()).Phase,
+                            Is.EqualTo(HeistPhase.Idle));
 
                 // Test actual guard sight/proximity -> core confiscation,
                 // then dispatch through the real custody release station.

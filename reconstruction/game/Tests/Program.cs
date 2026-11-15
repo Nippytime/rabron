@@ -32,6 +32,8 @@ internal static class Program
             CourierCancellationNeverCreditsCash,
             ArrestConfiscatesLootAndPreservesLegalMoney,
             ArrestSnapshotCannotForgeRolesOrRewards,
+            EmptyHandedWithdrawalRestoresPlayWithoutEarningCash,
+            EmptyEscapeAndForgedCheckpointAreRejected,
         };
 
         foreach (Action test in tests)
@@ -211,6 +213,8 @@ internal static class Program
         session.ControlStaff();
         Throws<InvalidOperationException>(() => session.ControlStaff());
         True(session.StaffControlled);
+        // Escaping is now legal only when a real loot item was collected.
+        session.TakeLoot("control-guard-fixture");
         session.Escape();
         Throws<InvalidOperationException>(() => session.ControlStaff());
     }
@@ -717,6 +721,97 @@ internal static class Program
         valid.ReleaseFromCustody();
         True(!valid.AlarmRaised);
         Throws<InvalidOperationException>(() => valid.ArrestAfterAlarm());
+    }
+
+    private static void EmptyHandedWithdrawalRestoresPlayWithoutEarningCash()
+    {
+        var session = new HeistSession();
+        session.OpenBankAccount();
+        session.PickUpCourierParcel();
+        session.DeliverCourierParcel(60);
+        session.DepositCleanCash(20);
+
+        // Deliberately carry legal cash, bank money and previously earned
+        // dirty cash into another attempt; withdrawal must not erase them.
+        session.Scout();
+        session.PutOnMask();
+        session.StartHeist();
+        session.TakeLoot("camera");
+        session.Escape();
+        session.SellLoot(new Dictionary<string, long> { ["camera"] = 100 });
+        session.CollectCounterCash();
+        session.StartLaundering(40, 35, 100, 1);
+        session.CompleteLaundering(101);
+        session.LeaveCity();
+        session.EnterCity();
+        session.BeginAnotherHeist();
+        session.Scout();
+        session.PutOnMask();
+        session.StartHeist();
+
+        Throws<InvalidOperationException>(() => session.SellLoot(
+            new Dictionary<string, long>()));
+        session.RaiseAlarm();
+        session.ControlStaff();
+        var saved = HeistSession.FromSnapshot(session.ExportSnapshot());
+        Eq(HeistPhase.Robbing, saved.Phase);
+        Eq(0, saved.Loot.Count);
+        saved.WithdrawEmptyHanded();
+
+        Eq(HeistPhase.Idle, saved.Phase);
+        Eq(PlayerRole.Civilian, saved.CurrentRole);
+        Eq(Zone.City, saved.CurrentZone);
+        Eq(0, saved.Loot.Count);
+        Eq(0L, saved.CounterCash);
+        Eq(60L, saved.DirtyCash);
+        Eq(75L, saved.CleanCash);
+        Eq(20L, saved.BankBalance);
+        True(saved.BankAccountOpened);
+        True(!saved.AlarmRaised && !saved.StaffControlled);
+        Throws<InvalidOperationException>(() => saved.WithdrawEmptyHanded());
+        Eq(HeistPhase.Idle, HeistSession.FromSnapshot(saved.ExportSnapshot()).Phase);
+
+        // Withdrawal is not a reset of the economy: another robbery is legal.
+        saved.Scout();
+        saved.PutOnMask();
+        saved.StartHeist();
+        saved.TakeLoot("painting");
+        Throws<InvalidOperationException>(() => saved.WithdrawEmptyHanded());
+        Eq(1, saved.Loot.Count);
+        Eq(PlayerRole.Criminal, saved.CurrentRole);
+        saved.Escape();
+        Eq(HeistPhase.Escaped, saved.Phase);
+    }
+
+    private static void EmptyEscapeAndForgedCheckpointAreRejected()
+    {
+        var game = new HeistSession();
+        Throws<InvalidOperationException>(() => game.WithdrawEmptyHanded());
+        game.Scout();
+        Throws<InvalidOperationException>(() => game.WithdrawEmptyHanded());
+        game.PutOnMask();
+        game.StartHeist();
+
+        Throws<InvalidOperationException>(() => game.Escape());
+        Eq(HeistPhase.Robbing, game.Phase);
+        Eq(0, game.Loot.Count);
+
+        var forged = game.ExportSnapshot();
+        forged.Phase = HeistPhase.Escaped;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(forged));
+
+        var police = new HeistSession(Zone.City, PlayerRole.Police);
+        Throws<InvalidOperationException>(() => police.WithdrawEmptyHanded());
+        game.WithdrawEmptyHanded();
+        Eq(PlayerRole.Civilian, game.CurrentRole);
+        game.Scout();
+        game.PutOnMask();
+        game.StartHeist();
+        game.TakeLoot("art");
+        Throws<InvalidOperationException>(() => game.WithdrawEmptyHanded());
+        game.Escape();
+        Throws<InvalidOperationException>(() => game.WithdrawEmptyHanded());
+        Eq(HeistPhase.Escaped, HeistSession.FromSnapshot(game.ExportSnapshot()).Phase);
     }
 
     private static HeistSession StartHeistWithOneItem()

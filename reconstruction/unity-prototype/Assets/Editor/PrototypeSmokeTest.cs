@@ -214,6 +214,23 @@ namespace Rabron.Prototype.Editor
             Check(courier.BankBalance == 12,
                   "Lawful courier earnings were not depositable at the bank");
 
+            // A quiet/loud empty-handed robbery must have a recovery
+            // path without fencing, minting or persisting an Escaped dead end.
+            var retreat = new HeistSession();
+            retreat.Scout();
+            retreat.PutOnMask();
+            retreat.StartHeist();
+            retreat.RaiseAlarm();
+            retreat = HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                JsonUtility.ToJson(retreat.ExportSnapshot())));
+            Check(retreat.Phase == HeistPhase.Robbing && retreat.Loot.Count == 0,
+                  "Unity JSON lost the empty in-progress robbery");
+            retreat.WithdrawEmptyHanded();
+            Check(retreat.Phase == HeistPhase.Idle &&
+                  retreat.CurrentRole == PlayerRole.Civilian && !retreat.AlarmRaised &&
+                  retreat.CounterCash == 0 && retreat.DirtyCash == 0,
+                  "Empty-handed withdrawal must restore civilian play without paying");
+
             // Exercise the custody state through Unity's actual JSON
             // serializer. An alarm alone is not the same as arrest.
             var custody = new HeistSession();

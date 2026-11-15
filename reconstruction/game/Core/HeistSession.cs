@@ -117,9 +117,25 @@ namespace Rabron.Reconstruction
             StaffControlled = false;
         }
 
+        /// <summary>
+        /// Abandon an unfinished robbery without loot or a payout. This does
+        /// not affect legal earnings or dirty money from earlier heists.
+        /// </summary>
+        public void WithdrawEmptyHanded()
+        {
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Criminal &&
+                    Phase == HeistPhase.Robbing && _loot.Count == 0,
+                    "Only an active empty-handed robbery can be abandoned.");
+            CurrentRole = PlayerRole.Civilian;
+            Phase = HeistPhase.Idle;
+            AlarmRaised = false;
+            StaffControlled = false;
+        }
+
         public void Escape()
         {
-            Require(Phase == HeistPhase.Robbing, "No active robbery to escape.");
+            Require(Phase == HeistPhase.Robbing && _loot.Count > 0,
+                    "Take at least one loot item before escaping.");
             Phase = HeistPhase.Escaped;
         }
 
@@ -374,6 +390,7 @@ namespace Rabron.Reconstruction
                              snapshot.Phase == HeistPhase.Escaped;
             bool counterPhase = snapshot.Phase == HeistPhase.CashOnCounter;
             bool validMoneyStage = (lootPhase || loot.Length == 0) &&
+                (snapshot.Phase != HeistPhase.Escaped || loot.Length > 0) &&
                 (counterPhase ? snapshot.CounterCash > 0 : snapshot.CounterCash == 0) &&
                 (snapshot.Phase != HeistPhase.DirtyCashCollected || snapshot.DirtyCash > 0);
 
