@@ -66,7 +66,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertEqual(enum_cases, dispatch)
         self.assertEqual(enum_cases, available)
         self.assertEqual(enum_cases, placed)
-        self.assertEqual(len(enum_cases), 15)
+        self.assertEqual(len(enum_cases), 17)
 
     def test_play_mode_bootstrap_and_editor_scene(self):
         boot = read("PrototypeBoot.cs")
@@ -283,7 +283,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("StationAction.Deposit", tests)
         self.assertIn("Is.EqualTo(HeistPhase.Idle)", tests)
         self.assertIn("field.SetValue(director, original)", tests)
-        self.assertIn("Is.EqualTo(15)", tests)
+        self.assertIn("Is.EqualTo(17)", tests)
 
         self.assertIn("'-runTests'", runner)
         self.assertIn("'-testPlatform', 'PlayMode'", runner)
@@ -306,6 +306,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn('arg, "-runTests"', save)
         self.assertIn("Application.temporaryCachePath", save)
         self.assertIn("Application.persistentDataPath", save)
+
+    def test_lawful_courier_has_one_core_faucet_and_restorable_markers(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(encoding="utf-8")
+        snapshot = (ROOT / "game/Core/HeistSessionSnapshot.cs").read_text(
+            encoding="utf-8")
+        director = read("PrototypeDirector.cs")
+        world = read("PrototypeWorld.cs")
+        balance = read("PrototypeBalance.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+
+        self.assertIn("public bool CarryingCourierParcel;", snapshot)
+        self.assertIn("public void PickUpCourierParcel()", core)
+        self.assertIn("public void DeliverCourierParcel(long verifiedCleanPayout)", core)
+        self.assertIn("long next = checked(CleanCash + verifiedCleanPayout);", core)
+        self.assertIn("CarryingCourierParcel = false;", core)
+        self.assertIn("snapshot.CarryingCourierParcel", core)
+        self.assertIn("StationAction.CourierPickup", world)
+        self.assertIn("StationAction.CourierDropoff", world)
+        self.assertIn("new List<InteractionMarker>(17)", world)
+        self.assertIn("_session.PickUpCourierParcel()", director)
+        self.assertIn("_session.DeliverCourierParcel(_balance.CourierReward)", director)
+        self.assertIn("public int CourierReward = 35", balance)
+        self.assertIn("courier.PickUpCourierParcel();", editor)
+        self.assertIn("JsonUtility.ToJson(courier.ExportSnapshot())", editor)
+        self.assertIn("Interact(StationAction.CourierPickup)", playmode)
+        self.assertIn("Interact(StationAction.CourierDropoff)", playmode)
+        self.assertIn("Interact(StationAction.Deposit)", playmode)
+        self.assertNotIn("CleanCash =", director)
+        self.assertNotIn("BankBalance =", director)
 
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")

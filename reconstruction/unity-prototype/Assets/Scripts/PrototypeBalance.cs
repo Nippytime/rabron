@@ -11,6 +11,7 @@ namespace Rabron.Prototype
         [Min(1)] public int WatchQuote = 80;
         [Range(0, 100)] public int CleanPayoutPercent = 80;
         [Min(1)] public int LaunderingSeconds = 8;
+        [Min(1)] public int CourierReward = 35; // Provisional legal-job faucet.
 
         public long QuoteFor(string lootId) => lootId switch
         {

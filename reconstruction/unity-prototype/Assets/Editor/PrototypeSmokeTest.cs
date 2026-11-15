@@ -158,6 +158,23 @@ namespace Rabron.Prototype.Editor
         private static void ValidateHeistCore()
         {
             // Numbers here are deliberately fixture data, not original rates.
+            // Exercise the alternate lawful path through Unity's own JSON
+            // serializer, including an in-progress parcel on restart.
+            var courier = new HeistSession();
+            courier.PickUpCourierParcel();
+            courier = HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                JsonUtility.ToJson(courier.ExportSnapshot())));
+            Check(courier.CarryingCourierParcel,
+                  "Unity JSON lost the unfinished legal delivery parcel");
+            courier.DeliverCourierParcel(12); // Deliberate independent demo fixture.
+            Check(!courier.CarryingCourierParcel && courier.CleanCash == 12 &&
+                  courier.DirtyCash == 0 && courier.CounterCash == 0,
+                  "Lawful delivery must pay clean cash exactly once");
+            courier.OpenBankAccount();
+            courier.DepositCleanCash(12);
+            Check(courier.BankBalance == 12,
+                  "Lawful courier earnings were not depositable at the bank");
+
             var session = new HeistSession();
             session.Scout();
             session.PutOnMask();

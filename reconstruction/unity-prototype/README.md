@@ -78,7 +78,7 @@ a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
-The Editor smoke checks generated procedural geometry, all 15 station
+The Editor smoke checks generated procedural geometry, all 17 station
 types and trigger colliders, solid-wall interaction occlusion, near-wall
 camera placement, the 0.65m step offset needed to climb the fence platform,
 and the heist-to-bank behavior contract. The optional
@@ -100,12 +100,13 @@ tests. These run **inside Unity** and are not simulated by the Python/.NET
 CI pipelines:
 
 - Runtime bootstrap: live director, player controller, camera, UI Toolkit
-  HUD, guard, cash presenter and 15 station markers
+  HUD, guard, cash presenter and 17 station markers
 - Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
 
-The heist test calls the production dispatcher directly via reflection,
+The dispatcher test also checks the civilian courier pickup-to-bank path.
+Both paths call the production dispatcher directly via reflection,
 not synthetic keyboard input. Manual WASD/gamepad controls, live physics
 reachability, visual presentation and the packaged Windows EXE still
 require a human playthrough.
@@ -153,7 +154,7 @@ Play Mode sessions and Windows executable launches. On startup it loads a
 versioned checkpoint from Unity's \`Application.persistentDataPath\`.
 Successful interactions, guard alarms, completed laundering, application
 pause and quit trigger saves. You can stop during a heist, with uncollected
-fence money, or while a laundering timer is running, then resume without
+fence money, a pending civilian courier parcel, or while a laundering timer is running, then resume without
 minting extra currency. A timer that expired while the app was closed
 completes on the next gameplay update.
 
@@ -187,6 +188,30 @@ its result can be claimed as verified.
 | Interact at a highlighted pillar | E | South face button (A) |
 | Release mouse cursor | Escape | — |
 | Lock cursor again | Left click in the Game view | — |
+
+## Civilian courier alternative (no robbery)
+
+The original, independently authored demo also offers a lawful, repeatable
+route for players who prefer not to join the criminal heist:
+
+1. From the starting street, walk to the western **Courier dispatch** kiosk
+   (near the ATM) and interact with **Collect legal delivery parcel**.
+2. The parcel is remembered by the versioned checkpoint. You cannot scout,
+   wear the criminal mask or leave the city while the delivery is active.
+3. Cross to the eastern **Courier recipient** kiosk and interact with
+   **Deliver legal parcel**. The configured demo quote credits **clean
+   cash** once; repeating the delivery without another pickup cannot pay
+   twice. No loot, dirty cash, fence or laundering are involved.
+4. Open a bank account as a civilian at the ATM and deposit clean cash.
+   You can start another delivery or scout the heist afterward.
+
+The initial demonstration courier reward is **35 invented demo units**,
+configured in the existing `PrototypeBalance` ScriptableObject. This is a
+named local legal-job cash source, **not an original game reward formula, a
+server-authorized transaction or an anti-cheat system**. Earlier v1 saves
+without the optional parcel flag load with no parcel. The demo intentionally
+permits only one courier parcel at a time and contains no vehicle logistics,
+item weight, routing algorithm or mission generator.
 
 ## Complete sample loop
 
@@ -252,6 +277,7 @@ These values are **provisional test figures**, not recovered ROB RUN balance:
 - Watch quote: 80 demo units
 - Clean payout: 80% of submitted dirty cash
 - Laundering time: 8 seconds
+- Civilian courier completion reward: 35 demo units (credited as clean cash)
 
 To override them, in Unity use **Assets > Create > Rabron > Prototype Economy**,
 configure the ScriptableObject in the Inspector, and save it as
@@ -275,7 +301,7 @@ No hard-coded economic rates live in the portable \`HeistSession\` core.
 
 ## Validation and limitations
 
-GitHub Actions checks the referenced local package, all 15 interaction targets,
+GitHub Actions checks the referenced local package, all 17 interaction targets,
 versioned save adapters and invariant validation,
 Unity project manifest, demo bootstrapping and code separation. The original
 .NET console tests compile and exercise money conservation and phase gating.

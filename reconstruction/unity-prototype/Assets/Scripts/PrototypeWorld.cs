@@ -14,7 +14,7 @@ namespace Rabron.Prototype
                                                                out CashPilePresenter cashPile,
                                                                out GuardSensor guard)
         {
-            var stations = new List<InteractionMarker>(15);
+            var stations = new List<InteractionMarker>(17);
             var asphalt = Hex("#242A34");
             var concrete = Hex("#56616F");
             var wall = Hex("#3E4858");
@@ -93,11 +93,21 @@ namespace Rabron.Prototype
             cashPile.SetAmount(0);
             Cube(parent, "Laundering workbench", new Vector3(20, 0.9f, 1),
                  new Vector3(5, 1.8f, 2), Hex("#647B81"));
+            // Civilian-only alternative to the robbery. Two separate walkable
+            // roadside kiosks, not an imported delivery or reference-game asset.
+            Cube(parent, "Courier dispatch kiosk", new Vector3(-16, 0.7f, -17),
+                 new Vector3(2.5f, 1.4f, 3), Hex("#B18C5A"));
+            Cube(parent, "Courier recipient kiosk", new Vector3(16, 0.7f, -17),
+                 new Vector3(2.5f, 1.4f, 3), Hex("#79A98F"));
             Cube(parent, "ATM booth", new Vector3(0, 1.35f, -24),
                  new Vector3(2, 2.7f, 1.1f), Hex("#367C9F"));
             Cube(parent, "ATM screen", new Vector3(0, 1.75f, -23.41f),
                  new Vector3(1.35f, 0.9f, 0.1f), Hex("#81DCFD"));
 
+            Station(parent, stations, StationAction.CourierPickup, "Collect legal delivery parcel",
+                    new Vector3(-12, 0, -17), "#B9D09A");
+            Station(parent, stations, StationAction.CourierDropoff, "Deliver legal parcel",
+                    new Vector3(12, 0, -17), "#86CFB1");
             Station(parent, stations, StationAction.Scout, "Scout building",
                     new Vector3(-3, 0, 11), "#80D6F2");
             Station(parent, stations, StationAction.Mask, "Put on criminal mask",
