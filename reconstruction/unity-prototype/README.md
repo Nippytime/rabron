@@ -78,7 +78,7 @@ a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
-The Editor smoke checks generated procedural geometry, all 20 station
+The Editor smoke checks generated procedural geometry, all 21 station
 types and trigger colliders, solid-wall interaction occlusion, near-wall
 camera placement, the 0.65m step offset needed to climb the fence platform,
 and the heist-to-bank behavior contract. The optional
@@ -153,7 +153,7 @@ CI pipelines:
 
 - Runtime bootstrap: live director, player controller, camera, UI Toolkit
   HUD, guard, cash presenter (including its intentionally inactive zero-cash
-  state) and 20 station markers
+  state) and 21 station markers
 - Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
@@ -256,6 +256,10 @@ its result can be claimed as verified.
 | Sprint | Left Shift | Left-stick click |
 | Jump (grounded only) | Space | North face button (Y / Triangle) |
 | Interact at a highlighted pillar | E | South face button (A) |
+| Enter/exit the parked practice car | E (exit only when stopped) | South face button (A) |
+| Drive forward / reverse | W / S | Left stick up / down |
+| Steer while driving | A / D | Left stick left / right |
+| Brake while driving | Space | North face button (Y / Triangle) |
 | Release mouse cursor | Escape | — |
 | Lock cursor again | Left click in the Game view | — |
 
@@ -265,6 +269,28 @@ hits a ceiling. The north-face gamepad button was selected to retain the
 existing south-face interact control. Air jumping, vaulting and crouching are
 not implemented. The movement and camera must still be manually validated
 in an actual Unity Editor and Windows build.
+
+## Original practice car (no vehicle economy)
+
+A single **driveable practice car** is parked to the east of the starting
+road, with a gold **Enter practice car** marker on its side. Approach it
+as a **Civilian** in **Idle** with no courier cargo and press E / gamepad A.
+The actor's walking collider and visual are hidden while boarded; the same
+third-person camera follows the car. W/S and left-stick throttle drive forward
+or reverse, A/D and the stick steer, and Space/Y brakes. Once nearly stopped,
+press E / A to exit on a collision-clear side. If both sides are blocked or
+the car is moving too quickly, exit is refused instead of placing the avatar
+inside a wall. No cash is paid for entering, driving or exiting.
+
+This uses an invented, low-speed **CharacterController** car with a simple
+original cube body and wheels. It is not a professional wheel/suspension
+simulation, model extracted from the reference game, AI traffic system or
+server-authoritative drive. **Vehicle position resets on restart**; normal
+player banking, courier and heist saves are unaffected. The car cannot carry
+an active courier parcel and does not transfer gameplay role or money. Real
+keyboard/gamepad steering, obstacles, exit clearance and a Windows executable
+must still be checked in Unity 6000.3; the hosted Python/.NET CI has not
+driven the car.
 
 ## Civilian courier alternative (no robbery)
 
@@ -293,7 +319,7 @@ server-authorized transaction or an anti-cheat system**. Earlier v1 saves
 without the optional parcel flag load with no parcel. The demo intentionally
 permits only one courier parcel at a time; a dedicated station is the
 no-payout return marker. The parcel mesh is presentation-only and its collider
-is disabled. The route contains no vehicle logistics,
+is disabled. The courier route contains no vehicle cargo logistics,
 item weight, routing algorithm or mission generator.
 
 ## Complete sample loop
@@ -412,7 +438,8 @@ Unity project manifest, demo bootstrapping and code separation. The original
 **Neither test substitutes for opening the actual project in Unity Editor.**
 
 Still missing: a real Unity Editor scene/build smoke test; exported Windows EXE;
-police dispatch, mobile guard AI, human multiplayer, base building, vehicles, cargo,
+police dispatch, mobile guard AI, human multiplayer, base building,
+full vehicle ownership/traffic, cargo,
 clans, prison, persistent server state, realistic art or animations; measured
 matching heist payouts, loot tables, laundering ratios and timers. The logic
 uses provisional restrictions and is **not claimed to match ROB RUN exactly**.
