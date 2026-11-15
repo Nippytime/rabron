@@ -31,7 +31,10 @@ animation or multiplayer networking yet.
 the full heist phase, role, loot IDs, collectible fence cash, guard/alarm
 flags, dirty/clean money, bank balance and running laundering job. Restores
 validate the save version, IDs, financial amounts, phase consistency and
-timer/payout integrity before using any saved values.
+timer/payout integrity before using any saved values. A criminal can never
+persist or start in the **desert**: leaving the city clears criminal status,
+and forged desert/criminal role combinations are rejected before recovery.
+Legitimate civilian and police saves in the desert still restore normally.
 
 \`Core/HeistSessionSnapshot.cs\` is a pure C# serializable data carrier.
 The core never touches JSON, Unity APIs or file storage. The Unity
