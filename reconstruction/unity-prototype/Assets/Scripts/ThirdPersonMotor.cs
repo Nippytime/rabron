@@ -17,14 +17,26 @@ namespace Rabron.Prototype
         private InputAction _sprint = null!;
         private InputAction _interact = null!;
         private InputAction _jump = null!;
+        private InputAction _crouch = null!;
         private const float DemoGravity = 20f;
         private const float DemoJumpHeight = 1.15f;
+        private const float DemoCrouchHeight = 1.15f;
+        private const float DemoCrouchSpeed = 2.4f;
+        private float _standingHeight;
+        private float _crouchHeight;
+        private float _standingStepOffset;
+        private Vector3 _standingCenter;
+        private Transform? _bodyVisual;
+        private Vector3 _standingVisualPosition;
+        private Vector3 _standingVisualScale;
+        private bool _isCrouched;
         private float _pitch = 18f;
         private float _drivingLookYaw;
         private float _verticalVelocity;
         private PrototypeVehicle? _vehicle;
         private readonly List<Renderer> _hiddenRenderers = new List<Renderer>();
         private readonly RaycastHit[] _cameraHits = new RaycastHit[24];
+        private readonly Collider[] _standHits = new Collider[32];
         private int _exitInteractFrame = -1;
         private int _boardedVehicleFrame = -1;
 
@@ -35,6 +47,7 @@ namespace Rabron.Prototype
             => pressed && boardFrame != frame;
 
         public bool IsDriving => _vehicle != null;
+        public bool IsCrouched => _isCrouched;
         public bool InteractPressed => _vehicle == null && _interact != null &&
             _exitInteractFrame != Time.frameCount && _interact.WasPressedThisFrame();
 
@@ -86,6 +99,16 @@ namespace Rabron.Prototype
         private void Awake()
         {
             _character = GetComponent<CharacterController>();
+            _standingHeight = _character.height;
+            _standingCenter = _character.center;
+            _standingStepOffset = _character.stepOffset;
+            _crouchHeight = Mathf.Min(DemoCrouchHeight, _standingHeight);
+            _bodyVisual = transform.Find("Player mesh");
+            if (_bodyVisual != null)
+            {
+                _standingVisualPosition = _bodyVisual.localPosition;
+                _standingVisualScale = _bodyVisual.localScale;
+            }
             // Editor smoke tests instantiate the procedural world outside Play Mode.
             // Do not spawn an unparented camera or capture the cursor in edit mode.
             if (!Application.isPlaying)
@@ -109,6 +132,10 @@ namespace Rabron.Prototype
             _jump = new InputAction("Jump", InputActionType.Button);
             _jump.AddBinding("<Keyboard>/space");
             _jump.AddBinding("<Gamepad>/buttonNorth");
+            // Hold crouch with a separate control from sprint or look.
+            _crouch = new InputAction("Crouch", InputActionType.Button);
+            _crouch.AddBinding("<Keyboard>/leftCtrl");
+            _crouch.AddBinding("<Gamepad>/rightStickPress");
 
             var cam = new GameObject("Prototype Follow Camera");
             _camera = cam.AddComponent<Camera>();
@@ -127,6 +154,7 @@ namespace Rabron.Prototype
             _sprint?.Enable();
             _interact?.Enable();
             _jump?.Enable();
+            _crouch?.Enable();
         }
 
         private void OnDisable()
@@ -137,6 +165,7 @@ namespace Rabron.Prototype
             _sprint?.Disable();
             _interact?.Disable();
             _jump?.Disable();
+            _crouch?.Disable();
             if (_vehicle != null)
             {
                 _vehicle.EndDriving();
@@ -155,6 +184,7 @@ namespace Rabron.Prototype
             _sprint?.Dispose();
             _interact?.Dispose();
             _jump?.Dispose();
+            _crouch?.Dispose();
             if (_camera != null)
                 Destroy(_camera.gameObject);
             if (Application.isPlaying)
@@ -200,9 +230,11 @@ namespace Rabron.Prototype
                 }
             }
 
+            UpdateCrouch(_crouch.IsPressed());
             Vector2 axis = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
             Vector3 planar = transform.right * axis.x + transform.forward * axis.y;
-            float speed = _sprint.IsPressed() ? 7f : 4.5f;
+            float speed = _isCrouched ? DemoCrouchSpeed :
+                (_sprint.IsPressed() ? 7f : 4.5f);
             _verticalVelocity = IntegrateVertical(_verticalVelocity,
                 _character.isGrounded, _jump.WasPressedThisFrame(), Time.deltaTime);
             CollisionFlags collision = _character.Move(
@@ -220,6 +252,65 @@ namespace Rabron.Prototype
             Vector2 stickLook = Vector2.ClampMagnitude(gamepadStick, 1f)
                 * (120f * Mathf.Max(0f, deltaSeconds));
             return mouseLook + stickLook;
+        }
+
+        // Keep the capsule's feet at the same level when changing height.
+        // Resuming full height requires real nontrigger headroom, never just
+        // a button release that can clip the player through a ceiling.
+        private void UpdateCrouch(bool held)
+        {
+            if (held == _isCrouched)
+                return;
+            if (!held && !CanStand())
+                return;
+
+            _isCrouched = held;
+            float height = held ? _crouchHeight : _standingHeight;
+            if (held)
+                _character.stepOffset = Mathf.Min(_standingStepOffset, 0.3f);
+            _character.height = height;
+            _character.center = _standingCenter -
+                Vector3.up * ((_standingHeight - height) * 0.5f);
+            if (!held)
+                _character.stepOffset = _standingStepOffset;
+
+            if (_bodyVisual != null)
+            {
+                _bodyVisual.localPosition = _standingVisualPosition -
+                    Vector3.up * ((_standingHeight - height) * 0.5f);
+                Vector3 visualScale = _standingVisualScale;
+                visualScale.y *= height / _standingHeight;
+                _bodyVisual.localScale = visualScale;
+            }
+        }
+
+        private bool CanStand()
+        {
+            // Test only the upper volume gained by standing, so the ground
+            // underneath the player's current capsule is not an obstacle.
+            float radius = _character.radius;
+            float bottomY = _standingCenter.y - _standingHeight * 0.5f;
+            Vector3 crouchedHead = transform.TransformPoint(
+                new Vector3(_standingCenter.x,
+                    bottomY + _crouchHeight - radius, _standingCenter.z));
+            Vector3 standingHead = transform.TransformPoint(
+                new Vector3(_standingCenter.x,
+                    bottomY + _standingHeight - radius, _standingCenter.z));
+            Vector3 scale = transform.lossyScale;
+            float clearanceRadius = (radius + _character.skinWidth) *
+                Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            int count = Physics.OverlapCapsuleNonAlloc(
+                crouchedHead, standingHead, clearanceRadius,
+                _standHits, ~0, QueryTriggerInteraction.Ignore);
+            if (count == _standHits.Length)
+                return false; // Never assume clearance with truncated hits.
+            for (int i = 0; i < count; i++)
+            {
+                Collider hit = _standHits[i];
+                if (hit != null && !hit.transform.IsChildOf(transform))
+                    return false;
+            }
+            return true;
         }
 
         private void ApplyLookDelta(Vector2 look)
@@ -259,7 +350,8 @@ namespace Rabron.Prototype
             Quaternion yaw = Quaternion.Euler(0f,
                 focus.eulerAngles.y + (_vehicle != null ? _drivingLookYaw : 0f), 0f);
             Quaternion pitch = Quaternion.Euler(_pitch, 0f, 0f);
-            Vector3 pivot = focus.position + Vector3.up * 1.6f;
+            Vector3 pivot = focus.position +
+                Vector3.up * (_vehicle != null ? 1.6f : _isCrouched ? 1.08f : 1.6f);
             Vector3 target = pivot + yaw * pitch * new Vector3(0f, 0.9f, -5.5f);
             target = WorldOcclusion.ClampCamera(pivot, target, focus, _cameraHits);
 

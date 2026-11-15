@@ -80,7 +80,8 @@ namespace Rabron.Prototype
             _prompt.style.backgroundColor = new Color(0.04f, 0.07f, 0.1f, 0.8f);
 
             Add(details, "WASD / left stick: move  •  Mouse / right stick: look", 12, false);
-            Add(details, "Shift / stick-click: sprint  •  Space / Y: jump", 12, false);
+            Add(details, "Shift / L-stick click: sprint  •  Ctrl / R-stick click: crouch", 12, false);
+            Add(details, "Space / Y: jump (on ground)", 12, false);
             Add(details, "E / A: interact  •  Esc: unlock mouse (stick still looks)", 12, false);
         }
 
