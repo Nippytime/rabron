@@ -28,6 +28,27 @@ try {
     }
     Write-Host 'PASS rejected: missing Unity platform/editor and stale success removed'
 
+    # A previously green runtime log must never survive a failed player
+    # invocation. This deliberately supplies a missing EXE (no Unity run).
+    $playerRunner = Join-Path $PSScriptRoot 'Verify-WindowsPlayer.ps1'
+    $playerLog = Join-Path $temp 'windows-player-smoke.log'
+    Set-Content -LiteralPath $playerLog -Value 'RABRON_WINDOWS_PLAYER_SMOKE_PASS'
+    $rejected = $false
+    try {
+        & $playerRunner -ExePath (Join-Path $temp 'missing-player.exe') `
+            -LogPath $playerLog | Out-Null
+    }
+    catch {
+        $rejected = $true
+    }
+    if (-not $rejected) {
+        throw 'Missing real Windows Player was falsely accepted.'
+    }
+    if (Test-Path -LiteralPath $playerLog) {
+        throw 'Stale green Windows Player log survived a failed invocation.'
+    }
+    Write-Host 'PASS rejected: missing Windows Player and stale startup marker removed'
+
     # Synthetic Git-based provenance tests: NO Unity executable is launched.
     $provenance = Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1'
     $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path

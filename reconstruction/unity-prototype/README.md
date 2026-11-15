@@ -98,7 +98,8 @@ PowerShell syntax checks cannot establish Unity runtime success.
 Use this after committing a known source revision, with the Unity project
 **closed in the graphical Editor**. This command runs the existing Editor
 smoke, real Play Mode NUnit and Windows build validation **in sequence**,
-and stops if any stage fails:
+and stops if any stage fails. It also runs a bounded **headless smoke of the
+actual freshly built Windows player** after the Unity build:
 
 ~~~powershell
 .\reconstruction\unity-prototype\Tools\Verify-Acceptance.ps1
@@ -110,17 +111,32 @@ and stops if any stage fails:
 The combined gate refuses a missing Editor, non-Windows host, dirty tracked
 reconstruction files, **unexpected untracked authored Assets** (such as C#
 scripts, custom ScriptableObjects, prefabs or extra scenes), missing Play Mode
-results, stale executable, or empty build data. Normal Unity-generated
+results, stale executable, empty build data, missing/failed/timed-out Windows
+Player startup, or a missing fresh runtime pass marker. Normal Unity-generated
 `.meta` files and the single auto-created
 `Assets/Scenes/Prototype.unity` are exceptions. The generated scene must be
 nonempty after the Editor smoke gate and retain the exact same SHA-256 through
 Play Mode and the Windows build; a changed scene fails acceptance.
 
 The gate writes a **new, local-only** `Logs/unity-acceptance.json` only after
-all three actual validations succeed. The ignored `Logs/` folder contains
-editor-smoke, Play Mode and build logs plus the NUnit XML; the manifest
-records the tested Git HEAD, generated scene SHA-256, configured Editor
-version, test count, executable SHA-256 and SHA-256 for each log/result file.
+all four actual validations succeed. The ignored `Logs/` folder contains
+Editor smoke, Play Mode, build and Windows Player startup logs plus NUnit XML;
+the manifest records the tested Git HEAD, generated scene SHA-256, configured
+Editor version, test count, executable SHA-256, and SHA-256 for each log/result
+file. The Windows Player smoke requires a clean exit code and a runtime marker
+written after the actual packaged Player boots its procedural director,
+movement motor, HUD, and all 21 unique interaction station actions.
+
+The built Player is launched in `-batchmode -nographics` using an opt-in
+`-rabronPlayerSmoke` flag, with a finite timeout and a fresh `-logFile`.
+The smoke invocation uses an isolated, per-process temporary save location,
+not normal demo checkpoints. This automated **headless** startup probe is
+**not a manual** or visually rendered gameplay test; it cannot validate
+graphics, camera interaction, human controls, real vehicle feel or windowed
+performance. A timeout, crash, missing marker or missing log rejects the
+entire acceptance manifest. Unity's supported standalone command flags
+are documented at
+https://docs.unity.com/en-us/engine/6000.3/manual/unity-editor/command-line-arguments/player.
 This is **not a real Unity run in hosted CI**, and Git HEAD alone does not
 fingerprint the machine's Unity-generated scene, settings or installed packages.
 No original game resources are copied into the manifest.
@@ -141,9 +157,10 @@ The manifest is local and can contain a machine-specific Unity installation
 path. Do not publish the raw log files or manifest without checking them for
 machine names, local directories, license identifiers or other personal data.
 Even a successful manifest establishes only **automated local validation**.
-Manual player checks—keyboard/gamepad input, jumping/ceiling, camera collision,
-physical pickup/return/delivery, banking, save/restart and launching the
-Windows EXE—remain required before closing playable acceptance issue #9.
+Manual rendered-player checks—keyboard/gamepad input, jumping/ceiling,
+camera collision, physical pickup/return/delivery, banking, save/restart and
+interactively launching the Windows EXE—remain required before closing
+playable acceptance issue #9.
 
 ## Real Unity Play Mode acceptance (Windows)
 

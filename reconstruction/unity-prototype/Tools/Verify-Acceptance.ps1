@@ -78,6 +78,7 @@ $startedUtc = (Get-Date).ToUniversalTime()
 $smoke = Join-Path $logs 'editor-smoke.log'
 $playmodeResults = Join-Path $logs 'playmode-results.xml'
 $playmodeLog = Join-Path $logs 'playmode-tests.log'
+$playerLog = Join-Path $logs 'windows-player-smoke.log'
 $exe = Join-Path $project 'Builds\RabronPrototype.exe'
 $data = Join-Path $project 'Builds\RabronPrototype_Data'
 $scene = Join-Path $project 'Assets/Scenes/Prototype.unity'
@@ -113,8 +114,15 @@ if (-not (Test-Path -LiteralPath $data -PathType Container) -or
     throw 'Windows build data directory is absent or empty.'
 }
 
-# Git should not have mutated tracked source/settings during the three
-# Unity invocations; otherwise the HEAD identifier is not full provenance.
+# The built EXE must actually start and exit cleanly, not merely exist.
+# The runner deletes stale logs, limits execution time and checks an
+# opt-in runtime marker emitted only by the built Player after bootstrap.
+& (Join-Path $PSScriptRoot 'Verify-WindowsPlayer.ps1') `
+    -ExePath $exe -LogPath $playerLog
+Assert-NonemptyFile $playerLog | Out-Null
+
+# Git should not have mutated tracked source/settings during the real
+# Unity Editor/Play Mode/build/Player invocations; HEAD remains provenance.
 $dirtyAfter = @(& git -C $repoRoot status --porcelain --untracked-files=no -- reconstruction)
 if ($LASTEXITCODE -ne 0 -or $dirtyAfter.Count -gt 0) {
     throw 'Unity modified tracked reconstruction files; review changes before acceptance.'
@@ -137,7 +145,7 @@ if ($testCount -lt 3 -or $testCount -ne $passedCount) {
 
 $manifest = [ordered]@{
     schema_version = 1
-    scope = 'local Windows Unity automation; manual gameplay not verified'
+    scope = 'local Windows Unity Editor, Play Mode, build and headless Player startup; manual gameplay not verified'
     git_revision = $revision
     started_utc = $startedUtc.ToString('o')
     finished_utc = (Get-Date).ToUniversalTime().ToString('o')
@@ -146,6 +154,7 @@ $manifest = [ordered]@{
         Join-Path $project 'ProjectSettings\ProjectVersion.txt') -Raw).Trim()
     automatic_gates_passed = $true
     manual_playthrough_verified = $false
+    windows_player_smoke_passed = $true
     playmode_total = $testCount
     playmode_passed = $passedCount
     artifacts = [ordered]@{
@@ -155,6 +164,7 @@ $manifest = [ordered]@{
         playmode_editor_log = File-Summary $playmodeLog
         windows_build_log = File-Summary $smoke
         windows_executable = File-Summary $exe
+        windows_player_smoke_log = File-Summary $playerLog
     }
     windows_data_directory_present = $true
 }
@@ -173,4 +183,4 @@ finally {
 }
 Write-Host "Real Unity automated acceptance PASSED at revision $revision"
 Write-Host "Evidence manifest: $EvidencePath"
-Write-Host 'Manual Windows gameplay and visual/control validation remain REQUIRED.'
+Write-Host 'Manual rendered Windows gameplay and visual/control validation remain REQUIRED.'

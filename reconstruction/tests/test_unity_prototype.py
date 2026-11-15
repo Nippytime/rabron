@@ -451,6 +451,57 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn('"No airborne double-jump"', playmode)
         self.assertIn('"Ceiling collision must cancel ascent"', playmode)
 
+    def test_real_windows_player_boot_is_a_required_isolated_gate(self):
+        boot = read("PrototypeBoot.cs")
+        probe = read("PrototypePlayerSmoke.cs")
+        store = read("PrototypeSaveStore.cs")
+        player = (UNITY / "Tools/Verify-WindowsPlayer.ps1").read_text(
+            encoding="utf-8")
+        acceptance = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8")
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn('"-rabronPlayerSmoke"', boot)
+        self.assertIn("Application.isBatchMode", boot)
+        self.assertIn("director.gameObject.AddComponent<PrototypePlayerSmoke>()", boot)
+        self.assertIn("yield return null;", probe)
+        self.assertIn("FindFirstObjectByType<PrototypeDirector>()", probe)
+        self.assertIn("FindFirstObjectByType<ThirdPersonMotor>()", probe)
+        self.assertIn("FindFirstObjectByType<PrototypeHud>()", probe)
+        self.assertIn("markers.Length == 21 && actions.Count == 21", probe)
+        self.assertIn("RABRON_WINDOWS_PLAYER_SMOKE_PASS", probe)
+        self.assertIn("Application.Quit(booted ? 0 : 1)", probe)
+
+        self.assertIn('"rabron-player-smoke", PlayerSmokeInvocationId', store)
+        self.assertIn("Application.temporaryCachePath", store)
+        self.assertIn("Guid.NewGuid().ToString(\"N\")", store)
+        self.assertIn('"-rabronPlayerSmoke"', store)
+
+        self.assertIn("Remove-Item -LiteralPath $LogPath -Force", player)
+        self.assertIn("[PlatformID]::Win32NT", player)
+        self.assertIn("Test-Path -LiteralPath $ExePath -PathType Leaf", player)
+        self.assertIn("'-batchmode', '-nographics', '-rabronPlayerSmoke'", player)
+        self.assertIn("Start-Process -FilePath $ExePath", player)
+        self.assertIn("$process.WaitForExit($TimeoutSeconds * 1000)", player)
+        self.assertIn("$process.Kill()", player)
+        self.assertIn("$exitCode -ne 0", player)
+        self.assertIn("RABRON_WINDOWS_PLAYER_SMOKE_PASS", player)
+
+        build = acceptance.index("'Verify-Unity.ps1') -EditorPath $EditorPath -BuildWindows")
+        player_gate = acceptance.index("'Verify-WindowsPlayer.ps1')")
+        manifest = acceptance.index("Move-Item -LiteralPath $temp -Destination $EvidencePath")
+        self.assertLess(build, player_gate)
+        self.assertLess(player_gate, manifest)
+        self.assertIn("windows_player_smoke_passed = $true", acceptance)
+        self.assertIn("windows_player_smoke_log = File-Summary $playerLog", acceptance)
+        self.assertIn("Assert-NonemptyFile $playerLog", acceptance)
+        self.assertIn("Stale green Windows Player log survived", fixture)
+        self.assertIn("missing-player.exe", fixture)
+        self.assertIn("headless", guide.lower())
+        self.assertIn("not a manual", guide.lower())
+
     def test_real_unity_acceptance_evidence_is_fail_closed_and_git_bound(self):
         runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
             encoding="utf-8")
