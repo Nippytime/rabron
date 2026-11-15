@@ -398,6 +398,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("guard-control marker", guide.lower())
         self.assertIn("not executed", guide.lower())
 
+    def test_quiet_guard_control_flank_uses_live_cone_and_dispatch(self):
+        world = read("PrototypeWorld.cs")
+        guard = read("GuardSensor.cs")
+        director = read("PrototypeDirector.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn('new Vector3(-1.3f, 0f, 31.9f)', world)
+        self.assertIn("private const float DemoHalfSightAngle = 55f;", guard)
+        self.assertIn("Vector3.Angle(transform.forward, horizontal)", guard)
+        self.assertIn("private const float InteractionRadius = 3.8f;", director)
+        self.assertIn('new Vector3(-3.6f, 0.12f, 31f)', editor)
+        self.assertIn("CheckControlInReach();", editor)
+        self.assertIn('"Quiet left flank must reach the real guard-control station"', editor)
+        self.assertIn('"Quiet flank guard ray must be unobstructed', editor)
+        self.assertIn('"Quiet flank must be outside the real guard vision cone"', editor)
+        self.assertIn('new Vector3(-3.6f, 0.12f, 31f)', playmode)
+        self.assertIn("liveGuard.CanSee(motor.transform)", playmode)
+        self.assertIn('"Quiet flank must select guard control', playmode)
+        self.assertIn("perform.Invoke(director, new object[] { quietFocus, now })", playmode)
+        self.assertIn("coverSession.StaffControlled, Is.True", playmode)
+        self.assertIn("coverSession.AlarmRaised, Is.False", playmode)
+        self.assertIn("update.Invoke(director, null)", playmode)
+        self.assertIn("motor.WarpTo(originalPosition);", playmode)
+        self.assertIn("wider left flank", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
     def test_alarm_is_single_shot_and_requires_uncontrolled_staff(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8"
