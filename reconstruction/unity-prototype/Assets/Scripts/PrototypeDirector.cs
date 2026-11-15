@@ -100,7 +100,10 @@ namespace Rabron.Prototype
             if (_player.InteractPressed)
             {
                 if (focused == null)
+                {
+                    _audio.PlayRejected();
                     Notice("Get closer to an available station.");
+                }
                 else
                 {
                     try
