@@ -166,13 +166,33 @@ class WwiseSelectedNumericRetryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             verify_report(bad, self.index)
 
-    def test_committed_original_evidence_if_available(self):
+    def test_committed_original_three_id_evidence_is_sha_locked(self):
+        import hashlib
         path = ROOT / "data/wwise_selected_numeric_retry.json"
-        if path.exists():
-            report = json.loads(path.read_text(encoding="utf-8"))
-            verify_report(report, self.index)
-            self.assertEqual(len(report["outcomes"]), 3)
-            self.assertEqual(report["unselected_original_caps_untouched"], 271)
+        self.assertTrue(path.is_file(), "Actual original binary evidence must be committed")
+        raw = path.read_bytes()
+        self.assertEqual(len(raw), 2768)
+        self.assertEqual(hashlib.sha256(raw).hexdigest(),
+                         "11a9f32db0134a0a42c7031b03c3f12b77fd03cdb0e24bb2d2760d12543d2428")
+        report = json.loads(raw)
+        verify_report(report, self.index)
+        self.assertEqual(report["resolved"], 0)
+        self.assertEqual(report["unresolved"], 3)
+        self.assertEqual(report["adaptive_retried"], 3)
+        self.assertEqual(report["unselected_original_caps_untouched"], 271)
+        self.assertFalse(report["full_bundle_numeric_extraction_complete"])
+        self.assertEqual([x["path_id"] for x in report["outcomes"]],
+                         ["-9215429395481605246", "-6697251573783040",
+                          "9197897462607697745"])
+        self.assertTrue(all(
+            r["status"] == "still_capped"
+            and r["numeric_field_count"] == 16384
+            and r["truncation_reasons"] == ["field_limit"]
+            and r["numeric_path_sha256"] ==
+            "c6194bbcd23fa7f03a36a52f689a5a803388ab69d6780821cefe4d47f574265a"
+            and r["sample_numeric_field_paths"][0] == "$.RawData[0]"
+            for r in report["outcomes"]))
+        self.assertNotIn('"value":', json.dumps(report))
 
     def test_report_stays_metadata_only(self):
         scanner = Scanner(self.measured, self.index)
