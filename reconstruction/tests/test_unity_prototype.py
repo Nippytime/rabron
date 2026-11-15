@@ -222,6 +222,34 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Guard should not see a player directly behind", smoke)
         self.assertIn("session.ControlStaff();", smoke)
 
+    def test_guard_overlap_cannot_bypass_visibility_and_arrest(self):
+        sensor = read("GuardSensor.cs")
+        director = read("PrototypeDirector.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # Range remains enforced; facing is undefined at exact overlap, so
+        # only ordinary nonzero directions are subject to the cone.
+        self.assertIn("horizontal.sqrMagnitude > DemoSightRange * DemoSightRange", sensor)
+        self.assertIn("horizontal.sqrMagnitude >= 0.001f &&", sensor)
+        self.assertIn("Vector3.Angle(transform.forward, horizontal)", sensor)
+        self.assertNotIn("horizontal.sqrMagnitude < 0.001f)", sensor)
+        self.assertIn("WorldOcclusion.HasClearLine(origin, target, transform", sensor)
+        self.assertIn("player.transform.position = guard.transform.position;", editor)
+        self.assertIn("Overlapping the guard must not grant invisibility", editor)
+        self.assertIn("Guard should not see a player directly behind him", editor)
+        self.assertIn("motor.WarpTo(activeGuard.transform.position);", playmode)
+        self.assertIn("activeGuard.CanSee(motor.transform), Is.True", playmode)
+        self.assertIn("Guard must detect a player at its exact position", playmode)
+        self.assertIn("Overlapping guard must cause confiscation after alarm", playmode)
+        self.assertIn("_session.ArrestAfterAlarm();", director)
+        self.assertIn("overlap", guide.lower())
+
     def test_original_audio_cues_are_bounded_and_runtime_only(self):
         audio = read("PrototypeAudioFeedback.cs")
         director = read("PrototypeDirector.cs")
