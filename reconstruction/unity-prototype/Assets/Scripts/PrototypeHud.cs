@@ -81,7 +81,7 @@ namespace Rabron.Prototype
 
             Add(details, "WASD / left stick: move  •  Mouse / right stick: look", 12, false);
             Add(details, "Shift / stick-click: sprint  •  Space / Y: jump", 12, false);
-            Add(details, "E / A: interact  •  Esc: cursor", 12, false);
+            Add(details, "E / A: interact  •  Esc: unlock mouse (stick still looks)", 12, false);
         }
 
         public void Render(HeistSession state, string objective, string prompt,
