@@ -179,8 +179,9 @@ namespace Rabron.Prototype
 
         private bool CanReachStation(InteractionMarker marker)
         {
-            // Don't steal through warehouse walls or reach through the counter.
-            Vector3 eye = _player.transform.position + Vector3.up * 1.5f;
+            // Don't reach through walls, counters or the low cover while
+            // crouched. Use the same actual capsule point as guard vision.
+            Vector3 eye = WorldOcclusion.UpperBodyPoint(_player.transform);
             return WorldOcclusion.HasClearLine(eye, marker.transform.position,
                                                _player.transform, _stationHits);
         }
