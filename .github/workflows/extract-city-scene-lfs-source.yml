@@ -3,7 +3,7 @@ name: W1-AM verify original City-scene Git LFS UnityFS sources
 on:
   pull_request:
     paths:
-      - ".github/workflows/extract-city-scene-lfs-sources.yml"
+      - ".github/workflows/extract-city-scene-lfs-source.yml"
       - "reconstruction/data/city_scene_lfs_source_target.json"
       - "reconstruction/data/extraction_coverage.json"
       - "reconstruction/tools/weapon_lfs_inventory.py"
