@@ -9,7 +9,7 @@ namespace Rabron.Prototype
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Spawn()
         {
-            var director = Object.FindFirstObjectByType<PrototypeDirector>();
+            var director = UnityEngine.Object.FindFirstObjectByType<PrototypeDirector>();
             if (director == null)
             {
                 var root = new GameObject("Rabron Procedural Prototype");
