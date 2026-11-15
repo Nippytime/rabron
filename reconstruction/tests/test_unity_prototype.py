@@ -147,6 +147,28 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("DirtyCash =", presenter)
         self.assertNotIn("BankBalance =", presenter)
 
+    def test_real_playmode_discovers_inactive_counter_cash(self):
+        world = read("PrototypeWorld.cs")
+        presenter = read("CashPilePresenter.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+
+        # A zero balance deactivates the actor; it must remain discoverable
+        # in the real Play Mode test without enabling it artificially.
+        self.assertIn("cashPile.SetAmount(0);", world)
+        self.assertIn("gameObject.SetActive(visible);", presenter)
+        self.assertIn("FindObjectsByType<CashPilePresenter>(", playmode)
+        self.assertIn("FindObjectsInactive.Include, FindObjectsSortMode.None", playmode)
+        self.assertIn("presenters.Length, Is.EqualTo(1)", playmode)
+        self.assertIn("return presenters[0];", playmode)
+        self.assertEqual(playmode.count("var cash = FindCashPresenter();"), 2)
+        self.assertNotIn("FindFirstObjectByType<CashPilePresenter>()", playmode)
+        self.assertIn("cash.IsVisible, Is.EqualTo(saved.CounterCash > 0L)", playmode)
+        self.assertIn("cash.SetAmount(0);", playmode)
+        self.assertIn("FindCashPresenter(), Is.SameAs(cash)", playmode)
+        self.assertIn("cash.IsVisible, Is.True", playmode)
+        self.assertIn("cash.IsVisible, Is.False", playmode)
+
     def test_interactions_and_camera_obey_world_colliders(self):
         director = read("PrototypeDirector.cs")
         motor = read("ThirdPersonMotor.cs")
