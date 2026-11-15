@@ -131,6 +131,68 @@ namespace Rabron.Prototype.Tests
                 Assert.That(hud.SaveWarningVisible, Is.True,
                             "A different notice must not hide unsaved progress");
 
+                // Reuse this real rejected disk write in both production
+                // guard outcomes. Earlier code overwrote the SaveProgress
+                // error by issuing ALARM/ARRESTED notices afterward.
+                var director = UnityEngine.Object.FindFirstObjectByType<PrototypeDirector>();
+                var motor = UnityEngine.Object.FindFirstObjectByType<ThirdPersonMotor>();
+                Assert.That(director, Is.Not.Null);
+                Assert.That(motor, Is.Not.Null);
+                var sessionField = typeof(PrototypeDirector).GetField("_session", PrivateInstance);
+                var noticeField = typeof(PrototypeDirector).GetField("_notice", PrivateInstance);
+                var untilField = typeof(PrototypeDirector).GetField("_noticeUntil", PrivateInstance);
+                var update = typeof(PrototypeDirector).GetMethod("Update", PrivateInstance);
+                Assert.That(sessionField, Is.Not.Null);
+                Assert.That(noticeField, Is.Not.Null);
+                Assert.That(untilField, Is.Not.Null);
+                Assert.That(update, Is.Not.Null);
+                var normalSession = (HeistSession)sessionField.GetValue(director);
+                var normalPosition = motor.transform.position;
+                var normalRotation = motor.transform.rotation;
+                string normalNotice = (string)noticeField.GetValue(director);
+                float normalNoticeUntil = (float)untilField.GetValue(director);
+                try
+                {
+                    var alarmed = new HeistSession();
+                    alarmed.Scout();
+                    alarmed.PutOnMask();
+                    alarmed.StartHeist();
+                    sessionField.SetValue(director, alarmed);
+
+                    // Visible to the guard but too far away for custody.
+                    motor.WarpTo(new Vector3(0f, 0.12f, 27f));
+                    Physics.SyncTransforms();
+                    update.Invoke(director, null);
+                    Assert.That(alarmed.AlarmRaised, Is.True,
+                                "The production guard must trigger an alarm");
+                    Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Robbing));
+                    Assert.That((string)noticeField.GetValue(director),
+                                Does.StartWith("Progress could not be saved:"),
+                                "Alarm notice must not overwrite failed checkpoint details");
+
+                    // Move into real guard capture range on the next update.
+                    motor.WarpTo(new Vector3(0f, 0.12f, 31.5f));
+                    Physics.SyncTransforms();
+                    update.Invoke(director, null);
+                    Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Arrested),
+                                "The production guard must apply the custody outcome");
+                    Assert.That((string)noticeField.GetValue(director),
+                                Does.StartWith("Progress could not be saved:"),
+                                "Custody notice must not overwrite failed checkpoint details");
+                    Assert.That(PrototypeSaveStore.LastWriteFailed, Is.True);
+                    Assert.That(File.ReadAllBytes(primary), Is.EqualTo(previousCheckpoint),
+                                "Failed alarm/custody saves must preserve the prior checkpoint");
+                }
+                finally
+                {
+                    sessionField.SetValue(director, normalSession);
+                    motor.WarpTo(normalPosition);
+                    motor.transform.rotation = normalRotation;
+                    noticeField.SetValue(director, normalNotice);
+                    untilField.SetValue(director, normalNoticeUntil);
+                    Physics.SyncTransforms();
+                }
+
                 Directory.Delete(temporary);
                 Assert.That(PrototypeSaveStore.TrySave(pending, out string retryError),
                             Is.True, retryError);
