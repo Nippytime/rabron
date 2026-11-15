@@ -95,8 +95,11 @@ def source_plan(sources, ledger, entries, *, expected_tracked=330,
 def scan(entry, run_url, *, scan_evidence=EVIDENCE):
     path = Path(entry["bundle"])
     verified = verify_source(path, entry, phase="bytes")
-    raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
-                      expected_sha256=verified["sha256"])
+    raw = scan_bundle(
+        path, max_fields=FIELDS, max_depth=DEPTH,
+        expected_sha256=verified["sha256"],
+        streamed_unityfs=(path.name == "wwisedata_windows_battle_assets_all.bundle"),
+    )
     summary = summarize(raw, samples_per_category=3)
     checked = validate(raw, summary, source=entry["bundle"],
                        expected_size=entry["size_bytes"],
