@@ -516,6 +516,23 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   unparsed oversized MonoBehaviour**. See
   reconstruction/docs/sectorcenter-common-lfs-source-audit.md.
 
+- W1-AJ original shared characters and legacy environment props Git LFS
+  binaries were downloaded selectively and independently verified
+  (**348,087,169 actual original bytes**). Both contained **zero
+  MonoBehaviours** but **1,744 verified typed Unity objects** (1,122
+  shared-character meshes/avatars/scene objects, 622 materials/textures).
+  Neither introduces numeric caps or unparsed MonoBehaviours. Strict
+  first original-source 2/2 reconcile and 4/4 jobs passed:
+  https://github.com/Nippytime/rabron/actions/runs/43670816316 .
+  The proposed machine ledger now documents **326/330** original UnityFS
+  source paths with **4** unscanned, **128,363** previously parsed
+  MonoBehaviours, **46 unresolved numeric cap records** and **one separate
+  unparsed oversized Wwise MonoBehaviour**. See
+  reconstruction/docs/characters-legacy-props-lfs-source-audit.md.
+  This is client serialized object inventory, **not** recovered source
+  code, server authority or permission to reuse original assets. A
+  new-current-head binary recheck and CI are still required before merge.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
