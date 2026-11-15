@@ -286,6 +286,40 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Guard should not see a player directly behind", smoke)
         self.assertIn("session.ControlStaff();", smoke)
 
+    def test_guard_uses_crouch_capsule_and_solid_low_cover(self):
+        guard = read("GuardSensor.cs")
+        motor = read("ThirdPersonMotor.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("player.GetComponent<CharacterController>()", guard)
+        self.assertIn("player.TransformPoint(body.center +", guard)
+        self.assertIn("body.height * 0.5f - body.radius * 0.5f", guard)
+        self.assertIn("delta.sqrMagnitude > DemoSightRange * DemoSightRange", guard)
+        self.assertNotIn(
+            "horizontal.sqrMagnitude > DemoSightRange * DemoSightRange", guard
+        )
+        self.assertIn("Vector3.ProjectOnPlane(delta, Vector3.up)", guard)
+        self.assertIn("WorldOcclusion.HasClearLine(", guard)
+        self.assertIn("QueryTriggerInteraction.Ignore", read("WorldOcclusion.cs"))
+        self.assertIn('private void UpdateCrouch(bool held)', motor)
+        self.assertIn("_character.height = height;", motor)
+        self.assertIn("ValidateCrouchedGuardCover(root.transform, player, guard);",
+                      editor)
+        self.assertIn('"Temporary guard cover regression"', editor)
+        self.assertIn("GameObject.CreatePrimitive(PrimitiveType.Cube)", editor)
+        self.assertIn('crouch.Invoke(player, new object[] { true });', editor)
+        self.assertIn('crouch.Invoke(player, new object[] { false });', editor)
+        self.assertIn("Standing player must be visible over low solid cover", editor)
+        self.assertIn("Crouched player must be hidden behind low solid cover", editor)
+        self.assertIn("Standing back up must restore guard visibility", editor)
+        self.assertIn("far above 3D sight range", editor)
+        self.assertIn("UnityEngine.Object.DestroyImmediate(cover)", editor)
+        self.assertIn("crouch behind low cover", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
     def test_alarm_is_single_shot_and_requires_uncontrolled_staff(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8"
@@ -336,9 +370,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         )
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
 
-        # Range remains enforced; facing is undefined at exact overlap, so
-        # only ordinary nonzero directions are subject to the cone.
-        self.assertIn("horizontal.sqrMagnitude > DemoSightRange * DemoSightRange", sensor)
+        # Full 3D range remains enforced even for elevated targets;
+        # facing is undefined at exact overlap, so only ordinary nonzero
+        # horizontal directions are subject to the cone.
+        self.assertIn("delta.sqrMagnitude > DemoSightRange * DemoSightRange", sensor)
+        self.assertIn("Vector3.ProjectOnPlane(delta, Vector3.up)", sensor)
         self.assertIn("horizontal.sqrMagnitude >= 0.001f &&", sensor)
         self.assertIn("Vector3.Angle(transform.forward, horizontal)", sensor)
         self.assertNotIn("horizontal.sqrMagnitude < 0.001f)", sensor)

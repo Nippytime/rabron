@@ -15,11 +15,19 @@ namespace Rabron.Prototype
         public bool CanSee(Transform player)
         {
             Vector3 origin = transform.position + Vector3.up * 1.5f;
-            Vector3 target = player.position + Vector3.up * 1.5f;
+            // Crouching changes the real CharacterController capsule. Aim at
+            // its upper body rather than an imaginary standing-height head:
+            // low solid cover can now block a crouched player's sightline.
+            CharacterController body = player.GetComponent<CharacterController>();
+            Vector3 target = body == null
+                ? player.position + Vector3.up * 1.5f
+                : player.TransformPoint(body.center +
+                    Vector3.up * (body.height * 0.5f - body.radius * 0.5f));
             Vector3 delta = target - origin;
             Vector3 horizontal = Vector3.ProjectOnPlane(delta, Vector3.up);
 
-            if (horizontal.sqrMagnitude > DemoSightRange * DemoSightRange)
+            // A high airborne target is not visible from unlimited altitude.
+            if (delta.sqrMagnitude > DemoSightRange * DemoSightRange)
                 return false;
 
             // An overlap has no meaningful facing angle. The placeholder
