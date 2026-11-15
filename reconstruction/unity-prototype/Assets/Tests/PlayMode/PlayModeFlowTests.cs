@@ -248,6 +248,7 @@ namespace Rabron.Prototype.Tests
             var motor = UnityEngine.Object.FindFirstObjectByType<ThirdPersonMotor>();
             Assert.That(motor, Is.Not.Null);
             var originalPosition = motor.transform.position;
+            var originalRotation = motor.transform.rotation;
             var car = UnityEngine.Object.FindFirstObjectByType<PrototypeVehicle>();
             Assert.That(car, Is.Not.Null);
             var carPosition = car.transform.position;
@@ -310,6 +311,40 @@ namespace Rabron.Prototype.Tests
                 Assert.That(motor.GetComponent<CharacterController>().enabled, Is.False);
                 Assert.That((bool)availableVehicle.Invoke(director,
                     new object[] { StationAction.VehicleEnter }), Is.False);
+
+                // Exercise the real motor's look routing without injecting
+                // device input: orbiting a moving car cannot steer the car or
+                // rotate the hidden walking avatar.
+                var applyLook = typeof(ThirdPersonMotor).GetMethod(
+                    "ApplyLookDelta", PrivateInstance);
+                var drivingYaw = typeof(ThirdPersonMotor).GetField(
+                    "_drivingLookYaw", PrivateInstance);
+                var pitchField = typeof(ThirdPersonMotor).GetField(
+                    "_pitch", PrivateInstance);
+                Assert.That(applyLook, Is.Not.Null);
+                Assert.That(drivingYaw, Is.Not.Null);
+                Assert.That(pitchField, Is.Not.Null);
+                float carHeading = car.transform.eulerAngles.y;
+                float playerHeading = motor.transform.eulerAngles.y;
+                float originalPitch = (float)pitchField.GetValue(motor);
+                applyLook.Invoke(motor, new object[] { new Vector2(42f, 10f) });
+                Assert.That((float)drivingYaw.GetValue(motor),
+                            Is.EqualTo(42f).Within(0.001f),
+                            "Driver right-stick/mouse look must orbit the camera");
+                Assert.That((float)pitchField.GetValue(motor),
+                            Is.EqualTo(Mathf.Clamp(originalPitch - 10f, -45f, 70f))
+                              .Within(0.001f));
+                applyLook.Invoke(motor, new object[] { new Vector2(360f, 0f) });
+                Assert.That((float)drivingYaw.GetValue(motor),
+                            Is.EqualTo(42f).Within(0.001f),
+                            "Driver look accumulation must wrap without drifting");
+                Assert.That(car.transform.eulerAngles.y,
+                            Is.EqualTo(carHeading).Within(0.001f),
+                            "Camera orbit must not steer the car");
+                Assert.That(motor.transform.eulerAngles.y,
+                            Is.EqualTo(playerHeading).Within(0.001f),
+                            "Camera orbit must not rotate the seated avatar");
+
                 car.Drive(new Vector2(0f, 1f), false, 0.1f);
                 Assert.That(car.Speed, Is.GreaterThan(0f),
                             "Throttle must accelerate the vehicle");
@@ -318,6 +353,10 @@ namespace Rabron.Prototype.Tests
                 car.Drive(Vector2.zero, true, 0.3f);
                 Assert.That(car.Speed, Is.EqualTo(0f).Within(0.001f),
                             "Brake must stop the car");
+                // Reproduce an on-foot heading mismatch before the safe exit.
+                // Returning to walking should inherit the car's heading,
+                // rather than snapping to an unrelated pre-drive view.
+                motor.transform.rotation = Quaternion.Euler(0f, 130f, 0f);
                 Physics.SyncTransforms();
                 Assert.That(motor.TryExitVehicle(), Is.True,
                             "Stationary car must allow a collision-clear exit");
@@ -325,6 +364,13 @@ namespace Rabron.Prototype.Tests
                 Assert.That(motor.GetComponent<CharacterController>().enabled, Is.True);
                 Assert.That(onFootVisual.enabled, Is.True,
                             "Leaving the car must restore the walking avatar");
+                Assert.That((float)drivingYaw.GetValue(motor),
+                            Is.EqualTo(0f).Within(0.001f),
+                            "Vehicle orbit must reset after a safe exit");
+                Assert.That(Quaternion.Angle(motor.transform.rotation,
+                    Quaternion.Euler(0f, car.transform.eulerAngles.y, 0f)),
+                    Is.LessThan(0.001f),
+                    "On-foot camera heading should match the parked car");
                 Assert.That(driver.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(driver.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
                 Assert.That(driver.CleanCash, Is.EqualTo(0L));
@@ -471,6 +517,7 @@ namespace Rabron.Prototype.Tests
                 car.transform.SetPositionAndRotation(carPosition, carRotation);
                 car.GetComponent<CharacterController>().enabled = true;
                 motor.WarpTo(originalPosition);
+                motor.transform.rotation = originalRotation;
                 cash.SetAmount(original.CounterCash);
                 parcel.SetCarrying(original.CarryingCourierParcel);
             }
