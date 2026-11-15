@@ -9825,6 +9825,74 @@
       "size_bytes": 183967345,
       "status": "documented_scan_not_fully_verified",
       "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/environment-materiallibrary-legacy_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "b265856eb782bd13cc0edcfbd97eaa29fc778ed9",
+      "lfs_oid_sha256": "38f2f9617e3deb1ea395a4ebd733692db812c6b4eff5ebb8b31878d3c1cafb80",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 658,
+        "Texture2D": 645
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43671682891",
+      "scan_evidence": "GitHub Actions W1-AK original material-library desert LFS source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "38f2f9617e3deb1ea395a4ebd733692db812c6b4eff5ebb8b31878d3c1cafb80",
+      "size_bytes": 239172482,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-environment-desert_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 6,
+        "economy": 0,
+        "progression": 2,
+        "timing_and_world": 317
+      },
+      "git_blob_sha": "92a86d66dd7438a2327b1b48d8f22b8f961cd1a3",
+      "lfs_oid_sha256": "4e2c4beb22bf1458e699fd917d7b300a9349253df99925fbf30284afe8da83b8",
+      "monobehaviours_parsed": 27,
+      "monobehaviours_total": 27,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Cubemap": 3,
+        "GameObject": 2899,
+        "LODGroup": 55,
+        "LightingSettings": 1,
+        "Material": 150,
+        "Mesh": 2922,
+        "MeshFilter": 2819,
+        "MeshRenderer": 2819,
+        "MonoBehaviour": 27,
+        "OcclusionCullingData": 1,
+        "Texture2D": 274,
+        "Transform": 2899
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43671682891",
+      "scan_evidence": "GitHub Actions W1-AK original material-library desert LFS source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "4e2c4beb22bf1458e699fd917d7b300a9349253df99925fbf30284afe8da83b8",
+      "size_bytes": 228978185,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],

@@ -533,6 +533,23 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   code, server authority or permission to reuse original assets. A
   new-current-head binary recheck and CI are still required before merge.
 
+- W1-AK source-verified the next two original Git LFS UnityFS bundles:
+  legacy material library and shared environment desert (**468,150,667**
+  full original bytes). Real original-byte run
+  https://github.com/Nippytime/rabron/actions/runs/43671682891
+  completed plan + 2/2 source workers + strict reconcile, **4/4 jobs
+  successful**. Legacy library had **1,304 typed Unity objects**, **0
+  MonoBehaviours**; shared desert had **14,870 typed Unity objects** and
+  **27/27 parsed MonoBehaviours**, **0 numeric caps / 0 unparsed** across
+  both new sources. Desert candidate counts: combat 6, progression 2,
+  timing/world 317, economy 0. Proposed ledger now **328/330** original
+  sources (2 still unscanned), **128,390 parsed MonoBehaviours**, **46
+  unresolved historic field caps**, plus one independently unparsed
+  oversized Wwise MonoBehaviour. A new current-head **2/2 full-original
+  recheck** and all CI must pass before merging into dev. See
+  reconstruction/docs/materiallibrary-desert-lfs-source-audit.md.
+  This is client metadata, not original server logic or asset reuse rights.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file

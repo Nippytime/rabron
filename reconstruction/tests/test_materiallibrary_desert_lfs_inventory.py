@@ -41,8 +41,8 @@ class MateriallibraryDesertLfsTests(unittest.TestCase):
         records = [s for s in ledger["scans"]
                    if s["bundle"] in {t["bundle"] for t in TARGETS}]
         # Never infer an original scan from a Git LFS pointer.
-        self.assertIn(len(records), (0, 2))
-        self.assertEqual(len(ledger["scans"]), 326)
+        self.assertEqual(len(records), 2)
+        self.assertEqual(len(ledger["scans"]), 328)
         for row in records:
             target = next(t for t in TARGETS if t["bundle"] == row["bundle"])
             for key, expected in (
@@ -53,6 +53,28 @@ class MateriallibraryDesertLfsTests(unittest.TestCase):
                 ("scan_evidence", AK_EVIDENCE),
             ):
                 self.assertEqual(row[key], expected)
+
+        self.assertEqual(sum(s["monobehaviours_parsed"] for s in records), 27)
+        self.assertEqual(sum(s["numeric_field_cap_records"] for s in records), 0)
+        self.assertEqual(sum(s["unparsed_records"] for s in records), 0)
+        by_name = {Path(s["bundle"]).name: s for s in records}
+        material = by_name["environment-materiallibrary-legacy_assets_all.bundle"]
+        desert = by_name["shared-environment-desert_assets_all.bundle"]
+        self.assertEqual(sum(material["objects_by_type"].values()), 1304)
+        self.assertEqual(material["monobehaviours_total"], 0)
+        self.assertEqual(material["objects_by_type"]["Material"], 658)
+        self.assertEqual(material["objects_by_type"]["Texture2D"], 645)
+        self.assertEqual(sum(desert["objects_by_type"].values()), 14870)
+        self.assertEqual(desert["monobehaviours_total"], 27)
+        self.assertEqual(desert["monobehaviours_parsed"], 27)
+        self.assertEqual(desert["candidate_field_counts"], {
+            "combat": 6, "economy": 0, "progression": 2,
+            "timing_and_world": 317,
+        })
+        for item in records:
+            self.assertEqual(item["unparsed_records"], 0)
+            self.assertEqual(item["numeric_field_cap_records"], 0)
+            self.assertIs(item["bounded_numeric_scan_complete"], True)
 
     def test_exact_two_source_plan_rejects_drift(self):
         self.assertEqual(self.plan()["mode"], "new")
