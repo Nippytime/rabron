@@ -532,8 +532,14 @@ movement, pursuit and server enforcement are not implemented.
 
 ### Physical access and camera
 
-Nearby pillars now require a clear ray from the player's eye: a solid
-warehouse wall or fence counter prevents interaction from its opposite side.
+Nearby pillars now require a clear ray from the player's actual upper
+body capsule: a solid warehouse wall or fence counter prevents interaction
+from its opposite side. **Crouched station interactions** also respect the
+lowered capsule, so the waist-high warehouse cover blocks attempts to reach
+the guard-control marker through it. Stand up or walk around the obstacle
+before interacting; guard sight and station targeting use the same physical
+point. A Unity Editor geometry regression using the generated barrier and
+real marker is authored but **not executed** in hosted CI.
 The cash-pickup station is therefore on the **rear** side of the counter;
 walk around to it rather than interacting through the front.
 Trigger colliders do not obstruct the ray. The third-person follow camera

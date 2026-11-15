@@ -15,14 +15,9 @@ namespace Rabron.Prototype
         public bool CanSee(Transform player)
         {
             Vector3 origin = transform.position + Vector3.up * 1.5f;
-            // Crouching changes the real CharacterController capsule. Aim at
-            // its upper body rather than an imaginary standing-height head:
-            // low solid cover can now block a crouched player's sightline.
-            CharacterController body = player.GetComponent<CharacterController>();
-            Vector3 target = body == null
-                ? player.position + Vector3.up * 1.5f
-                : player.TransformPoint(body.center +
-                    Vector3.up * (body.height * 0.5f - body.radius * 0.5f));
+            // The same live capsule-derived point is used for physical
+            // interactions, so crouching never grants contradictory sight.
+            Vector3 target = WorldOcclusion.UpperBodyPoint(player);
             Vector3 delta = target - origin;
             Vector3 horizontal = Vector3.ProjectOnPlane(delta, Vector3.up);
 
