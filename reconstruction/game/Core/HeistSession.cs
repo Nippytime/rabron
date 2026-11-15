@@ -61,9 +61,12 @@ namespace Rabron.Reconstruction
 
         public void PutOnMask()
         {
+            // Complete the previous heist's city-return/reset cycle before
+            // masking again. Match the Unity MASK station's Idle/Scouted gate.
             Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&
-                    !CarryingCourierParcel,
-                    "Only a civilian without courier cargo may enter criminal mode.");
+                    !CarryingCourierParcel &&
+                    (Phase == HeistPhase.Idle || Phase == HeistPhase.Scouted),
+                    "Masking requires an idle or scouting civilian without courier cargo in the city.");
             CurrentRole = PlayerRole.Criminal;
         }
 
