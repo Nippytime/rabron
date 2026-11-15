@@ -1,4 +1,4 @@
-# ROB RUN-style prototype — Unity 6.3
+# ROB RUN-style prototype — Unity 6.5
 
 **Status: source implementation targeting Unity 6000.5.0f1; real Editor / packaged build not yet smoke-tested.**
 
@@ -135,7 +135,7 @@ PowerShell syntax checks cannot establish Unity runtime success.
 
 Use this after checking out a clean known \`dev\` source revision, with the Unity project
 **closed in the graphical Editor**. The default Editor is
-\`C:\\Program Files\\Unity\\Hub\\Editor\\6000.5.0f1\\Editor\\Unity.exe\`. This command runs the existing Editor
+\`C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe\`. This command runs the existing Editor
 smoke, real Play Mode NUnit and Windows build validation **in sequence**,
 and stops if any stage fails. It also runs a bounded **headless smoke of the
 actual freshly built Windows player** after the Unity build:
@@ -503,9 +503,10 @@ This uses an invented, low-speed **CharacterController** car with a simple
 original cube body and wheels. It is not a professional wheel/suspension
 simulation, model extracted from the reference game, AI traffic system or
 server-authoritative drive. **Vehicle position resets on restart**; normal
-player banking, courier and heist saves are unaffected. The car cannot carry
-an active courier parcel and does not transfer gameplay role or money. Real
-keyboard/gamepad steering, obstacles, exit clearance and a Windows executable
+player banking, courier and heist saves are unaffected. The car can carry
+an active courier parcel, but boarding, driving and exiting never deliver it
+or change gameplay role or money. Real keyboard/gamepad steering, obstacles,
+exit clearance and a Windows executable
 must still be checked in Unity 6000.5; the hosted Python/.NET CI has not
 driven the car.
 
