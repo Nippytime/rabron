@@ -60,6 +60,7 @@ namespace Rabron.Prototype
         private void Update()
         {
             long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            bool arrestedThisFrame = false;
             if (_session.Phase == HeistPhase.Laundering &&
                 _session.LaunderingReadyAt <= now)
             {
@@ -91,6 +92,7 @@ namespace Rabron.Prototype
                 _guard.CanSee(_player.transform))
             {
                 _session.ArrestAfterAlarm();
+                arrestedThisFrame = true;
                 _audio.PlayRejected();
                 _player.WarpTo(CustodySpawn);
                 // A write error must not be masked by the custody notice.
@@ -99,7 +101,10 @@ namespace Rabron.Prototype
             }
 
             var focused = FindNearbyStation();
-            if (_player.InteractPressed)
+            // The press that preceded automatic capture must not also
+            // activate the release marker beside the new custody position.
+            // A separate press on a later frame still releases normally.
+            if (CanConsumeInteraction(_player.InteractPressed, arrestedThisFrame))
             {
                 if (focused == null)
                 {
@@ -135,6 +140,11 @@ namespace Rabron.Prototype
                         PrototypeSaveStore.SavingDisabled,
                         PrototypeSaveStore.LastWriteFailed);
         }
+
+        // Pure gate allows Editor/Play Mode tests to verify the button race
+        // without inventing a physical keyboard or controller input event.
+        private static bool CanConsumeInteraction(bool pressed, bool arrestedThisFrame)
+            => pressed && !arrestedThisFrame;
 
         private InteractionMarker? FindNearbyStation()
         {
