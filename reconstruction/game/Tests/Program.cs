@@ -23,6 +23,7 @@ internal static class Program
             SnapshotPreservesBankAcrossHeists,
             SnapshotRejectsInvalidOrTamperedState,
             SnapshotRejectsUnreachablePoliceRobberyPhases,
+            SnapshotRejectsCivilianInActiveHeistStages,
             ConstructorRejectsUnknownRolesAndZones,
             SnapshotRejectsUnreachablePoliceEconomy,
             LaunderingRejectsUnrestorableTimestamps,
@@ -358,6 +359,54 @@ internal static class Program
         Throws<ArgumentException>(() => HeistSession.FromSnapshot(missingJob));
 
         Throws<ArgumentNullException>(() => HeistSession.FromSnapshot(null!));
+    }
+
+    private static void SnapshotRejectsCivilianInActiveHeistStages()
+    {
+        var game = new HeistSession();
+        game.OpenBankAccount();
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(20);
+        game.DepositCleanCash(10);
+        game.Scout();
+        Eq(PlayerRole.Civilian, HeistSession.FromSnapshot(
+            game.ExportSnapshot()).CurrentRole);
+
+        game.PutOnMask();
+        game.StartHeist();
+
+        void AssertStage()
+        {
+            // The actual criminal save must remain reloadable.
+            var checkpoint = game.ExportSnapshot();
+            Eq(PlayerRole.Criminal, HeistSession.FromSnapshot(checkpoint).CurrentRole);
+            checkpoint.Role = PlayerRole.Civilian;
+            Throws<ArgumentException>(() => HeistSession.FromSnapshot(checkpoint));
+        }
+
+        AssertStage(); // Robbing without loot
+        game.TakeLoot("camera");
+        AssertStage(); // Robbing with loot
+        game.Escape();
+        AssertStage(); // Escaped
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 30 });
+        AssertStage(); // Cash on counter
+        game.CollectCounterCash();
+        AssertStage(); // Dirty cash collected
+        game.StartLaundering(30, 25, 100, 2);
+        AssertStage(); // Laundering in progress
+
+        game.CompleteLaundering(102);
+        Eq(PlayerRole.Criminal, HeistSession.FromSnapshot(
+            game.ExportSnapshot()).CurrentRole);
+        game.LeaveCity(); // Legitimate transition to civilian after laundering
+        Eq(PlayerRole.Civilian, HeistSession.FromSnapshot(
+            game.ExportSnapshot()).CurrentRole);
+        game.EnterCity();
+        Eq(PlayerRole.Civilian, HeistSession.FromSnapshot(
+            game.ExportSnapshot()).CurrentRole);
+        Eq(10L, game.BankBalance);
+        Eq(35L, game.CleanCash); // Prior legal cash plus completed laundering
     }
 
     private static void SnapshotRejectsUnreachablePoliceRobberyPhases()

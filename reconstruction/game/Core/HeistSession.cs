@@ -343,6 +343,18 @@ namespace Rabron.Reconstruction
                 snapshot.Phase != HeistPhase.Idle && snapshot.Phase != HeistPhase.Scouted)
                 throw new ArgumentException("Police role cannot occupy a robbery state.", nameof(snapshot));
 
+            // Only a masked criminal can reach these in-flight heist stages.
+            // Civilian status is restored by a safe withdrawal, custody release,
+            // or city exit after laundering, never during the active cycle.
+            if (snapshot.Role == PlayerRole.Civilian &&
+                (snapshot.Phase == HeistPhase.Robbing ||
+                 snapshot.Phase == HeistPhase.Escaped ||
+                 snapshot.Phase == HeistPhase.CashOnCounter ||
+                 snapshot.Phase == HeistPhase.DirtyCashCollected ||
+                 snapshot.Phase == HeistPhase.Laundering))
+                throw new ArgumentException(
+                    "Civilian role cannot occupy an active heist state.", nameof(snapshot));
+
             // No operation in this local state machine grants Police money or
             // a civilian bank account. They also cannot switch to civilian.
             if (snapshot.Role == PlayerRole.Police &&
