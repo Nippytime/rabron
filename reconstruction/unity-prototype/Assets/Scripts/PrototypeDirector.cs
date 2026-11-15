@@ -118,7 +118,8 @@ namespace Rabron.Prototype
             _hud.Render(_session, Objective(now),
                         _player.IsDriving ? "Exit car after stopping" :
                         focused == null ? "" : focused.Label,
-                        Time.unscaledTime < _noticeUntil ? _notice : "");
+                        Time.unscaledTime < _noticeUntil ? _notice : "",
+                        PrototypeSaveStore.SavingDisabled);
         }
 
         private InteractionMarker? FindNearbyStation()

@@ -61,6 +61,17 @@ namespace Rabron.Prototype.Tests
                 var fresh = PrototypeSaveStore.Load(out string message);
                 Assert.That(message, Does.Contain("without saving"));
                 Assert.That(fresh.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.True);
+                var hud = UnityEngine.Object.FindFirstObjectByType<PrototypeHud>();
+                Assert.That(hud, Is.Not.Null, "Actual runtime HUD must exist");
+                hud.Render(fresh, "Recover progress", "", message,
+                           PrototypeSaveStore.SavingDisabled);
+                Assert.That(hud.SaveWarningVisible, Is.True,
+                            "Blocked autosave must have a persistent HUD warning");
+                hud.Render(fresh, "Different activity", "", "",
+                           PrototypeSaveStore.SavingDisabled);
+                Assert.That(hud.SaveWarningVisible, Is.True,
+                            "Temporary notices must not clear the unsaved-session warning");
                 Assert.That(PrototypeSaveStore.TrySave(fresh, out string error),
                             Is.False, "Auto-save must fail closed on corruption");
                 Assert.That(error, Does.Contain("Autosave disabled"));
@@ -76,6 +87,11 @@ namespace Rabron.Prototype.Tests
                 var recovered = PrototypeSaveStore.Load(out string recoveredMessage);
                 Assert.That(recoveredMessage, Does.Contain("recovered"));
                 Assert.That(recovered.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.False);
+                hud.Render(recovered, "Delivery available", "", "",
+                           PrototypeSaveStore.SavingDisabled);
+                Assert.That(hud.SaveWarningVisible, Is.False,
+                            "Valid backup recovery must clear the persistent warning");
                 Assert.That(PrototypeSaveStore.TrySave(recovered, out string saveError),
                             Is.True, saveError);
             }

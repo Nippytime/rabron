@@ -17,6 +17,8 @@ namespace Rabron.Prototype
         // unreadable primary/backup that a player may still recover manually.
         // Reset only on a new Load after the player has moved those files.
         private static bool _preserveUnreadableSaves;
+        // Read-only UI signal; never interpret an in-memory fallback as saved.
+        public static bool SavingDisabled => _preserveUnreadableSaves;
 #if UNITY_EDITOR
         // A fixed test-cache path lets a later -runTests process reload stale
         // arrests or courier jobs from an earlier NUnit execution. Generate one
