@@ -20,6 +20,7 @@ namespace Rabron.Prototype
             var director = FindFirstObjectByType<PrototypeDirector>();
             var motor = FindFirstObjectByType<ThirdPersonMotor>();
             var hud = FindFirstObjectByType<PrototypeHud>();
+            var audio = FindFirstObjectByType<PrototypeAudioFeedback>();
             var markers = FindObjectsByType<InteractionMarker>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None);
             var actions = new HashSet<StationAction>();
@@ -30,13 +31,14 @@ namespace Rabron.Prototype
             bool booted = director != null && motor != null &&
                 motor.GetComponent<CharacterController>() != null &&
                 hud != null && hud.GetComponent<UIDocument>() != null &&
+                audio != null && audio.CuesReady &&
                 markers.Length == 21 && actions.Count == 21;
 
             if (booted)
                 Debug.Log("RABRON_WINDOWS_PLAYER_SMOKE_PASS");
             else
                 Debug.LogError("RABRON_WINDOWS_PLAYER_SMOKE_FAILED: " +
-                    "missing runtime director, motor, HUD or unique stations.");
+                    "missing runtime director, motor, HUD, audio or unique stations.");
 
             // Only the automated smoke invocation exits the application.
             // This probe is never added to a normal interactive player.
