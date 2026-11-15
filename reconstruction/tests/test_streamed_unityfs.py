@@ -133,6 +133,36 @@ class StreamedUnityfsTests(unittest.TestCase):
                 )
         self.assertEqual(original.call_count, 2)
 
+    def test_city_mono_budget_is_independent_and_explicit(self):
+        class Kind(Enum):
+            MonoBehaviour = 114
+            TextAsset = 49
+
+        from reconstruction.tools.streamed_unityfs import MAX_CITY_MONO_OBJECT_BYTES
+        original = Mock(return_value={"safe": 1})
+        small = SimpleNamespace(type=Kind.MonoBehaviour, path_id=1,
+                                byte_size=MAX_CITY_MONO_OBJECT_BYTES)
+        large = SimpleNamespace(type=Kind.MonoBehaviour, path_id=2,
+                                byte_size=MAX_CITY_MONO_OBJECT_BYTES + 1)
+        with redirect_stdout(io.StringIO()) as log:
+            self.assertEqual(_parse_bounded_wwise_mono(
+                small, original, Kind.MonoBehaviour,
+                budget_bytes=MAX_CITY_MONO_OBJECT_BYTES, scope="CITY"
+            ), {"safe": 1})
+            with self.assertRaises(WwiseMonoObjectBudgetExceeded):
+                _parse_bounded_wwise_mono(
+                    large, original, Kind.MonoBehaviour,
+                    budget_bytes=MAX_CITY_MONO_OBJECT_BYTES, scope="CITY"
+                )
+        self.assertIn("CITY_INVENTORY_MONO_UNPARSED_SIZE_BUDGET",
+                      log.getvalue())
+        original.assert_called_once_with(small)
+        with self.assertRaisesRegex(ValueError, "Unknown source"):
+            _parse_bounded_wwise_mono(
+                small, original, Kind.MonoBehaviour,
+                budget_bytes=MAX_CITY_MONO_OBJECT_BYTES, scope="INVALID"
+            )
+
     def test_embedded_file_reads_only_selected_range(self):
         segment = RangeStream(self.backing, 2, 3)
         self.assertEqual(segment.read(2), b"cD")

@@ -19,28 +19,36 @@ MAX_CACHE_BYTES = 128 * 1024 * 1024
 # Python values even though its serialized byte count is much smaller.
 # Above this source-scoped bound, preserve the object as explicitly unparsed.
 MAX_WWISE_MONO_OBJECT_BYTES = 8 * 1024 * 1024
+# Independently conservative initial city-scene MonoBehaviour allocation cap.
+MAX_CITY_MONO_OBJECT_BYTES = 8 * 1024 * 1024
 
 
 class WwiseMonoObjectBudgetExceeded(ValueError):
     """An original MonoBehaviour was not parsed; numeric evidence incomplete."""
 
 
-def _parse_bounded_wwise_mono(reader, original, mono_type, *args, **kwargs):
+def _parse_bounded_wwise_mono(reader, original, mono_type, *args,
+                              budget_bytes=None, scope="WWISE", **kwargs):
+    budget = MAX_WWISE_MONO_OBJECT_BYTES if budget_bytes is None else budget_bytes
+    if type(budget) is not int or budget < 1:
+        raise ValueError("Invalid source-specific MonoBehaviour budget")
+    if scope not in ("WWISE", "CITY"):
+        raise ValueError("Unknown source-specific inventory scope")
     if reader.type == mono_type:
         raw_size = getattr(reader, "byte_size", None)
         if type(raw_size) is not int or raw_size < 0:
             raise WwiseMonoObjectBudgetExceeded(
                 "Missing/invalid original Wwise MonoBehaviour byte count"
             )
-        print(f"WWISE_INVENTORY_MONO path_id={reader.path_id} "
-              f"byte_size={raw_size} budget={MAX_WWISE_MONO_OBJECT_BYTES}",
+        print(f"{scope}_INVENTORY_MONO path_id={reader.path_id} "
+              f"byte_size={raw_size} budget={budget}",
               flush=True)
-        if raw_size > MAX_WWISE_MONO_OBJECT_BYTES:
-            print(f"WWISE_INVENTORY_MONO_UNPARSED_SIZE_BUDGET "
+        if raw_size > budget:
+            print(f"{scope}_INVENTORY_MONO_UNPARSED_SIZE_BUDGET "
                   f"path_id={reader.path_id} byte_size={raw_size}", flush=True)
             raise WwiseMonoObjectBudgetExceeded(
                 f"Wwise MonoBehaviour byte size {raw_size} exceeds "
-                f"bounded parse budget {MAX_WWISE_MONO_OBJECT_BYTES}"
+                f"bounded parse budget {budget}"
             )
     return original(reader, *args, **kwargs)
 
@@ -203,7 +211,8 @@ def _parse_without_unused_container_index(reader, original, assetbundle_type, *a
 
 
 @contextmanager
-def streamed_unityfs():
+def streamed_unityfs(*, mono_budget_bytes=None, scope="WWISE",
+                     skip_container_index=True):
     """Temporarily replace eager UnityFS reads and unused container indexing.
 
     The Wwise inventory counts all original Unity object headers and parses
@@ -214,6 +223,11 @@ def streamed_unityfs():
     object in type counts, restore all UnityPy methods on error, and never
     hide unknown numeric fields or claim complete source code reconstruction.
     """
+    if scope not in ("WWISE", "CITY"):
+        raise ValueError("Unknown source-specific inventory scope")
+    if mono_budget_bytes is not None and (
+            type(mono_budget_bytes) is not int or mono_budget_bytes < 1):
+        raise ValueError("Invalid source-specific MonoBehaviour budget")
     from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld, ClassIDType
     from UnityPy.files import BundleFile, File, ObjectReader, SerializedFile
     from UnityPy.helpers import ArchiveStorageManager, ImportHelper
@@ -225,13 +239,16 @@ def streamed_unityfs():
     old_parse_dict = ObjectReader.parse_as_dict
 
     def parse_as_object(reader, *args, **kwargs):
+        if not skip_container_index:
+            return old_parse_object(reader, *args, **kwargs)
         return _parse_without_unused_container_index(
             reader, old_parse_object, ClassIDType.AssetBundle, *args, **kwargs
         )
 
     def parse_as_dict(reader, *args, **kwargs):
         return _parse_bounded_wwise_mono(
-            reader, old_parse_dict, ClassIDType.MonoBehaviour, *args, **kwargs
+            reader, old_parse_dict, ClassIDType.MonoBehaviour, *args,
+            budget_bytes=mono_budget_bytes, scope=scope, **kwargs
         )
 
     def read_fs(self, reader):
@@ -303,7 +320,7 @@ def streamed_unityfs():
         if not isinstance(getattr(reader, "stream", None), (BlockStream, RangeStream)):
             return old_files(self, reader, nodes)
         for node in nodes:
-            print(f"WWISE_INVENTORY_NODE_BEGIN name={node.path!r} "
+            print(f"{scope}_INVENTORY_NODE_BEGIN name={node.path!r} "
                   f"size_bytes={node.size}", flush=True)
             sub_reader = EndianBinaryReader(
                 RangeStream(reader.stream, node.offset, node.size)
@@ -313,7 +330,7 @@ def streamed_unityfs():
             )
             kind = "serialized" if isinstance(parsed, SerializedFile) else "resource"
             object_count = len(parsed.objects) if kind == "serialized" else 0
-            print(f"WWISE_INVENTORY_NODE_END name={node.path!r} "
+            print(f"{scope}_INVENTORY_NODE_END name={node.path!r} "
                   f"kind={kind} objects={object_count}", flush=True)
             if isinstance(parsed, (EndianBinaryReader, SerializedFile)):
                 if self.environment:
