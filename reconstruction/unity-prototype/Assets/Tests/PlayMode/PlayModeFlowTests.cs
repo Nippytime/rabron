@@ -4,6 +4,7 @@ using System.Reflection;
 using NUnit.Framework;
 using Rabron.Reconstruction;
 using UnityEngine;
+using UnityEngine.InputSystem;
 using UnityEngine.TestTools;
 using UnityEngine.UIElements;
 
@@ -38,6 +39,42 @@ namespace Rabron.Prototype.Tests
 
             Assert.That(motor, Is.Not.Null, "No player controller");
             Assert.That(motor.GetComponent<CharacterController>(), Is.Not.Null);
+            // Check the real Input System action, not a hard-coded key label.
+            var jumpField = typeof(ThirdPersonMotor).GetField("_jump", PrivateInstance);
+            Assert.That(jumpField, Is.Not.Null);
+            var jump = (InputAction)jumpField.GetValue(motor);
+            Assert.That(jump, Is.Not.Null);
+            Assert.That(jump.enabled, Is.True);
+            bool keyboardJump = false;
+            bool gamepadJump = false;
+            foreach (var binding in jump.bindings)
+            {
+                keyboardJump |= binding.effectivePath == "<Keyboard>/space";
+                gamepadJump |= binding.effectivePath == "<Gamepad>/buttonNorth";
+            }
+            Assert.That(keyboardJump && gamepadJump, Is.True,
+                        "Jump requires dedicated Space and north-face bindings");
+
+            // Deterministic motor integration tests do not emulate real
+            // keyboard input, physics collision timing or a packaged player.
+            var flags = PrivateInstance | BindingFlags.Static;
+            var integrate = typeof(ThirdPersonMotor).GetMethod("IntegrateVertical", flags);
+            var ceiling = typeof(ThirdPersonMotor).GetMethod("ResolveCeiling", flags);
+            Assert.That(integrate, Is.Not.Null);
+            Assert.That(ceiling, Is.Not.Null);
+            float launched = (float)integrate.Invoke(null,
+                new object[] { 0f, true, true, 0f });
+            Assert.That(launched, Is.GreaterThan(0f), "Grounded jump must launch upward");
+            float airborne = (float)integrate.Invoke(null,
+                new object[] { 0f, false, true, 0.1f });
+            Assert.That(airborne, Is.LessThan(0f), "No airborne double-jump");
+            Assert.That((float)ceiling.Invoke(null,
+                new object[] { launched, CollisionFlags.Above }), Is.EqualTo(0f),
+                "Ceiling collision must cancel ascent");
+            Assert.That((float)ceiling.Invoke(null,
+                new object[] { airborne, CollisionFlags.Above }), Is.EqualTo(airborne),
+                "Ceiling contact must preserve falling speed");
+
             Assert.That(camera, Is.Not.Null, "No runtime follow camera");
             Assert.That(camera.isActiveAndEnabled, Is.True);
             Assert.That(hud, Is.Not.Null, "No runtime HUD");
