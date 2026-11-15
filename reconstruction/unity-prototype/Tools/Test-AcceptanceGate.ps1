@@ -27,6 +27,67 @@ try {
         throw 'Stale green Unity acceptance evidence survived a failed invocation.'
     }
     Write-Host 'PASS rejected: missing Unity platform/editor and stale success removed'
+
+    # Synthetic Git-based provenance tests: NO Unity executable is launched.
+    $provenance = Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1'
+    $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+    $assets = Join-Path $repoRoot 'reconstruction/unity-prototype/Assets'
+    $nonce = 'acceptance-provenance-' + [Guid]::NewGuid().ToString('N')
+    $meta = Join-Path $assets ($nonce + '.meta')
+    $untrackedSource = Join-Path $assets ($nonce + '.cs')
+    $sceneFolder = Join-Path $assets 'Scenes'
+    $scene = Join-Path $sceneFolder 'Prototype.unity'
+    $alternate = Join-Path $sceneFolder ($nonce + '.unity')
+    $createdScene = $false
+    $createdSceneFolder = $false
+
+    try {
+        & $provenance -RepoRoot $repoRoot | Out-Null
+
+        Set-Content -LiteralPath $meta -Value 'synthetic Unity import metadata'
+        & $provenance -RepoRoot $repoRoot | Out-Null
+
+        if (-not (Test-Path -LiteralPath $sceneFolder)) {
+            New-Item -ItemType Directory -Path $sceneFolder | Out-Null
+            $createdSceneFolder = $true
+        }
+        if (-not (Test-Path -LiteralPath $scene)) {
+            Set-Content -LiteralPath $scene -Value 'synthetic bootstrap scene'
+            $createdScene = $true
+        }
+        & $provenance -RepoRoot $repoRoot | Out-Null
+
+        foreach ($bad in @($untrackedSource, $alternate)) {
+            Set-Content -LiteralPath $bad -Value 'synthetic untracked source'
+            $rejected = $false
+            try {
+                & $provenance -RepoRoot $repoRoot | Out-Null
+            }
+            catch {
+                $rejected = $true
+            }
+            Remove-Item -LiteralPath $bad -Force
+            if (-not $rejected) {
+                throw "Untracked authored Unity file was incorrectly accepted: $bad"
+            }
+        }
+
+        & $provenance -RepoRoot $repoRoot | Out-Null
+        Write-Host 'PASS rejected: untracked Unity source and alternate scene; allowed Unity metadata/bootstrap scene'
+    }
+    finally {
+        foreach ($file in @($meta, $untrackedSource, $alternate)) {
+            if (Test-Path -LiteralPath $file) {
+                Remove-Item -LiteralPath $file -Force
+            }
+        }
+        if ($createdScene -and (Test-Path -LiteralPath $scene)) {
+            Remove-Item -LiteralPath $scene -Force
+        }
+        if ($createdSceneFolder) {
+            Remove-Item -LiteralPath $sceneFolder -Force -ErrorAction SilentlyContinue
+        }
+    }
 }
 finally {
     Remove-Item -LiteralPath $temp -Recurse -Force

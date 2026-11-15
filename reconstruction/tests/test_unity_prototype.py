@@ -472,6 +472,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Test-AcceptanceGate.ps1", workflow)
         self.assertIn("Verify-Acceptance.ps1", workflow)
 
+    def test_untracked_unity_assets_rejected_and_scene_fingerprinted(self):
+        gate = (UNITY / "Tools/Assert-UnitySourceTree.ps1").read_text(
+            encoding="utf-8")
+        runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8")
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8")
+        workflow = (ROOT.parent / ".github/workflows/reconstruction-tests.yml").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("ls-files --others --exclude-standard", gate)
+        self.assertIn("reconstruction/unity-prototype/Assets", gate)
+        self.assertIn("Scenes/Prototype.unity", gate)
+        self.assertIn("EndsWith('.meta'", gate)
+        self.assertIn("Untracked authored Unity assets are not covered by Git HEAD", gate)
+        self.assertIn("Assert-UnitySourceTree.ps1", workflow)
+        self.assertEqual(runner.count("'Assert-UnitySourceTree.ps1'"), 3)
+        self.assertIn("$sceneAtSmoke = File-Summary $scene", runner)
+        self.assertEqual(
+            runner.count("(File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256"), 2
+        )
+        self.assertIn("generated_scene = $sceneAtSmoke", runner)
+        self.assertIn("Assert-NonemptyFile $smoke", runner)
+        self.assertIn("Move-Item -LiteralPath $temp -Destination $EvidencePath", runner)
+        self.assertIn("Untracked authored Unity file was incorrectly accepted", fixture)
+        self.assertIn("synthetic Unity import metadata", fixture)
+        self.assertIn("synthetic bootstrap scene", fixture)
+        self.assertIn("generated scene", guide.lower())
+        self.assertIn("untracked", guide.lower())
+        self.assertIn("not a real unity", guide.lower())
+
     def test_guard_alarm_has_confiscation_custody_and_recoverable_release(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8")
