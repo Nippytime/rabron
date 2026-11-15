@@ -77,7 +77,7 @@ namespace Rabron.Prototype
 
             // Check both sides rather than ejecting a player through a wall.
             // Root/vehicle collider and the passenger are deliberately ignored.
-            foreach (float side in new[] { 1f, -1f })
+            for (int side = 1; side >= -1; side -= 2)
             {
                 Vector3 candidate = transform.position + transform.right * (side * 2.3f);
                 candidate.y = transform.position.y + 0.1f;
