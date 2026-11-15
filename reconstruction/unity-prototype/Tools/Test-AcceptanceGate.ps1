@@ -59,6 +59,16 @@ try {
     $sceneFolder = Join-Path $assets 'Scenes'
     $scene = Join-Path $sceneFolder 'Prototype.unity'
     $alternate = Join-Path $sceneFolder ($nonce + '.unity')
+    $untrackedPackage = Join-Path $repoRoot (
+        'reconstruction/unity-prototype/Packages/' + $nonce + '.json')
+    $untrackedSettings = Join-Path $repoRoot (
+        'reconstruction/unity-prototype/ProjectSettings/' + $nonce + '.asset')
+    $untrackedTool = Join-Path $repoRoot (
+        'reconstruction/unity-prototype/Tools/' + $nonce + '.ps1')
+    $untrackedCore = Join-Path $repoRoot (
+        'reconstruction/game/Core/' + $nonce + '.cs')
+    $unexpectedInputs = @($untrackedSource, $alternate, $untrackedPackage,
+                          $untrackedSettings, $untrackedTool, $untrackedCore)
     $createdScene = $false
     $createdSceneFolder = $false
 
@@ -78,7 +88,9 @@ try {
         }
         & $provenance -RepoRoot $repoRoot | Out-Null
 
-        foreach ($bad in @($untrackedSource, $alternate)) {
+        # Test every untracked input that may change the real Editor import,
+        # tests or linked game core without changing the recorded Git HEAD.
+        foreach ($bad in $unexpectedInputs) {
             Set-Content -LiteralPath $bad -Value 'synthetic untracked source'
             $rejected = $false
             try {
@@ -94,10 +106,10 @@ try {
         }
 
         & $provenance -RepoRoot $repoRoot | Out-Null
-        Write-Host 'PASS rejected: untracked Unity source and alternate scene; allowed Unity metadata/bootstrap scene'
+        Write-Host 'PASS rejected: untracked Assets, Packages, ProjectSettings, Tools and linked core; allowed generated metadata/bootstrap scene'
     }
     finally {
-        foreach ($file in @($meta, $untrackedSource, $alternate)) {
+        foreach ($file in @($meta) + $unexpectedInputs) {
             if (Test-Path -LiteralPath $file) {
                 Remove-Item -LiteralPath $file -Force
             }
