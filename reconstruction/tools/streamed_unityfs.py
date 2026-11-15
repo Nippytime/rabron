@@ -158,7 +158,7 @@ def streamed_unityfs():
     """
     from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld
     from UnityPy.files import BundleFile, File, SerializedFile
-        from UnityPy.helpers import ArchiveStorageManager, ImportHelper
+    from UnityPy.helpers import ArchiveStorageManager, ImportHelper
     from UnityPy.streams import EndianBinaryReader
 
     old_fs = BundleFile.read_fs
