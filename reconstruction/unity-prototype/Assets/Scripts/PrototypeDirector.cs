@@ -17,6 +17,7 @@ namespace Rabron.Prototype
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
         private ThirdPersonMotor _player = null!;
+        private PrototypeVehicle _vehicle = null!;
         private GuardSensor _guard = null!;
         private CashPilePresenter _cashPile = null!;
         private CourierParcelPresenter _courierParcel = null!;
@@ -39,6 +40,7 @@ namespace Rabron.Prototype
             _stations = PrototypeWorld.Create(transform, out _player, out _cashPile,
                                               out _guard);
             _courierParcel = _player.GetComponentInChildren<CourierParcelPresenter>(true);
+            _vehicle = GetComponentInChildren<PrototypeVehicle>(true);
 
             var hudObject = new GameObject("Prototype HUD");
             hudObject.transform.SetParent(transform, false);
@@ -119,6 +121,13 @@ namespace Rabron.Prototype
 
         private InteractionMarker? FindNearbyStation()
         {
+            if (_player.IsDriving)
+            {
+                foreach (var marker in _stations)
+                    if (marker.gameObject.activeSelf)
+                        marker.gameObject.SetActive(false);
+                return null;
+            }
             InteractionMarker? nearest = null;
             float best = InteractionRadius * InteractionRadius;
             foreach (var marker in _stations)
@@ -156,6 +165,10 @@ namespace Rabron.Prototype
             bool criminal = _session.CurrentRole == PlayerRole.Criminal;
             return action switch
             {
+                StationAction.VehicleEnter => city && civilian &&
+                    _session.Phase == HeistPhase.Idle &&
+                    !_session.CarryingCourierParcel && !_player.IsDriving &&
+                    _vehicle != null && !_vehicle.Occupied,
                 StationAction.ReleaseCustody => city &&
                     _session.Phase == HeistPhase.Arrested &&
                     _session.CurrentRole == PlayerRole.Criminal,
@@ -204,6 +217,9 @@ namespace Rabron.Prototype
         {
             switch (marker.Action)
             {
+                case StationAction.VehicleEnter:
+                    _player.BoardVehicle(_vehicle);
+                    break;
                 case StationAction.ReleaseCustody:
                     _session.ReleaseFromCustody();
                     _player.WarpTo(CivilianSpawn);
@@ -279,6 +295,8 @@ namespace Rabron.Prototype
 
         private string Objective(long now)
         {
+            if (_player.IsDriving)
+                return "DRIVING: W/S or left stick throttle, A/D steer. Space/Y brake. Stop, then E/A to exit.";
             return _session.Phase switch
             {
                 HeistPhase.Arrested
