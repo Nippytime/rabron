@@ -19,11 +19,14 @@ namespace Rabron.Prototype
             Vector3 delta = target - origin;
             Vector3 horizontal = Vector3.ProjectOnPlane(delta, Vector3.up);
 
-            if (horizontal.sqrMagnitude > DemoSightRange * DemoSightRange ||
-                horizontal.sqrMagnitude < 0.001f)
+            if (horizontal.sqrMagnitude > DemoSightRange * DemoSightRange)
                 return false;
 
-            if (Vector3.Angle(transform.forward, horizontal) > DemoHalfSightAngle)
+            // An overlap has no meaningful facing angle. The placeholder
+            // guard's mesh is a trigger, so standing inside it must not grant
+            // invisibility or bypass arrest. Keep the normal cone at range.
+            if (horizontal.sqrMagnitude >= 0.001f &&
+                Vector3.Angle(transform.forward, horizontal) > DemoHalfSightAngle)
                 return false;
 
             return WorldOcclusion.HasClearLine(origin, target, transform, _hits, player);
