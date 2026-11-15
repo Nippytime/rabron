@@ -537,7 +537,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("FindFirstObjectByType<PrototypeHud>()", probe)
         self.assertIn("markers.Length == 21 && actions.Count == 21", probe)
         self.assertIn("RABRON_WINDOWS_PLAYER_SMOKE_PASS", probe)
-        self.assertIn("Application.Quit(booted ? 0 : 1)", probe)
+        self.assertIn("Application.Quit(saved ? 0 : 1)", probe)
 
         self.assertIn('"rabron-player-smoke", PlayerSmokeInvocationId', store)
         self.assertIn("Application.temporaryCachePath", store)
@@ -566,6 +566,53 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("missing-player.exe", fixture)
         self.assertIn("headless", guide.lower())
         self.assertIn("not a manual", guide.lower())
+
+    def test_windows_player_smoke_requires_isolated_persistence_roundtrip(self):
+        smoke = read("PrototypePlayerSmoke.cs")
+        store = read("PrototypeSaveStore.cs")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # The built-player probe is opt-in, and a bad world must not write.
+        self.assertIn("private static bool VerifyIsolatedCheckpoint(out string error)", smoke)
+        self.assertIn("bool saved = booted && VerifyIsolatedCheckpoint(out saveError);",
+                      smoke)
+        self.assertIn("Application.Quit(saved ? 0 : 1)", smoke)
+        self.assertIn("FindFirstObjectByType<Camera>()", smoke)
+        self.assertIn("FindFirstObjectByType<GuardSensor>()", smoke)
+        self.assertIn("FindFirstObjectByType<PrototypeVehicle>()", smoke)
+        for presenter in ("CashPilePresenter", "CourierParcelPresenter"):
+            self.assertIn(f"FindObjectsByType<{presenter}>(", smoke)
+        self.assertIn("FindObjectsInactive.Include, FindObjectsSortMode.None", smoke)
+        self.assertIn("cash.Length == 1 && parcels.Length == 1", smoke)
+        self.assertIn("vehicle.GetComponent<CharacterController>() != null", smoke)
+
+        # Explicit path verification must happen before touching any file:
+        # disallow ordinary Application.persistentDataPath and shared root.
+        path_guard = smoke.index('string isolatedRoot = Path.GetFullPath(')
+        first_save = smoke.index("PrototypeSaveStore.TrySave(initial, out error)")
+        self.assertLess(path_guard, first_save)
+        self.assertIn('Application.temporaryCachePath, "rabron-player-smoke"', smoke)
+        self.assertIn("Path.GetDirectoryName(invocation), isolatedRoot", smoke)
+        self.assertIn("Refusing to write outside a unique player-smoke", smoke)
+        self.assertNotIn("Application.persistentDataPath", smoke)
+        self.assertIn('"rabron-player-smoke", PlayerSmokeInvocationId', store)
+
+        # First write, reload, second replace and restored previous backup
+        # all exercise the real Unity SaveStore/JsonUtility implementation.
+        self.assertEqual(smoke.count("PrototypeSaveStore.TrySave("), 2)
+        self.assertEqual(smoke.count("PrototypeSaveStore.Load(out _)"), 2)
+        self.assertIn("initial.PickUpCourierParcel();", smoke)
+        self.assertIn("pending.DeliverCourierParcel(25);", smoke)
+        self.assertIn("pending.DepositCleanCash(10);", smoke)
+        self.assertIn('File.ReadAllText(path + ".bak")', smoke)
+        self.assertIn("HeistSession.FromSnapshot(", smoke)
+        self.assertIn("final.CleanCash != 15 || final.BankBalance != 10", smoke)
+        self.assertIn("backup.CleanCash != 0 || backup.BankBalance != 0", smoke)
+        self.assertIn("Directory.Delete(invocation, recursive: true)", smoke)
+        self.assertIn("Could not clean isolated smoke files:", smoke)
+        self.assertIn("RABRON_WINDOWS_PLAYER_SMOKE_FAILED:", smoke)
+        self.assertIn("never writes or removes normal demo checkpoints", guide)
+        self.assertIn("real isolated checkpoint", guide)
 
     def test_real_unity_acceptance_evidence_is_fail_closed_and_git_bound(self):
         runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
