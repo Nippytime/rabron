@@ -451,7 +451,11 @@ and Windows build.
 
 A single **driveable practice car** is parked to the east of the starting
 road, with a gold **Enter practice car** marker on its side. Approach it
-as a **Civilian** in **Idle** with no courier cargo and press E / gamepad A.
+as a **Civilian** in **Idle** and press E / gamepad A. An active **courier parcel**
+can travel with you: the parcel and walking avatar are hidden while driving,
+then restored when you exit. Boarding, driving and leaving the car never pay
+money or complete a delivery; bring the parcel to the delivery kiosk and
+interact there to receive the one lawful clean-cash payout.
 The actor's walking collider and visual are hidden while boarded; the same
 third-person camera follows the car. W/S and left-stick throttle drive forward
 or reverse, A/D and the stick steer, and Space/Y brakes. **Mouse and right stick

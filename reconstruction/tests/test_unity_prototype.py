@@ -1610,6 +1610,31 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("drive", guide.lower())
         self.assertIn("vehicle position", guide.lower())
 
+    def test_courier_parcel_can_ride_practice_car_without_early_payout(self):
+        director = read("PrototypeDirector.cs")
+        motor = read("ThirdPersonMotor.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        vehicle_gate = director.split(
+            "StationAction.VehicleEnter =>", 1
+        )[1].split("StationAction.ReleaseCustody =>", 1)[0]
+        self.assertIn("city && civilian", vehicle_gate)
+        self.assertIn("_session.Phase == HeistPhase.Idle", vehicle_gate)
+        self.assertIn("!_player.IsDriving", vehicle_gate)
+        self.assertIn("!_vehicle.Occupied", vehicle_gate)
+        self.assertNotIn("!_session.CarryingCourierParcel", vehicle_gate)
+        self.assertIn("_player.BoardVehicle(_vehicle)", director)
+        self.assertIn("RestoreVisuals();", motor)
+        self.assertIn("Idle civilian with parcel must be allowed into the car", playmode)
+        self.assertIn("Boarding with cargo must not award delivery money", playmode)
+        self.assertIn("Courier parcel renderer must restore after leaving car", playmode)
+        self.assertIn("Interact(StationAction.CourierDropoff);", playmode)
+        self.assertIn("courier.BankBalance, Is.GreaterThan(0L)", playmode)
+        self.assertIn("courier parcel", guide.lower())
+        self.assertIn("car", guide.lower())
+
     def test_car_exit_checks_full_actual_passenger_capsule(self):
         car = read("PrototypeVehicle.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
