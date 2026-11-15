@@ -9,6 +9,18 @@ namespace Rabron.Prototype
     /// </summary>
     public static class WorldOcclusion
     {
+        // One physical sight point for guard vision and nearby interactions.
+        // The live CharacterController changes height when crouched; a fixed
+        // standing-height ray would let a crouched actor interact through cover.
+        public static Vector3 UpperBodyPoint(Transform actor)
+        {
+            CharacterController body = actor.GetComponent<CharacterController>();
+            return body == null
+                ? actor.position + Vector3.up * 1.5f
+                : actor.TransformPoint(body.center +
+                    Vector3.up * (body.height * 0.5f - body.radius * 0.5f));
+        }
+
         public static bool HasClearLine(Vector3 from, Vector3 to,
                                         Transform ignore, RaycastHit[] hits,
                                         Transform alsoIgnore = null)
