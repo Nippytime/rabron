@@ -319,22 +319,39 @@ namespace Rabron.Prototype.Editor
             MethodInfo crouch = typeof(ThirdPersonMotor).GetMethod(
                 "UpdateCrouch", BindingFlags.Instance | BindingFlags.NonPublic);
             Check(crouch != null, "Cannot exercise the live crouch capsule");
+
+            // Use the real guard-control station across the real barrier.
+            // Crouch must block BOTH guard sight and the player's station ray.
+            InteractionMarker control = Array.Find(
+                root.GetComponentsInChildren<InteractionMarker>(true),
+                marker => marker.Action == StationAction.ControlStaff);
+            Check(control != null, "Generated guard-control station is missing");
+            var interactionHits = new RaycastHit[24];
+            bool CanReachControl() => WorldOcclusion.HasClearLine(
+                WorldOcclusion.UpperBodyPoint(player.transform),
+                control.transform.position, player.transform, interactionHits);
             try
             {
                 player.transform.position = new Vector3(0f, 0.12f, 28f);
                 Physics.SyncTransforms();
                 Check(guard.CanSee(player.transform),
                       "Standing player must be visible over low solid cover");
+                Check(CanReachControl(),
+                      "Standing sightline should clear real cover toward guard control");
 
                 crouch.Invoke(player, new object[] { true });
                 Physics.SyncTransforms();
                 Check(player.IsCrouched && !guard.CanSee(player.transform),
                       "Crouched player must be hidden behind low solid cover");
+                Check(!CanReachControl(),
+                      "Crouched station interaction cannot pass through low solid cover");
 
                 crouch.Invoke(player, new object[] { false });
                 Physics.SyncTransforms();
                 Check(!player.IsCrouched && guard.CanSee(player.transform),
                       "Standing back up must restore guard visibility over cover");
+                Check(CanReachControl(),
+                      "Standing back up must restore the station sightline");
 
                 // Stealth is due to the physical barrier, not an invisible
                 // gameplay flag: walking around it restores detection.
@@ -342,6 +359,8 @@ namespace Rabron.Prototype.Editor
                 Physics.SyncTransforms();
                 Check(guard.CanSee(player.transform),
                       "Standing beside real warehouse cover must remain visible");
+                Check(CanReachControl(),
+                      "Flanking physical cover must restore station sightline");
 
                 player.transform.position = new Vector3(0f, 20f, 28f);
                 Physics.SyncTransforms();
