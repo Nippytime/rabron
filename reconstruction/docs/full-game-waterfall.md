@@ -550,6 +550,25 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   reconstruction/docs/materiallibrary-desert-lfs-source-audit.md.
   This is client metadata, not original server logic or asset reuse rights.
 
+- W1-AL original `wwisedata_windows_assets_all.bundle` was selectively
+  fetched and **verified at 170,634,407 original bytes** with exact Git LFS
+  SHA-256 and UnityFS magic. [First real original-source scan and strict
+  reconcile #43673281268](https://github.com/Nippytime/rabron/actions/runs/43673281268)
+  passed 3/3 jobs; Wwise Windows contains **276 typed Unity objects**,
+  **275 MonoBehaviours**, of which **274 parsed with numeric caps**, and
+  **1 oversized 10,876,192-byte MonoBehaviour explicitly unparsed** against
+  the 8 MiB per-object bound. Bounded numeric inspection **is incomplete**:
+  all 274 parsed MonoBehaviours have numeric-field caps (2,048 fields/depth 32).
+  Proposed ledger is now **329/330** original sources (one city-scene source
+  still unscanned), **128,664 parsed MonoBehaviours**, **350 numeric-cap
+  records** (76 previous, 274 new), **320 remaining numeric caps** under
+  current accounting (46 previous plus 274 new), and **2 separately unparsed
+  Wwise MonoBehaviours** (one older battle, one new Windows).
+  See reconstruction/docs/wwise-windows-lfs-source-audit.md. This is client
+  serialized metadata, not authoritative formulas or media reuse rights.
+  A fresh exact-current-head full-original recheck and all CI are still
+  required before a merge into `dev`.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file

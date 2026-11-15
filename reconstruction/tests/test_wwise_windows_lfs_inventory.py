@@ -50,8 +50,8 @@ class WwiseWindowsLfsTests(unittest.TestCase):
                    if s["bundle"] == self.target["bundle"]]
         # Before original-byte CI the record is absent; after measured PR
         # update it must match exact source fingerprint and evidence tag.
-        self.assertIn(len(records), (0, 1))
-        self.assertGreaterEqual(len(data["scans"]), 328)
+        self.assertEqual(len(records), 1)
+        self.assertEqual(len(data["scans"]), 329)
         for row in records:
             for key, expected in (
                 ("sha256", self.target["lfs_oid_sha256"]),
@@ -61,6 +61,27 @@ class WwiseWindowsLfsTests(unittest.TestCase):
                 ("scan_evidence", AL_EVIDENCE),
             ):
                 self.assertEqual(row[key], expected)
+
+    def test_measured_original_records_preserve_explicit_numeric_limits(self):
+        ledger = json.loads((ROOT / "data/extraction_coverage.json").read_text())
+        record = next(s for s in ledger["scans"]
+                      if s["bundle"] == self.target["bundle"])
+        self.assertEqual(record["monobehaviours_total"], 275)
+        self.assertEqual(record["monobehaviours_parsed"], 274)
+        self.assertEqual(record["unparsed_records"], 1)
+        self.assertEqual(record["numeric_field_cap_records"], 274)
+        self.assertIs(record["bounded_numeric_scan_complete"], False)
+        self.assertEqual(record["objects_by_type"],
+                         {"AssetBundle": 1, "MonoBehaviour": 275})
+        self.assertEqual(record["candidate_field_counts"], {
+            "combat": 0, "economy": 0, "progression": 0,
+            "timing_and_world": 0,
+        })
+        self.assertEqual(record["numeric_field_limit"], 2048)
+        self.assertEqual(record["numeric_depth_limit"], 32)
+        self.assertTrue(record["status"].startswith("documented_scan"))
+        self.assertEqual(record["run_url"],
+                         "https://github.com/Nippytime/rabron/actions/runs/43673281268")
 
     def test_rejects_other_singletons_and_partial_legacy_pair(self):
         with tempfile.TemporaryDirectory() as tmp:
