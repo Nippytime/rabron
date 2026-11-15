@@ -34,6 +34,8 @@ internal static class Program
             ArrestSnapshotCannotForgeRolesOrRewards,
             EmptyHandedWithdrawalRestoresPlayWithoutEarningCash,
             EmptyEscapeAndForgedCheckpointAreRejected,
+            ActiveHeistsCannotLeaveCityOrForgeDesertSaves,
+            IdleScoutedAndLaunderedCanTravelWithBalances,
         };
 
         foreach (Action test in tests)
@@ -812,6 +814,106 @@ internal static class Program
         game.Escape();
         Throws<InvalidOperationException>(() => game.WithdrawEmptyHanded());
         Eq(HeistPhase.Escaped, HeistSession.FromSnapshot(game.ExportSnapshot()).Phase);
+    }
+
+    private static void ActiveHeistsCannotLeaveCityOrForgeDesertSaves()
+    {
+        // Local game core must enforce the same city-only heist boundary as
+        // Unity's ExitCity pillar. The save loader cannot be a second bypass.
+        var game = new HeistSession();
+        game.OpenBankAccount();
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(90);
+        game.DepositCleanCash(40);
+        game.Scout();
+        game.PutOnMask();
+        game.StartHeist();
+        game.TakeLoot("painting");
+
+        void RejectExitAndForgedDesert()
+        {
+            HeistSessionSnapshot before = game.ExportSnapshot();
+            Throws<InvalidOperationException>(() => game.LeaveCity());
+            HeistSessionSnapshot after = game.ExportSnapshot();
+            Eq(before.Zone, after.Zone);
+            Eq(before.Role, after.Role);
+            Eq(before.Phase, after.Phase);
+            Eq(before.LootIds.Length, after.LootIds.Length);
+            Eq(before.CounterCash, after.CounterCash);
+            Eq(before.DirtyCash, after.DirtyCash);
+            Eq(before.CleanCash, after.CleanCash);
+            Eq(before.BankBalance, after.BankBalance);
+            Eq(before.LaunderingReadyAt, after.LaunderingReadyAt);
+
+            var tampered = game.ExportSnapshot();
+            tampered.Zone = Zone.Desert;
+            Throws<ArgumentException>(() => HeistSession.FromSnapshot(tampered));
+        }
+
+        RejectExitAndForgedDesert(); // Robbing, loot in inventory
+        game.Escape();
+        RejectExitAndForgedDesert(); // Escaped, awaiting sale
+        game.SellLoot(new Dictionary<string, long> { ["painting"] = 100 });
+        RejectExitAndForgedDesert(); // CashOnCounter, must collect
+        game.CollectCounterCash();
+        RejectExitAndForgedDesert(); // DirtyCashCollected, must launder
+        game.StartLaundering(80, 60, 1000, 10);
+        RejectExitAndForgedDesert(); // Laundering, must complete
+        game.CompleteLaundering(1010);
+        Eq(HeistPhase.Laundered, game.Phase);
+
+        var custody = StartHeistWithOneItem();
+        custody.RaiseAlarm();
+        custody.ArrestAfterAlarm();
+        var originalCustody = custody.ExportSnapshot();
+        Throws<InvalidOperationException>(() => custody.LeaveCity());
+        Eq(originalCustody.Phase, custody.Phase);
+        Eq(Zone.City, custody.CurrentZone);
+        var forgedCustody = custody.ExportSnapshot();
+        forgedCustody.Zone = Zone.Desert;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(forgedCustody));
+    }
+
+    private static void IdleScoutedAndLaunderedCanTravelWithBalances()
+    {
+        // Normal, scouted and completed-game travel stays valid in v1 saves.
+        var civilian = new HeistSession();
+        civilian.OpenBankAccount();
+        civilian.PickUpCourierParcel();
+        Throws<InvalidOperationException>(() => civilian.LeaveCity());
+        civilian.CancelCourierParcel();
+        civilian.LeaveCity();
+        Eq(HeistPhase.Idle, HeistSession.FromSnapshot(
+            civilian.ExportSnapshot()).Phase);
+        civilian.EnterCity();
+        civilian.Scout();
+        civilian.PutOnMask();
+        civilian.LeaveCity();
+        Eq(Zone.Desert, civilian.CurrentZone);
+        Eq(PlayerRole.Civilian, civilian.CurrentRole);
+        Eq(HeistPhase.Scouted, HeistSession.FromSnapshot(
+            civilian.ExportSnapshot()).Phase);
+        civilian.EnterCity();
+        civilian.PutOnMask();
+        civilian.StartHeist();
+        civilian.TakeLoot("painting");
+        civilian.Escape();
+        civilian.SellLoot(new Dictionary<string, long> { ["painting"] = 100 });
+        civilian.CollectCounterCash();
+        civilian.StartLaundering(80, 60, 1000, 10);
+        civilian.CompleteLaundering(1010);
+        civilian.LeaveCity();
+        var saved = HeistSession.FromSnapshot(civilian.ExportSnapshot());
+        Eq(Zone.Desert, saved.CurrentZone);
+        Eq(PlayerRole.Civilian, saved.CurrentRole);
+        Eq(HeistPhase.Laundered, saved.Phase);
+        Eq(20L, saved.DirtyCash);
+        Eq(60L, saved.CleanCash);
+        Eq(0L, saved.BankBalance);
+        True(saved.BankAccountOpened);
+        saved.EnterCity();
+        saved.DepositCleanCash(60);
+        Eq(60L, saved.BankBalance);
     }
 
     private static HeistSession StartHeistWithOneItem()

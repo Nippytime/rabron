@@ -524,7 +524,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Phase = HeistPhase.Arrested;", core)
         self.assertIn("snapshot.Phase == HeistPhase.Arrested", core)
         self.assertIn("unreachable arrest state", core)
-        self.assertIn("Phase != HeistPhase.Arrested", core)
+        self.assertIn("Phase == HeistPhase.Idle || Phase == HeistPhase.Scouted", core)
         self.assertIn("ReleaseCustody", marker)
         self.assertIn("StationAction.ReleaseCustody", world)
         self.assertIn('new List<InteractionMarker>(20)', world)
@@ -590,6 +590,32 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("no reward", guide.lower())
         self.assertNotIn("DirtyCash =", director)
         self.assertNotIn("CounterCash =", director)
+
+    def test_city_travel_rejects_active_heist_and_unreachable_desert_saves(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        director = read("PrototypeDirector.cs")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # The portable state machine must not bypass the Unity-only
+        # ExitCity availability gate or import an interrupted desert heist.
+        self.assertIn("Phase == HeistPhase.Idle || Phase == HeistPhase.Scouted ||", core)
+        self.assertIn("Phase == HeistPhase.Laundered)", core)
+        self.assertIn("snapshot.Zone == Zone.Desert", core)
+        self.assertIn("snapshot.Phase != HeistPhase.Laundered)", core)
+        self.assertIn("unreachable desert heist phase", core)
+        self.assertIn("Finish the current heist before leaving the city.", core)
+        self.assertIn("Active robbery must not escape city through core API", editor)
+        self.assertIn("Unity JSON accepted unreachable desert robbery", editor)
+        self.assertIn('"An active robbery must not expose desert exit"', playmode)
+        self.assertIn('"A completed heist must allow lawful city departure"', playmode)
+        self.assertIn("StationAction.ExitCity => city && _session.Phase == HeistPhase.Laundered", director)
+        self.assertIn("in-progress", guide.lower())
+        self.assertIn("desert", guide.lower())
 
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")

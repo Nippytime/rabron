@@ -231,6 +231,31 @@ namespace Rabron.Prototype.Editor
                   retreat.CounterCash == 0 && retreat.DirtyCash == 0,
                   "Empty-handed withdrawal must restore civilian play without paying");
 
+            // The core cannot exit with an unfinished heist even if a
+            // caller bypasses the UI's already-guarded ExitCity station.
+            var interrupted = new HeistSession();
+            interrupted.Scout();
+            interrupted.PutOnMask();
+            interrupted.StartHeist();
+            interrupted.TakeLoot("smoke-city-only-loot");
+            bool blockedExit = false;
+            try { interrupted.LeaveCity(); }
+            catch (InvalidOperationException) { blockedExit = true; }
+            Check(blockedExit && interrupted.CurrentZone == Zone.City &&
+                  interrupted.CurrentRole == PlayerRole.Criminal &&
+                  interrupted.Loot.Count == 1,
+                  "Active robbery must not escape city through core API");
+            var impossibleDesert = interrupted.ExportSnapshot();
+            impossibleDesert.Zone = Zone.Desert;
+            bool rejectedDesert = false;
+            try
+            {
+                HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                    JsonUtility.ToJson(impossibleDesert)));
+            }
+            catch (ArgumentException) { rejectedDesert = true; }
+            Check(rejectedDesert, "Unity JSON accepted unreachable desert robbery");
+
             // Exercise the custody state through Unity's actual JSON
             // serializer. An alarm alone is not the same as arrest.
             var custody = new HeistSession();

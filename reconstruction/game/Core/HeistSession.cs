@@ -207,9 +207,12 @@ namespace Rabron.Reconstruction
 
         public void LeaveCity()
         {
+            // Leaving during a robbery, fence pickup or laundering would
+            // strand the session outside its valid city-only transition path.
             Require(CurrentZone == Zone.City && !CarryingCourierParcel &&
-                    Phase != HeistPhase.Arrested,
-                    "Custody must be released before leaving the city.");
+                    (Phase == HeistPhase.Idle || Phase == HeistPhase.Scouted ||
+                     Phase == HeistPhase.Laundered),
+                    "Finish the current heist before leaving the city.");
             CurrentZone = Zone.Desert;
             if (CurrentRole == PlayerRole.Criminal)
                 CurrentRole = PlayerRole.Civilian; // Official status reset occurs on city exit.
@@ -324,6 +327,15 @@ namespace Rabron.Reconstruction
                 Enum.IsDefined(typeof(HeistPhase), snapshot.Phase);
             if (!supported)
                 throw new ArgumentException("Unsupported or invalid session save.", nameof(snapshot));
+
+            // Only idle/scouted/completed sessions can legitimately exit
+            // the city. Reject former core-only desert checkpoints that could
+            // process unsold loot or unfinished laundering outside the map.
+            if (snapshot.Zone == Zone.Desert &&
+                snapshot.Phase != HeistPhase.Idle &&
+                snapshot.Phase != HeistPhase.Scouted &&
+                snapshot.Phase != HeistPhase.Laundered)
+                throw new ArgumentException("Save contains an unreachable desert heist phase.", nameof(snapshot));
 
             // Police may scout but cannot start a robbery in this state machine.
             // Reject unreachable later phases instead of loading a forged role.

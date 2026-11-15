@@ -331,6 +331,14 @@ around the city.
    Dirty Cash. The next destination is the **eastern** laundry workstation.
 8. Laundering finishes after an adjustable demo timer. Go **south** to the
    city-exit marker to clear criminal status and use the return marker.
+   The live Unity exit marker is only available after laundering completes.
+   The independent core additionally permits travel during Idle or Scouted
+   phases for compatible non-robbery paths, but never during an in-progress
+   robbery, unsold fence payout, uncollected counter cash, dirty-cash
+   collection, active laundering or custody. Former hand-authored Desert
+   checkpoints containing unfinished heist phases are rejected on load
+   rather than silently moving loot or laundering jobs across the zone
+   boundary; no reward or save migration is invented.
 9. As a **civilian**, open the bank account at the ATM if not already open,
    and deposit clean cash. A nearby new-heist station resets just the
    heist phase and retains account balances.

@@ -230,6 +230,9 @@ namespace Rabron.Prototype.Tests
                     new object[] { StationAction.WithdrawEmptyHanded }), Is.True);
                 Assert.That((bool)available.Invoke(director,
                     new object[] { StationAction.Escape }), Is.False);
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.ExitCity }), Is.False,
+                    "An active robbery must not expose desert exit");
                 Interact(StationAction.WithdrawEmptyHanded);
                 Assert.That(empty.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(empty.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
@@ -294,6 +297,9 @@ namespace Rabron.Prototype.Tests
                 // The portable core validates exact deadlines separately.
                 simulated.CompleteLaundering(
                     simulated.LaunderingReadyAt.GetValueOrDefault());
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.ExitCity }), Is.True,
+                    "A completed heist must allow lawful city departure");
                 Interact(StationAction.ExitCity);
                 Assert.That(simulated.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
                 Interact(StationAction.EnterCity);
