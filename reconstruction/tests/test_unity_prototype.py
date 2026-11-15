@@ -375,6 +375,41 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("parcel.IsVisible, Is.True", playmode)
         self.assertIn("parcel.IsVisible, Is.False", playmode)
 
+    def test_grounded_jump_preserves_interact_and_handles_ceiling(self):
+        motor = read("ThirdPersonMotor.cs")
+        hud = read("PrototypeHud.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertEqual(motor.count('new InputAction("Jump"'), 1)
+        self.assertIn('_jump.AddBinding("<Keyboard>/space")', motor)
+        self.assertIn('_jump.AddBinding("<Gamepad>/buttonNorth")', motor)
+        self.assertIn('_interact.AddBinding("<Gamepad>/buttonSouth")', motor)
+        for action in ("Enable", "Disable", "Dispose"):
+            self.assertIn(f"_jump?.{action}();", motor)
+        self.assertIn("_character.isGrounded, _jump.WasPressedThisFrame()", motor)
+        self.assertIn("private static float IntegrateVertical(", motor)
+        self.assertIn("if (grounded)", motor)
+        self.assertIn("if (jumpPressed)", motor)
+        self.assertIn("Mathf.Sqrt(2f * DemoGravity * DemoJumpHeight)", motor)
+        self.assertIn("CollisionFlags collision = _character.Move(", motor)
+        self.assertIn("ResolveCeiling(_verticalVelocity, collision)", motor)
+        self.assertIn("(collision & CollisionFlags.Above) != 0", motor)
+        self.assertIn("_verticalVelocity = 0f;", motor)  # Warp resets velocity.
+        self.assertNotRegex(motor, r"\\bInput\\.Get(?:Button|Key|Axis)")
+        self.assertIn("Space / Y: jump", hud)
+        self.assertIn("Jump (grounded only)", guide)
+        self.assertIn("IntegrateVertical", editor)
+        self.assertIn("CollisionFlags.Above", editor)
+        self.assertIn('jump.enabled, Is.True', playmode)
+        self.assertIn('"<Keyboard>/space"', playmode)
+        self.assertIn('"<Gamepad>/buttonNorth"', playmode)
+        self.assertIn('"No airborne double-jump"', playmode)
+        self.assertIn('"Ceiling collision must cancel ascent"', playmode)
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")
