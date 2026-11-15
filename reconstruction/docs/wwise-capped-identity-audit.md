@@ -1,0 +1,19 @@
+# W1-AP — original Wwise Windows capped-identity audit
+
+## Strict original binary evidence
+
+- First full-original [W1-AP Actions #43679455011](https://github.com/Nippytime/rabron/actions/runs/43679455011) completed **3/3 real jobs successfully**: pointer and negative tests, pinned UnityPy original 170,634,407-byte SHA-verified read-only Wwise scan, and strict 274-capped-plus-one-unparsed reconciliation.
+- Original SHA-256: `d84888fe94f74b5cb817749abbcb1af59225300523ad9a1a14e01f475e08fb35`; Git LFS pointer SHA-1: `40324cc5a4281d764319e2291e9fb7c142208c57`; original source `StreamingAssets/aa/StandaloneWindows64/wwisedata_windows_assets_all.bundle`. Source inventory: **276 Unity typed objects**, consisting of one AssetBundle and 275 MonoBehaviours, with **274 parsed but numeric-field capped** and **one explicitly unparsed**. Field traversal was bounded at 2,048 fields and depth 32; Wwise-specific raw-object parsing stays capped at 8 MiB. No source scope or global memory budget was widened.
+- Original [GitHub Actions artifact `wwise-capped-identity-evidence` (ID 14147922904)](https://github.com/Nippytime/rabron/actions/runs/43679455011) contained **104,791 bytes** of JSON evidence (`wwise-cap-index.json`), SHA-256 `74b9ef8481e04ecc6169a4062e491463a65cf02cfbd64f0d0bad44d89efbff49`, Git blob SHA-1 `b618f2175442e0848719c8513c86e4f6380412a0`. The **exact** JSON blob is preserved without re-encoding in `reconstruction/data/wwise_numeric_cap_identities.json`. The Git blob SHA-1 was checked byte-for-byte against the original artifact before inclusion.
+- Strict first source run's reconciliation reported `mode=new`, `capped=274`, `unparsed=1`, `identities=275`, `reverified=0`, and `full_numeric_extraction_complete=false`.
+
+## Original object identities and limitations
+
+- **All 274 capped records** belong to serialized file `CAB-0d2ba6020dca38a3a92a5458383d263a`. Each has a different scoped Unity path ID, an original numeric-string display name, **exactly 2,048 visible numeric fields**, and truncation reason `field_limit`. The numeric **field-path digest** is identical for all 274 (`d9b4a6a67c00e1d264caee0794b27ed82ccc63aac3a3675b9e7e5d62404a8aa3`): this says their *first bounded field-name paths* match, not their values or remaining truncated fields.
+- The other original MonoBehaviour is **unparsed** with `error_type=WwiseMonoObjectBudgetExceeded` at path ID **`-8363773085191996504`**, same serialized file. The original 8 MiB per-object safety budget was enforced, not bypassed.
+- The full scoped identity list (274 capped IDs and one unparsed ID), bounded field counts, truncation metadata and path digests is in the 104,791-byte JSON evidence. There are **275 unique `(serialized_file,path_id)` keys**. No source numeric values, Wwise audio, original media, source text bodies or decompiled gameplay logic were exported.
+- **All 274 caps are still capped**; the one unparsed object is still unparsed. No Wwise numeric extraction or authoritative gameplay formula recovered. This audit preserves the integrated baseline: **330/330 original source bundle paths**, **143,131 parsed MonoBehaviours**, **355 historical field-cap records**, **323 unresolved under existing targeted recovery accounting**, and **two separately unparsed oversized Wwise original objects globally**.
+
+## Integration gate
+
+This first-original-source evidence is proposed on PR #108, not integrated merely by the initial run. Require a **fresh exact-current-head full-original binary recheck** in `mode=recheck`, with `reverified=275` and strict byte-for-byte identity/digest equality, as well as **all** current-head nonempty Actions workflows, jobs and checks `completed/success` before a guarded squash merge to `dev`. Verify exact-merge `dev` Python and update issues #107, #3 and control #32. Do not equate 330/330 source paths with original complete numeric/gameplay extraction.

@@ -1,5 +1,6 @@
 """Wwise original 274-cap plus one-unparsed strict evidence checks."""
 import copy
+import hashlib
 import json
 import unittest
 from pathlib import Path
@@ -131,6 +132,37 @@ class OriginalWwiseCapTests(unittest.TestCase):
                 row[k] = value
                 with self.assertRaises(ValueError):
                     evidence(data)
+
+    def test_measured_wwise_artifact_exact_original_sha_and_scope(self):
+        path = ROOT / "data/wwise_numeric_cap_identities.json"
+        self.assertTrue(path.is_file(),
+                        "Original 274-plus-one source artifact must be committed")
+        blob = path.read_bytes()
+        self.assertEqual(len(blob), 104791)
+        self.assertEqual(
+            hashlib.sha256(blob).hexdigest(),
+            "74b9ef8481e04ecc6169a4062e491463a65cf02cfbd64f0d0bad44d89efbff49",
+        )
+        measured = json.loads(blob)
+        verify(measured, self.source)
+        self.assertEqual(len(measured["capped_objects"]), CAPS)
+        self.assertEqual(len(measured["unparsed_objects"]), 1)
+        self.assertTrue(all(
+            row["serialized_file"] == "CAB-0d2ba6020dca38a3a92a5458383d263a"
+            and row["truncation_reasons"] == ["field_limit"]
+            and row["visible_numeric_field_count"] == 2048
+            for row in measured["capped_objects"]
+        ))
+        self.assertEqual(
+            measured["unparsed_objects"],
+            [{
+                "error_type": "WwiseMonoObjectBudgetExceeded",
+                "path_id": "-8363773085191996504",
+                "serialized_file": "CAB-0d2ba6020dca38a3a92a5458383d263a",
+                "status": "unparsed",
+            }],
+        )
+        self.assertIs(measured["full_numeric_extraction_complete"], False)
 
     def test_committed_original_ids_stay_valid_if_present(self):
         path = ROOT / "data/wwise_numeric_cap_identities.json"
