@@ -622,6 +622,36 @@ namespace Rabron.Prototype.Tests
                 Assert.That(motor.GetComponent<CharacterController>().enabled, Is.False);
                 Assert.That(driver.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(driver.CleanCash, Is.EqualTo(0L));
+                // Final landing spots are open, but these solid walls
+                // bisect the path from each door to its landing. The swept
+                // capsule must refuse both before restoring the walking body.
+                for (int side = 0; side < exitBlockers.Length; side++)
+                {
+                    var obstacle = exitBlockers[side];
+                    obstacle.name = "Synthetic between-car-and-exit wall";
+                    obstacle.transform.position = car.transform.position +
+                        car.transform.right * (side == 0 ? 1.4f : -1.4f) +
+                        Vector3.up * 0.8f;
+                    obstacle.transform.localScale = new Vector3(0.12f, 1.6f, 0.8f);
+                }
+                Physics.SyncTransforms();
+                Assert.That(motor.TryExitVehicle(), Is.False,
+                    "Solid walls between the car and clear exit points must block egress");
+                Assert.That(motor.IsDriving && car.Occupied, Is.True,
+                    "Rejected swept exit must preserve vehicle occupancy");
+                Assert.That(motor.GetComponent<CharacterController>().enabled, Is.False);
+
+                // Only the opposite side becomes available; never cross the
+                // still-blocked side or quietly modify the heist economy.
+                exitBlockers[1].GetComponent<Collider>().enabled = false;
+                Physics.SyncTransforms();
+                Assert.That(car.TryFindExit(motor.transform, out Vector3 openSide), Is.True,
+                    "Clear opposite door must remain usable");
+                Assert.That(Vector3.Dot(openSide - car.transform.position,
+                                        car.transform.right), Is.LessThan(0f),
+                    "One blocked door must fall back to the unblocked side");
+                Assert.That(driver.CleanCash, Is.EqualTo(0L));
+
                 foreach (var obstacle in exitBlockers)
                     obstacle.GetComponent<Collider>().enabled = false;
                 Physics.SyncTransforms();

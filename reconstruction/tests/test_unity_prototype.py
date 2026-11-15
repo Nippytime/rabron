@@ -1135,6 +1135,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("clearanceRadius, _exitHits", car)
         self.assertIn("if (count == _exitHits.Length)", car)
         self.assertIn("!hit.transform.IsChildOf(passenger)", car)
+        self.assertIn("Physics.CapsuleCastNonAlloc(", car)
+        self.assertIn("travel.normalized, _pathHits", car)
+        self.assertIn("travel.magnitude, ~0, QueryTriggerInteraction.Ignore", car)
+        self.assertIn("if (swept == _pathHits.Length)", car)
+        self.assertIn("!hit.transform.IsChildOf(transform)", car)
 
         # These assertions are authored real-Unity Play Mode test source;
         # hosted Python cannot claim collider execution or Windows acceptance.
@@ -1144,6 +1149,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("motor.IsDriving && car.Occupied, Is.True", playmode)
         self.assertIn("Stationary car must allow a collision-clear exit", playmode)
         self.assertIn("ankle-height", guide)
+        self.assertIn("Solid walls between the car and clear exit points must block egress",
+                      playmode)
+        self.assertIn("Rejected swept exit must preserve vehicle occupancy", playmode)
+        self.assertIn("One blocked door must fall back to the unblocked side", playmode)
+        self.assertIn("swept capsule", guide)
 
     def test_driving_camera_look_stays_independent_of_vehicle_steering(self):
         motor = read("ThirdPersonMotor.cs")
