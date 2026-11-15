@@ -135,6 +135,22 @@ class UnityPrototypeStructureTests(unittest.TestCase):
                           })
         self.assertEqual(artifacts, ())
 
+    def test_playmode_assembly_uses_one_test_framework_reference_strategy(self):
+        # Real Unity 6000.5.0f1 import reported duplicate test runner refs
+        # when explicit references and legacy TestAssemblies were combined.
+        path = UNITY / "Assets/Tests/PlayMode/Rabron.Prototype.PlayModeTests.asmdef"
+        asmdef = json.loads(path.read_text(encoding="utf-8"))
+        references = asmdef["references"]
+        for name in ("UnityEngine.TestRunner", "UnityEditor.TestRunner"):
+            self.assertEqual(references.count(name), 1)
+        self.assertNotIn("TestAssemblies", asmdef.get("optionalUnityReferences", []))
+        self.assertTrue(asmdef["overrideReferences"])
+        self.assertEqual(asmdef["precompiledReferences"], ["nunit.framework.dll"])
+        self.assertEqual(asmdef["includePlatforms"], ["Editor"])
+        self.assertFalse(asmdef["autoReferenced"])
+        self.assertIn("Rabron.Prototype", references)
+        self.assertIn("Rabron.GameCore", references)
+
     def test_actual_editor_validation_is_explicit_and_not_falsely_green(self):
         editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
             encoding="utf-8"
@@ -651,7 +667,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("UnityEditor.TestRunner", asmdef["references"])
         self.assertEqual(asmdef["includePlatforms"], ["Editor"])
         self.assertIn("nunit.framework.dll", asmdef["precompiledReferences"])
-        self.assertIn("TestAssemblies", asmdef["optionalUnityReferences"])
+        self.assertNotIn("TestAssemblies", asmdef.get("optionalUnityReferences", []))
 
         self.assertIn('[Category("RabronPlayMode")]', tests)
         self.assertEqual(tests.count("[UnityTest]"), 2)

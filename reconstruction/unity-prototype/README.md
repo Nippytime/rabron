@@ -285,9 +285,15 @@ Close the graphical Unity Editor first, then run from repository root:
 ~~~
 
 Unity test discovery uses a **dedicated Editor-only test assembly** with
-NUnit, UnityEngine.TestRunner and UnityEditor.TestRunner references, as
-required by Unity's assembly definition documentation. The tests are not
-included in ordinary packaged Windows builds.
+explicit NUnit, UnityEngine.TestRunner and UnityEditor.TestRunner references,
+as required by Unity 6000.5. The redundant legacy
+`optionalUnityReferences: ["TestAssemblies"]` setting is deliberately omitted:
+combining it with those explicit references caused a real Unity 6.5 import to
+report duplicate TestRunner assembly references and abort compilation.
+The three authored Play Mode tests and their fail-closed NUnit acceptance
+requirements are unchanged. Actual successful compilation and execution
+still require a fresh run of the Windows Unity acceptance script.
+The tests are not included in ordinary packaged Windows builds.
 
 The NUnit result acceptance gate is independently exercised in GitHub
 Actions with synthetic successful, missing, malformed, failed and duplicate
