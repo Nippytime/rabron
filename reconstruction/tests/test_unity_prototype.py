@@ -370,9 +370,11 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         )
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
 
-        # Range remains enforced; facing is undefined at exact overlap, so
-        # only ordinary nonzero directions are subject to the cone.
-        self.assertIn("horizontal.sqrMagnitude > DemoSightRange * DemoSightRange", sensor)
+        # Full 3D range remains enforced even for elevated targets;
+        # facing is undefined at exact overlap, so only ordinary nonzero
+        # horizontal directions are subject to the cone.
+        self.assertIn("delta.sqrMagnitude > DemoSightRange * DemoSightRange", sensor)
+        self.assertIn("Vector3.ProjectOnPlane(delta, Vector3.up)", sensor)
         self.assertIn("horizontal.sqrMagnitude >= 0.001f &&", sensor)
         self.assertIn("Vector3.Angle(transform.forward, horizontal)", sensor)
         self.assertNotIn("horizontal.sqrMagnitude < 0.001f)", sensor)
