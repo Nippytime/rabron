@@ -9987,7 +9987,23 @@
       "sha256": "5c06c4527fa48871b842e76d8dab5e37f9fde91da9b99a806270a763becadc7f",
       "size_bytes": 549566135,
       "status": "documented_scan_not_fully_verified",
-      "unparsed_records": 0
+      "unparsed_records": 0,
+      "targeted_rescan": {
+        "run_url": "https://github.com/Nippytime/rabron/actions/runs/43677848887",
+        "source_ref": "reconstruction/data/city_scene_targeted_numeric_retry.json",
+        "initial_field_limit": 8192,
+        "initial_depth_limit": 32,
+        "adaptive_field_limit": 16384,
+        "adaptive_depth_limit": 48,
+        "initial_field_caps_reproduced": 5,
+        "resolved_count": 2,
+        "unresolved_count": 3,
+        "adaptive_retried_count": 5,
+        "remaining_reasons": [
+          "field_limit"
+        ],
+        "complete_historical_field_caps": false
+      }
     }
   ],
   "known_lfs_not_yet_scanned": [],

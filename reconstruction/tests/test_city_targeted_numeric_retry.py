@@ -146,6 +146,26 @@ class CityTargetedNumericRetryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             verify_report(bad, self.index)
 
+    def test_committed_original_retry_matches_exact_five_scoped_ids(self):
+        report_path = ROOT / "data/city_scene_targeted_numeric_retry.json"
+        self.assertTrue(report_path.is_file(),
+                        "Only verified original-byte evidence can be committed")
+        report = json.loads(report_path.read_text(encoding="utf-8"))
+        verify_report(report, self.index)
+        self.assertEqual(report["resolved"], 2)
+        self.assertEqual(report["unresolved"], 3)
+        self.assertEqual(report["adaptive_retried"], 5)
+        self.assertEqual(
+            [(x["path_id"], x["status"], x["numeric_field_count"])
+             for x in report["outcomes"]],
+            [("344196", "still_capped", 16384),
+             ("344216", "resolved", 11824),
+             ("344248", "still_capped", 16384),
+             ("344310", "resolved", 10863),
+             ("7968", "still_capped", 16384)],
+        )
+        self.assertIs(report["full_bundle_numeric_extraction_complete"], False)
+
     def test_report_stays_metadata_only(self):
         scanner = Scanner(self.measured, self.index)
         with patch("reconstruction.tools.streamed_unityfs.streamed_unityfs"):
