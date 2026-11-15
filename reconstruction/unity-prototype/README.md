@@ -12,10 +12,29 @@ The source repository holds a large reference-game binary inventory; the
 prototype only needs the \`reconstruction/\` subtree. From PowerShell:
 
 ~~~powershell
-git clone --filter=blob:none --sparse https://github.com/Nippytime/rabron.git
+# The prototype is developed on dev; main is deliberately unpromoted.
+git clone --branch dev --single-branch --filter=blob:none --sparse https://github.com/Nippytime/rabron.git
 cd rabron
 git sparse-checkout set reconstruction
+git rev-parse --verify HEAD
 ~~~
+
+For a **previously cloned** copy, close Unity, ensure any local source
+changes are committed or otherwise safely handled, and fast-forward to the
+current integration branch before collecting acceptance evidence:
+
+~~~powershell
+git fetch origin dev:refs/remotes/origin/dev
+git switch dev
+git merge --ff-only origin/dev
+git rev-parse --verify HEAD
+~~~
+
+Confirm that the tested SHA is the intended integration revision. The
+acceptance manifest records this exact checked-out SHA; an old `main`
+checkout can pass its own historical checks without validating current
+`dev`. The native runner intentionally does not require network access
+or silently move a checkout during testing.
 
 This avoids downloading the original Unity assets to open the prototype.
 The local gameplay package still resolves because it also lives inside

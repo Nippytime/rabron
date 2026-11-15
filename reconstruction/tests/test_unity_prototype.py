@@ -52,6 +52,23 @@ class UnityPrototypeStructureTests(unittest.TestCase):
                          .read_text(encoding="utf-8").strip(),
                          "m_EditorVersion: 6000.3.18f1")
 
+    def test_windows_unity_acceptance_clone_targets_dev_not_default_main(self):
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        clone = guide.split("## Small clone (recommended on Windows)", 1)[1].split(
+            "## Open and play", 1
+        )[0]
+        self.assertIn(
+            "git clone --branch dev --single-branch --filter=blob:none --sparse",
+            clone,
+        )
+        self.assertIn("git sparse-checkout set reconstruction", clone)
+        self.assertIn("git fetch origin dev:refs/remotes/origin/dev", clone)
+        self.assertIn("git switch dev", clone)
+        self.assertIn("git merge --ff-only origin/dev", clone)
+        self.assertIn("git rev-parse --verify HEAD", clone)
+        self.assertIn("main", clone)
+        self.assertNotIn("git clone --filter=blob:none --sparse", clone)
+
     def test_every_station_is_implemented_and_placed_in_the_world(self):
         marker = read("InteractionMarker.cs")
         section = marker.split("public enum StationAction", 1)[1].split("}", 1)[0]
