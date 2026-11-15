@@ -114,6 +114,7 @@ namespace Rabron.Prototype.Editor
                 Physics.SyncTransforms();
                 Check(guard.CanSee(player.transform),
                       "Overlapping the guard must not grant invisibility");
+                ValidateCrouchedGuardCover(root.transform, player, guard);
                 player.transform.position = new Vector3(0f, 0.12f, -15f);
                 Physics.SyncTransforms();
 
@@ -300,6 +301,51 @@ namespace Rabron.Prototype.Editor
             Check(restored.CleanCash == long.MaxValue &&
                   restored.DirtyCash == 9 && restored.Phase == HeistPhase.Laundered,
                   "Maximum-size payable laundering job failed to complete after Unity JSON");
+        }
+
+        private static void ValidateCrouchedGuardCover(
+            Transform root, ThirdPersonMotor player, GuardSensor guard)
+        {
+            // Real geometry in the actual Unity Editor: 1.5m-high cover
+            // blocks the lowered crouched capsule, but not a standing actor.
+            // Never replace this with a mocked ray or test-only visibility.
+            MethodInfo crouch = typeof(ThirdPersonMotor).GetMethod(
+                "UpdateCrouch", BindingFlags.Instance | BindingFlags.NonPublic);
+            Check(crouch != null, "Cannot exercise the live crouch capsule");
+            var cover = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            cover.name = "Temporary guard cover regression";
+            cover.transform.SetParent(root, false);
+            cover.transform.position = new Vector3(0f, 0.75f, 30.5f);
+            cover.transform.localScale = new Vector3(2f, 1.5f, 0.6f);
+            try
+            {
+                player.transform.position = new Vector3(0f, 0.12f, 28f);
+                Physics.SyncTransforms();
+                Check(guard.CanSee(player.transform),
+                      "Standing player must be visible over low solid cover");
+
+                crouch.Invoke(player, new object[] { true });
+                Physics.SyncTransforms();
+                Check(player.IsCrouched && !guard.CanSee(player.transform),
+                      "Crouched player must be hidden behind low solid cover");
+
+                crouch.Invoke(player, new object[] { false });
+                Physics.SyncTransforms();
+                Check(!player.IsCrouched && guard.CanSee(player.transform),
+                      "Standing back up must restore guard visibility over cover");
+
+                player.transform.position = new Vector3(0f, 20f, 28f);
+                Physics.SyncTransforms();
+                Check(!guard.CanSee(player.transform),
+                      "Guard cannot detect a player far above 3D sight range");
+            }
+            finally
+            {
+                if (player.IsCrouched)
+                    crouch.Invoke(player, new object[] { false });
+                UnityEngine.Object.DestroyImmediate(cover);
+                Physics.SyncTransforms();
+            }
         }
 
         private static void ValidateHeistCore()
