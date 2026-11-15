@@ -34,6 +34,40 @@ social participation, purchases, daily streaks, or irreversible grind.
 The existing heist prototype is a functional *starting point*, not a
 representation of the final feature breadth.
 
+## Player-scale experience pillars — evidence-backed design priorities (W0-P #90)
+
+**Status: proposed design requirements, NOT implemented original mechanics.**
+The goal is to retain players by delivering memorable, fair and expressive
+sandbox sessions, not by copying high-player-count games or promising virality.
+The benchmark, metric definitions, source URLs and adverse signals live in
+[Player-scale research and acceptance](player-scale-design-evidence.md).
+Cross-title peaks, copies sold, DAU and play-hours are distinct metrics; none
+proves one feature *caused* another game's player count.
+
+| Priority | Differentiated experience to build | Earliest owning gate | First testable acceptance and measurement |
+| --- | --- | --- | --- |
+| P0 — frictionless first win | From a readable civilian spawn, choose a legal cargo task or small stealth theft, earn/secure a first payout, then preview cop/criminal/crew paths. Optional guided route; no involuntary lethal newbie funnel. | W2 journey contract; W3 local playable; W7 live-user acceptance | New solo player can reach first **earned** cash safely and see next meaningful choice. Instrument time-to-first-action, time-to-secured-payout, tutorial exits, D1/D7 return by cohort; test a **5-minute first-payout hypothesis**, not a factual balance rule. |
+| P0 — fair high stakes | Valuable gear and emergent PvP with predictable losses, clear death/extract rules, server-authoritative money, damage and inventory, anti-dupe/cheat and spawn-camp counterplay; meaningful solo recovery. | W2 threat/authority design; W3 simulations; W4 authoritative network; W7 security | Rejoin/recovery tests, transaction invariants and adversarial dupe checks pass; track unfair-death reports, late-cycle gear-gap, solo median recovery time, cheat incidence and crash/reconnect losses. Never promise perfect anti-cheat. |
+| P1 — shared heist stories | Scout, plan, specialize as lookout/driver/infiltrator/negotiator, face human police and opportunistic rivals, then improvise a getaway; fast optional party invites and useful non-voice pings. | W2 role/decision model; W3 scenarios; W4 co-op authority; W6 crew board | One objective supports at least stealth and loud viable outcomes plus counterplay and solo path. Track viable approaches, party-join time, crew repeat rate, fair role distribution and grief reports. |
+| P1 — ownership and layered progression | Build a recognizable hideout, vehicles and small businesses; operate cargo/production routes and clan settlements. Short-cycle territory power may reset, while non-power personal story/identity survives. | W2 economic/wipe invariants; W3 base and logistics; W4 persistence; W6 legacy | Deterministic economic conservation across theft, production and resets; solo and clan trajectories both reach meaningful goals. Measure days to first property, late-cycle newcomer disadvantage, return-after-wipe and top-clan concentration. |
+| P1 — memorable, shareable moments | Player-approved 15–30 s local recap of a heist, escape, interception or defense; optional rivalry/crew story card and privacy-safe friend join. No automatic posts or third-party voice capture. | W2 consent design; W6 bounded recorder; W7 privacy/moderation | Opt-in capture, review, delete and revoke; no upload by default; track voluntary clip sharing, viewer-to-party joins, abuse reports and privacy opt-outs. |
+| P2 — living community, not a giant UGC platform | Carefully bounded, moderated player-authored contracts, saved base/route blueprints, rotating co-op objectives, world events and faction story recaps. Start with one typed contract template, not scripting or an unrestricted editor. | W2 abuse/content contract; W6 curated pilot; W7 moderation/load | Deterministic validation, limits on payouts and spam, approval/report/removal, accessible solo versions; track creator-to-completer ratio, distinct participants, completion and moderation load. |
+
+**Build order (must respect the waterfall):** Design and instrument P0
+first; prove one complete single-player/solo-safe high-stakes loop before
+extending to authoritative co-op; add expressive ownership, crew systems
+and consent-based replay; only later trial moderated creator contracts
+and large-scale events. A crowded but broken or punitive first session
+does not meet acceptance regardless of peak concurrent users.
+
+**Deliberate exclusions:** no copying another game's map, art, audio or
+scripts; no pay-to-win, predatory grinds, fabricated scarcity, streak
+coercion or forced sharing; no unmoderated UGC/scripting platform in V1;
+no fixed seven-day balance assumption for *our* game without testing
+alternative cycle lengths against late-joiners and casual players.
+The documented reference Federal Raid cadence remains OFFICIAL for
+the reference, while any alternate live-service tuning here is PROPOSED.
+
 ## Evidence policy: extract first, invent only where necessary
 
 Each mechanic/parameter/asset schema must have one explicit origin:
@@ -717,8 +751,10 @@ releases from dev to main only when the relevant acceptance gates hold.
   manual movement/input test and packaged Windows EXE smoke.
 - **NOT recovered:** authoritative original/server economy, combat or AI
   formulas, original IL2CPP method bodies, proprietary usable assets.
-- **Planned, NOT implemented:** the majority of systems and all V1–V7
-  viral-loop features above. Do not report this roadmap as functionality.
+- **Planned, NOT implemented:** the majority of systems, all V1–V7
+  viral-loop features, and W0-P #90 player-scale P0/P1/P2 experience pillars.
+  Competitive adoption metrics are design references, not proof of delivered
+  mechanics, feature causality or original authoritative server coefficients.
 
 ### Evidence references
 
@@ -727,5 +763,6 @@ releases from dev to main only when the relevant acceptance gates hold.
 - reconstruction/docs/location-bundle-audit.md
 - reconstruction/docs/lfs-bundle-audit.md
 - reconstruction/data/extraction_coverage.json (machine-readable measured passes)
+- reconstruction/docs/player-scale-design-evidence.md (W0-P independent adoption/retention comparators and proposed tests)
 - Developer: https://kefirgames.helpshift.com/hc/en/14-rob-run/
 - Official listing: https://store.steampowered.com/app/4262460/ROB_RUN/
