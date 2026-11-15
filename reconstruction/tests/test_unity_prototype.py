@@ -410,6 +410,46 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn('"No airborne double-jump"', playmode)
         self.assertIn('"Ceiling collision must cancel ascent"', playmode)
 
+    def test_real_unity_acceptance_evidence_is_fail_closed_and_git_bound(self):
+        runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8")
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8")
+        workflow = (ROOT.parent / ".github/workflows/reconstruction-tests.yml").read_text(
+            encoding="utf-8")
+
+        # First require actual Windows Unity; never fill in a fake pass for CI.
+        self.assertIn("[PlatformID]::Win32NT", runner)
+        self.assertIn("Unity Editor missing:", runner)
+        self.assertIn("rev-parse --verify HEAD", runner)
+        self.assertIn("status --porcelain --untracked-files=no -- reconstruction", runner)
+        self.assertIn("Tracked reconstruction source is dirty", runner)
+        self.assertIn("Unity modified tracked reconstruction files", runner)
+        self.assertIn("Remove-Item -LiteralPath $EvidencePath -Force", runner)
+
+        # Three genuine existing validators, strictly ordered and sequential.
+        first = runner.index("'Verify-Unity.ps1') -EditorPath $EditorPath\n")
+        second = runner.index("'Verify-PlayMode.ps1') -EditorPath $EditorPath\n")
+        third = runner.index(
+            "'Verify-Unity.ps1') -EditorPath $EditorPath -BuildWindows")
+        manifest = runner.index("Move-Item -LiteralPath $temp -Destination $EvidencePath")
+        self.assertLess(first, second)
+        self.assertLess(second, third)
+        self.assertLess(third, manifest)
+        for name in ("editor_smoke_log", "playmode_nunit_xml", "playmode_editor_log",
+                     "windows_build_log", "windows_executable", "git_revision",
+                     "playmode_passed", "sha256", "schema_version"):
+            self.assertIn(name, runner)
+        self.assertIn("manual_playthrough_verified = $false", runner)
+        self.assertIn("Windows executable was not regenerated", runner)
+        self.assertIn("data directory is absent or empty", runner)
+
+        # A negative test can run in hosted CI without a Unity license.
+        self.assertIn("'nonexistent-unity-editor.exe'", fixture)
+        self.assertIn("Stale green Unity acceptance evidence survived", fixture)
+        self.assertIn("Test-AcceptanceGate.ps1", workflow)
+        self.assertIn("Verify-Acceptance.ps1", workflow)
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")

@@ -25,6 +25,7 @@ jobs:
           sparse-checkout: |
             reconstruction/
             .github/workflows/extract-gameplay-bundles.yml
+            .github/workflows/reconstruction-tests.yml
           sparse-checkout-cone-mode: false
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -53,7 +54,9 @@ jobs:
             "reconstruction/unity-prototype/Tools/Verify-Unity.ps1",
             "reconstruction/unity-prototype/Tools/Verify-PlayMode.ps1",
             "reconstruction/unity-prototype/Tools/Assert-PlayModeResults.ps1",
-            "reconstruction/unity-prototype/Tools/Test-PlayModeResults.ps1"
+            "reconstruction/unity-prototype/Tools/Test-PlayModeResults.ps1",
+            "reconstruction/unity-prototype/Tools/Verify-Acceptance.ps1",
+            "reconstruction/unity-prototype/Tools/Test-AcceptanceGate.ps1"
           )) {
             $tokens = $null
             $parseErrors = $null
@@ -71,3 +74,7 @@ jobs:
         shell: pwsh
         run: |
           & ./reconstruction/unity-prototype/Tools/Test-PlayModeResults.ps1
+      - name: Reject missing Unity and stale acceptance manifest (synthetic only)
+        shell: pwsh
+        run: |
+          & ./reconstruction/unity-prototype/Tools/Test-AcceptanceGate.ps1
