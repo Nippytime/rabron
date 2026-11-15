@@ -1,0 +1,116 @@
+name: W1-AR original city residual cap structure diagnostic
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/city-residual-structure.yml"
+      - "reconstruction/tools/city_residual_structure.py"
+      - "reconstruction/tests/test_city_residual_structure.py"
+      - "reconstruction/data/city_residual_structure.json"
+      - "reconstruction/data/city_scene_targeted_numeric_retry.json"
+      - "reconstruction/data/city_scene_numeric_cap_identities.json"
+      - "reconstruction/data/extraction_coverage.json"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Check pointer identity and three remaining original city IDs
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.city_residual_structure plan --ledger reconstruction/data/extraction_coverage.json
+          python -m unittest discover -s reconstruction/tests -p test_city_residual_structure.py -v
+
+  inspect:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+            StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Verify exact original city Git LFS pointer
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.city_residual_structure plan --ledger reconstruction/data/extraction_coverage.json
+      - name: Fetch only exact 549 MB original city UnityFS
+        run: |
+          set -euo pipefail
+          git lfs install --local
+          git lfs pull --include="StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle" --exclude=""
+          git lfs checkout StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle
+      - name: Install pinned read-only UnityPy
+        run: python -m pip install UnityPy==1.25.4
+      - name: SHA-verified stream and three-object structure-only diagnostic
+        shell: bash
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.city_residual_structure scan --ledger reconstruction/data/extraction_coverage.json --output "$RUNNER_TEMP/city-residual-structure.json" &
+          scan_pid=$!
+          trap 'kill "$scan_pid" 2>/dev/null || true' EXIT
+          while kill -0 "$scan_pid" 2>/dev/null; do
+            echo "CITY_SHAPE_RSS utc=$(date -u +%FT%TZ)"
+            if [[ -r "/proc/$scan_pid/status" ]]; then
+              grep -E '^(VmRSS|VmHWM|VmPeak):' "/proc/$scan_pid/status" || true
+            fi
+            if [[ -r /sys/fs/cgroup/memory.events ]]; then
+              grep -E '^(oom|oom_kill|oom_group_kill) ' /sys/fs/cgroup/memory.events || true
+            fi
+            sleep 10
+          done
+          wait "$scan_pid"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: city-residual-structure-measured
+          path: ${{ runner.temp }}/city-residual-structure.json
+          if-no-files-found: error
+          retention-days: 30
+
+  reconcile:
+    needs: [plan, inspect]
+    if: ${{ needs.plan.result == 'success' && needs.inspect.result == 'success' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          filter: blob:none
+          lfs: false
+          sparse-checkout: |
+            reconstruction/
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - uses: actions/download-artifact@v4
+        with:
+          name: city-residual-structure-measured
+          path: ${{ runner.temp }}
+      - name: Strictly reconcile three original-byte object shapes without values
+        run: |
+          set -euo pipefail
+          python -m reconstruction.tools.city_residual_structure reconcile --ledger reconstruction/data/extraction_coverage.json --result "$RUNNER_TEMP/city-residual-structure.json"
