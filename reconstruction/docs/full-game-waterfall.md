@@ -504,6 +504,18 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   separate **1 Wwise unparsed** MonoBehaviour. See
   reconstruction/docs/shared-props-wwise-lfs-source-audit.md.
 
+- W1-AI original sector-center scene and shared environment-common Git LFS
+  sources (**263,147,663 original bytes**) were scanned and reconciled at
+  https://github.com/Nippytime/rabron/actions/runs/43662347513. Sector-center: **74,713 typed objects**,
+  **2,411/2,411** parsed MonoBehaviours, **2 numeric field caps**,
+  `bounded_numeric_scan_complete=false`. Environment-common:
+  **2,421 objects**, **5/5** parsed MonoBehaviours, zero caps/unparsed,
+  bounded numeric completeness true. Original-source ledger on the
+  PR branch now covers **324/330**, with **6** still unscanned,
+  **46 unresolved numeric caps**, and the independent **1 Wwise
+  unparsed oversized MonoBehaviour**. See
+  reconstruction/docs/sectorcenter-common-lfs-source-audit.md.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file

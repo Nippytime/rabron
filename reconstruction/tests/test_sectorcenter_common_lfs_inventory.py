@@ -22,6 +22,43 @@ class SectorcenterCommonLfsTests(unittest.TestCase):
         self.ledger = {"schema_version": 1, "scans": [],
                        "known_lfs_not_yet_scanned": []}
 
+    def test_actual_original_ai_ledger_conserves_source_caps(self):
+        import json
+        data = json.loads((ROOT / "data/extraction_coverage.json").read_text(
+            encoding="utf-8"
+        ))
+        self.assertEqual(len(data["scans"]), 324)
+        actual = {x["bundle"]: x for x in data["scans"]
+                  if x["bundle"] in {t["bundle"] for t in TARGETS}}
+        self.assertEqual(len(actual), 2)
+        sector, common = [actual[t["bundle"]] for t in TARGETS]
+        for target in TARGETS:
+            item = actual[target["bundle"]]
+            self.assertEqual(item["sha256"], target["lfs_oid_sha256"])
+            self.assertEqual(item["lfs_oid_sha256"], target["lfs_oid_sha256"])
+            self.assertEqual(item["git_blob_sha"], target["git_blob_sha"])
+            self.assertEqual(item["size_bytes"], target["size_bytes"])
+            self.assertEqual(item["scan_evidence"], AI_EVIDENCE)
+            self.assertEqual(item["numeric_field_limit"], 2048)
+            self.assertEqual(item["numeric_depth_limit"], 32)
+            self.assertEqual(item["monobehaviours_parsed"],
+                             item["monobehaviours_total"])
+            self.assertEqual(item["unparsed_records"], 0)
+        self.assertEqual(sum(sector["objects_by_type"].values()), 74713)
+        self.assertEqual(sector["monobehaviours_total"], 2411)
+        self.assertEqual(sector["numeric_field_cap_records"], 2)
+        self.assertIs(sector["bounded_numeric_scan_complete"], False)
+        self.assertEqual(sector["candidate_field_counts"],
+                         {"combat": 2, "economy": 228, "progression": 12,
+                          "timing_and_world": 1862})
+        self.assertEqual(sum(common["objects_by_type"].values()), 2421)
+        self.assertEqual(common["monobehaviours_total"], 5)
+        self.assertEqual(common["numeric_field_cap_records"], 0)
+        self.assertIs(common["bounded_numeric_scan_complete"], True)
+        self.assertEqual([e["bundle"].rsplit("/", 1)[-1]
+                          for e in data["scans"] if e.get("unparsed_records", 0)],
+                         ["wwisedata_windows_battle_assets_all.bundle"])
+
     def test_original_identity_and_exact_two_source_plan(self):
         self.assertEqual(len(TARGETS), 2)
         self.assertEqual({e["bundle"].split("/")[-1] for e in TARGETS}, AI_NAMES)
