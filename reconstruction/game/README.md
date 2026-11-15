@@ -26,6 +26,13 @@ A pure C# 8 / .NET Standard 2.1 gameplay state machine covering this sequence:
    after scouting. This matches the existing Unity mask station and prevents
    direct core callers from re-entering criminal status mid-reset.
 
+The provisional guard alarm is **single-shot** per active robbery.
+An uncontrolled staff member may raise the first alert; repeated alerts or
+new alerts after **controlled staff** are rejected without changing state.
+Controlling staff after a previously raised alarm does not erase that alarm.
+The live Unity guard already applies these conditions; they are original
+prototype rules, not recovered reference-game NPC mechanics.
+
 This implements a working rules **simulation**, with no 3D camera, UI,
 animation or multiplayer networking yet.
 

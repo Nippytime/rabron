@@ -79,7 +79,11 @@ namespace Rabron.Reconstruction
 
         public void RaiseAlarm()
         {
-            Require(Phase == HeistPhase.Robbing, "Alarm requires an active robbery.");
+            // Match the live guard: one detection per heist, only while the
+            // staff member is still active. Controlling staff after an alarm
+            // never clears the alarm already recorded.
+            Require(Phase == HeistPhase.Robbing && !AlarmRaised && !StaffControlled,
+                    "Alarm requires an active robbery with uncontrolled staff and no prior alert.");
             AlarmRaised = true;
         }
 
