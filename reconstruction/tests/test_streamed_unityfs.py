@@ -6,6 +6,7 @@ evidence; full binary verification still takes place on GitHub Actions.
 import io
 import unittest
 from types import SimpleNamespace
+from unittest.mock import patch
 
 from reconstruction.tools.streamed_unityfs import BlockStream, RangeStream, MAX_BLOCK
 
@@ -52,6 +53,26 @@ class StreamedUnityfsTests(unittest.TestCase):
         self.assertEqual(self.backing.seek(-3, 2), 3)
         self.assertEqual(self.backing.read(3), b"DEF")
         self.assertGreaterEqual(self.called.count(0), 1)
+
+    def test_interleaved_reads_reuse_recent_blocks(self):
+        self.assertEqual(self.backing.read(1), b"a")
+        self.assertEqual(self.backing.seek(4), 4)
+        self.assertEqual(self.backing.read(1), b"E")
+        self.backing.seek(0)
+        self.assertEqual(self.backing.read(2), b"ab")
+        self.assertEqual(self.called, [0, 1])
+        self.assertEqual(self.backing.cache_bytes, 6)
+
+    def test_cache_eviction_is_strict_and_reparses_on_demand(self):
+        with patch("reconstruction.tools.streamed_unityfs.MAX_CACHE_BYTES", 4):
+            self.backing.read(1)
+            self.backing.seek(4)
+            self.backing.read(1)
+            self.assertEqual(self.backing.cache_bytes, 3)
+            self.backing.seek(1)
+            self.assertEqual(self.backing.read(1), b"b")
+            self.assertEqual(self.called, [0, 1, 0])
+            self.assertLessEqual(self.backing.cache_bytes, 4)
 
     def test_embedded_file_reads_only_selected_range(self):
         segment = RangeStream(self.backing, 2, 3)

@@ -7,12 +7,14 @@ all object records, but expose the original compressed blocks as a seekable
 on-demand byte stream; never copy embedded media to RAM or export it.
 """
 from bisect import bisect_right
+from collections import OrderedDict
 from contextlib import contextmanager
 from io import RawIOBase
 from types import SimpleNamespace
 
 MAX_BLOCK = 32 * 1024 * 1024
 MAX_READ = 32 * 1024 * 1024
+MAX_CACHE_BYTES = 128 * 1024 * 1024
 
 
 class BlockStream(RawIOBase):
@@ -26,8 +28,8 @@ class BlockStream(RawIOBase):
         self.starts = [0]
         self.compressed = []
         self.position = 0
-        self.cached_index = -1
-        self.cached_data = b""
+        self.cache = OrderedDict()
+        self.cache_bytes = 0
         compressed_pos = base_offset
         for block in blocks:
             raw_size = block.compressedSize
@@ -67,20 +69,27 @@ class BlockStream(RawIOBase):
         return position
 
     def _block(self, index):
-        if self.cached_index != index:
-            block = self.blocks[index]
-            self.source.Position = self.compressed[index]
-            compressed = self.source.read_bytes(block.compressedSize)
-            if len(compressed) != block.compressedSize:
-                raise ValueError("Truncated UnityFS source block")
-            decoded = self.decompress(
-                compressed, block.uncompressedSize, block.flags, index
-            )
-            if len(decoded) != block.uncompressedSize:
-                raise ValueError("Inconsistent UnityFS decompressed block length")
-            self.cached_index = index
-            self.cached_data = decoded
-        return self.cached_data
+        if index in self.cache:
+            self.cache.move_to_end(index)
+            return self.cache[index]
+        block = self.blocks[index]
+        self.source.Position = self.compressed[index]
+        compressed = self.source.read_bytes(block.compressedSize)
+        if len(compressed) != block.compressedSize:
+            raise ValueError("Truncated UnityFS source block")
+        decoded = self.decompress(
+            compressed, block.uncompressedSize, block.flags, index
+        )
+        if len(decoded) != block.uncompressedSize:
+            raise ValueError("Inconsistent UnityFS decompressed block length")
+        # The source may alternate between distant serialized-file offsets.
+        # Retain recent decompressed blocks under a strict total RAM budget.
+        while self.cache and self.cache_bytes + len(decoded) > MAX_CACHE_BYTES:
+            _, oldest = self.cache.popitem(last=False)
+            self.cache_bytes -= len(oldest)
+        self.cache[index] = decoded
+        self.cache_bytes += len(decoded)
+        return decoded
 
     def read(self, size=-1):
         remaining = self.starts[-1] - self.position
