@@ -752,6 +752,16 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("CleanCash =", director)
         self.assertNotIn("BankBalance =", director)
 
+    def test_courier_presenter_closes_class_and_namespace(self):
+        # Real Unity 6000.5.0f1 compilation failed with CS1513 because
+        # CourierParcelPresenter.cs omitted its namespace-closing brace.
+        presenter = read("CourierParcelPresenter.cs")
+        self.assertIn("namespace Rabron.Prototype\n{", presenter)
+        self.assertIn("public sealed class CourierParcelPresenter : MonoBehaviour", presenter)
+        self.assertIn("public void SetCarrying(bool carrying)", presenter)
+        self.assertEqual(presenter.count("{"), presenter.count("}"))
+        self.assertTrue(presenter.rstrip().endswith("    }\n}"))
+
     def test_courier_recovery_has_physical_feedback_and_no_duplicate_faucet(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8")
