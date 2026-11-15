@@ -986,6 +986,34 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("actual unity editor version", guide.lower())
         self.assertIn("not a real unity", guide.lower())
 
+    def test_unity_acceptance_rejects_git_head_drift_between_gates(self):
+        gate = (UNITY / "Tools/Assert-UnitySourceTree.ps1").read_text(
+            encoding="utf-8"
+        )
+        runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8"
+        )
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("[string]$ExpectedRevision", gate)
+        self.assertIn("git -C $RepoRoot rev-parse --verify HEAD", gate)
+        self.assertIn("$actualRevision -cne $ExpectedRevision", gate)
+        self.assertIn("Git HEAD changed during Unity acceptance", gate)
+        self.assertIn("Expected Unity acceptance Git revision must be", gate)
+        self.assertEqual(runner.count("-ExpectedRevision $revision"), 3)
+        self.assertIn("git_revision = $revision", runner)
+        self.assertIn("$expectedHead = (& git -C $repoRoot rev-parse --verify HEAD)",
+                      fixture)
+        self.assertIn("-ExpectedRevision $expectedHead", fixture)
+        self.assertIn("-ExpectedRevision ('0' * 40)", fixture)
+        self.assertIn("Mismatched Git HEAD did not fail provenance", fixture)
+        self.assertIn("PASS rejected: changed Unity acceptance Git HEAD", fixture)
+        self.assertIn("git head", guide.lower())
+        self.assertIn("not a real unity", guide.lower())
+
     def test_untracked_unity_assets_rejected_and_scene_fingerprinted(self):
         gate = (UNITY / "Tools/Assert-UnitySourceTree.ps1").read_text(
             encoding="utf-8")
