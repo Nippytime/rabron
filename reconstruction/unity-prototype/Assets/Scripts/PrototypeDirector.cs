@@ -16,6 +16,7 @@ namespace Rabron.Prototype
         private ThirdPersonMotor _player = null!;
         private GuardSensor _guard = null!;
         private CashPilePresenter _cashPile = null!;
+        private CourierParcelPresenter _courierParcel = null!;
         private PrototypeHud _hud = null!;
         private IReadOnlyList<InteractionMarker> _stations = null!;
         private string _notice = "";
@@ -34,6 +35,7 @@ namespace Rabron.Prototype
             _session = PrototypeSaveStore.Load(out string startupMessage);
             _stations = PrototypeWorld.Create(transform, out _player, out _cashPile,
                                               out _guard);
+            _courierParcel = _player.GetComponentInChildren<CourierParcelPresenter>(true);
 
             var hudObject = new GameObject("Prototype HUD");
             hudObject.transform.SetParent(transform, false);
@@ -42,6 +44,7 @@ namespace Rabron.Prototype
             if (_session.CurrentZone == Zone.Desert)
                 _player.WarpTo(new Vector3(0f, 0.12f, -45f));
             _cashPile.SetAmount(_session.CounterCash);
+            _courierParcel.SetCarrying(_session.CarryingCourierParcel);
             Notice(startupMessage);
         }
 
@@ -89,6 +92,7 @@ namespace Rabron.Prototype
 
             // Visual only. This does not credit money or change the game state.
             _cashPile.SetAmount(_session.CounterCash);
+            _courierParcel.SetCarrying(_session.CarryingCourierParcel);
             _hud.Render(_session, Objective(now), focused == null ? "" : focused.Label,
                         Time.unscaledTime < _noticeUntil ? _notice : "");
         }
@@ -138,6 +142,8 @@ namespace Rabron.Prototype
                     _session.Phase == HeistPhase.Idle && !_session.CarryingCourierParcel,
                 StationAction.CourierDropoff => city && civilian &&
                     _session.Phase == HeistPhase.Idle && _session.CarryingCourierParcel,
+                StationAction.CourierCancel => city && civilian &&
+                    _session.Phase == HeistPhase.Idle && _session.CarryingCourierParcel,
                 StationAction.Mask => city && civilian &&
                                       !_session.CarryingCourierParcel &&
                                       (_session.Phase == HeistPhase.Idle ||
@@ -178,6 +184,9 @@ namespace Rabron.Prototype
                     break;
                 case StationAction.CourierDropoff:
                     _session.DeliverCourierParcel(_balance.CourierReward);
+                    break;
+                case StationAction.CourierCancel:
+                    _session.CancelCourierParcel();
                     break;
                 case StationAction.Scout:
                     _session.Scout();
@@ -241,7 +250,7 @@ namespace Rabron.Prototype
             return _session.Phase switch
             {
                 HeistPhase.Idle when _session.CarryingCourierParcel
-                    => "Deliver the legal parcel at the green recipient kiosk across the road.",
+                    => "Deliver the parcel at the eastern kiosk, or return it to dispatch without payment.",
                 HeistPhase.Idle when _session.CurrentRole == PlayerRole.Civilian
                     => "Choose a legal COURIER job to the west or SCOUT a heist to the north.",
                 HeistPhase.Idle => "Travel to the warehouse to plan your next heist.",
