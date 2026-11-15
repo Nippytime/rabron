@@ -9,6 +9,7 @@ on-demand byte stream; never copy embedded media to RAM or export it.
 from bisect import bisect_right
 from contextlib import contextmanager
 from io import RawIOBase
+from types import SimpleNamespace
 
 MAX_BLOCK = 32 * 1024 * 1024
 MAX_READ = 32 * 1024 * 1024
@@ -157,8 +158,7 @@ def streamed_unityfs():
     """
     from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld
     from UnityPy.files import BundleFile, File, SerializedFile
-    from UnityPy.files.BundleFile import DirectoryInfoFS
-    from UnityPy.helpers import ArchiveStorageManager, CompressionHelper, ImportHelper
+        from UnityPy.helpers import ArchiveStorageManager, ImportHelper
     from UnityPy.streams import EndianBinaryReader
 
     old_fs = BundleFile.read_fs
@@ -200,12 +200,26 @@ def streamed_unityfs():
             raise ValueError("Inconsistent original UnityFS block directory")
         info = EndianBinaryReader(info_bytes, offset=start)
         info.read_bytes(16)  # directory hash
-        blocks = [CompressionHelper.BlockInfo.from_reader(info, self.version)
-                  for _ in range(info.read_int())]
-        nodes = [DirectoryInfoFS(
-            info.read_long(), info.read_long(), info.read_u_int(),
-            info.read_string_to_null()
-        ) for _ in range(info.read_int())]
+        block_count = info.read_int()
+        if not 0 < block_count <= 2_000_000:
+            raise ValueError("Invalid original UnityFS block count")
+        blocks = []
+        for _ in range(block_count):
+            size = info.read_u_int()
+            compressed_size = info.read_u_int()
+            block_flags = info.read_u_short()
+            offset = info.read_u_long() if self.version >= 9 else None
+            blocks.append(SimpleNamespace(
+                uncompressedSize=size, compressedSize=compressed_size,
+                flags=block_flags, offset=offset,
+            ))
+        node_count = info.read_int()
+        if not 0 < node_count <= 1_000_000:
+            raise ValueError("Invalid original UnityFS directory count")
+        nodes = [SimpleNamespace(
+            offset=info.read_long(), size=info.read_long(),
+            flags=info.read_u_int(), path=info.read_string_to_null(),
+        ) for _ in range(node_count)]
         if not blocks or not nodes:
             raise ValueError("Missing UnityFS blocks or serialized file nodes")
         self._block_info_flags = blocks[0].flags
