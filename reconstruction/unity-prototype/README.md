@@ -297,6 +297,18 @@ to safety for manual recovery. If staged promotion itself fails, the state
 recovers in memory but saves stay disabled so the staged bytes survive.
 These are authored real Unity Play Mode filesystem regressions, **not executed**
 by hosted GitHub CI.
+
+When a valid primary or backup is already present, a leftover `.tmp` might
+contain **uncommitted, more recent** progress from a later interrupted write.
+The committed checkpoint still wins on loading, but the next autosave moves
+the leftover staged file into a uniquely named `.tmp.staged-<random-id>`
+sibling **before** writing its own stage. This preserves the old bytes for
+manual recovery rather than silently overwriting them. Preserve these files
+when backing up local progress; they are not automatically replayed, and a
+failed preservation move makes the attempted save fail rather than replacing
+the old stage. The isolated real Unity Play Mode scenario for this behavior is
+authored but **not executed** in hosted CI.
+
 If the backup is valid but the primary is unreadable, recovery first moves the
 damaged primary into a unique sibling **quarantine** file named
 `rabron-prototype-v1.json.corrupt-<random-id>`, then copies the validated

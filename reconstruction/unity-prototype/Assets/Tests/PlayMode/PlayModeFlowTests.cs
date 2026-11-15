@@ -50,6 +50,7 @@ namespace Rabron.Prototype.Tests
             byte[] originalBackup = File.Exists(backup) ? File.ReadAllBytes(backup) : null;
             byte[] originalTemporary = File.Exists(temporary) ? File.ReadAllBytes(temporary) : null;
             string retainedDamagedPrimary = null;
+            string retainedStagedCheckpoint = null;
 
             try
             {
@@ -165,8 +166,33 @@ namespace Rabron.Prototype.Tests
                            PrototypeSaveStore.LastWriteFailed);
                 Assert.That(hud.SaveWarningVisible, Is.False,
                             "Valid backup recovery must clear the persistent warning");
+
+                // A crash after writing .tmp but before replacing an already
+                // valid primary may leave newer uncommitted player progress.
+                // The next autosave must preserve those exact stage bytes,
+                // even though the committed primary remains authoritative.
+                var interruptedUpdate = new HeistSession();
+                interruptedUpdate.PickUpCourierParcel();
+                File.WriteAllText(temporary,
+                    JsonUtility.ToJson(interruptedUpdate.ExportSnapshot()));
+                byte[] uncommittedBytes = File.ReadAllBytes(temporary);
                 Assert.That(PrototypeSaveStore.TrySave(recovered, out string saveError),
                             Is.True, saveError);
+                string[] savedStages = Directory.GetFiles(
+                    Path.GetDirectoryName(primary),
+                    Path.GetFileName(temporary) + ".staged-*");
+                retainedStagedCheckpoint = savedStages.Length == 1
+                    ? savedStages[0] : null;
+                Assert.That(savedStages.Length, Is.EqualTo(1),
+                    "Later autosave must retain exactly one old staged checkpoint");
+                Assert.That(File.ReadAllBytes(retainedStagedCheckpoint),
+                            Is.EqualTo(uncommittedBytes),
+                    "Uncommitted courier progress must survive later autosave unchanged");
+                Assert.That(File.Exists(temporary), Is.False,
+                    "Successful replacement must consume only its own new stage");
+                Assert.That(PrototypeSaveStore.Load(out _).CarryingCourierParcel,
+                            Is.False,
+                    "Loading must prefer the committed checkpoint, not the leftover stage");
 
                 // Reproduce a normal file write failure without touching an
                 // actual player's save or relying on machine permissions:
@@ -291,6 +317,8 @@ namespace Rabron.Prototype.Tests
                 // Never delete a preexisting user or other-test checkpoint.
                 if (retainedDamagedPrimary != null && File.Exists(retainedDamagedPrimary))
                     File.Delete(retainedDamagedPrimary);
+                if (retainedStagedCheckpoint != null && File.Exists(retainedStagedCheckpoint))
+                    File.Delete(retainedStagedCheckpoint);
                 // Do not leave a global write block affecting other tests.
                 PrototypeSaveStore.Load(out _);
             }

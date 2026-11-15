@@ -1086,6 +1086,34 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("autosave", guide.lower())
         self.assertIn("not executed", guide.lower())
 
+    def test_existing_primary_autosave_never_erases_previous_staged_progress(self):
+        store = read("PrototypeSaveStore.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        saving = store.split("public static bool TrySave(", 1)[1].split(
+            "private static bool TryRead(", 1
+        )[0]
+        self.assertIn("if (File.Exists(temporary))", saving)
+        self.assertIn('temporary + ".staged-" + Guid.NewGuid().ToString("N")', saving)
+        self.assertIn("File.Move(temporary, preserved);", saving)
+        self.assertLess(
+            saving.index("File.Move(temporary, preserved);"),
+            saving.index("File.WriteAllText(temporary, json);"),
+        )
+        self.assertIn("LastWriteFailed = true;", saving)
+        self.assertIn("File.Replace(temporary, target, target + \".bak\")", saving)
+        self.assertIn("uncommittedBytes = File.ReadAllBytes(temporary)", playmode)
+        self.assertIn('Path.GetFileName(temporary) + ".staged-*"', playmode)
+        self.assertIn("File.ReadAllBytes(retainedStagedCheckpoint)", playmode)
+        self.assertIn("Is.EqualTo(uncommittedBytes)", playmode)
+        self.assertIn("File.Delete(retainedStagedCheckpoint)", playmode)
+        self.assertIn("Loading must prefer the committed checkpoint", playmode)
+        self.assertIn("uncommitted", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
     def test_unsaved_checkpoint_warning_remains_visible_in_live_hud(self):
         store = read("PrototypeSaveStore.cs")
         director = read("PrototypeDirector.cs")

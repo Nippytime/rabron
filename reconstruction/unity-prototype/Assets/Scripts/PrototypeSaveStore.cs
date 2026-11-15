@@ -159,6 +159,17 @@ namespace Rabron.Prototype
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(target));
                 string json = JsonUtility.ToJson(session.ExportSnapshot());
+                // A previous interrupted replacement may leave a newer
+                // staged checkpoint beside a valid committed primary. Never
+                // overwrite those bytes: preserve the stage for manual
+                // recovery before writing this attempt's temporary file.
+                // A failed move aborts this write via the catch below.
+                if (File.Exists(temporary))
+                {
+                    string preserved = temporary + ".staged-" + Guid.NewGuid().ToString("N");
+                    File.Move(temporary, preserved);
+                    Debug.LogWarning("Preserved previous staged checkpoint at " + preserved);
+                }
                 File.WriteAllText(temporary, json);
 
                 if (File.Exists(target))
