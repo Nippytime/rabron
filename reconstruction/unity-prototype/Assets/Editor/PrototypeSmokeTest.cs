@@ -306,17 +306,19 @@ namespace Rabron.Prototype.Editor
         private static void ValidateCrouchedGuardCover(
             Transform root, ThirdPersonMotor player, GuardSensor guard)
         {
-            // Real geometry in the actual Unity Editor: 1.5m-high cover
-            // blocks the lowered crouched capsule, but not a standing actor.
-            // Never replace this with a mocked ray or test-only visibility.
+            // Probe the cover players actually encounter, not a temporary
+            // test-only cube that can pass while the shipped world has none.
+            Transform cover = root.Find("Warehouse stealth cover");
+            Check(cover != null && cover.GetComponent<BoxCollider>() != null &&
+                  cover.GetComponent<BoxCollider>().enabled &&
+                  !cover.GetComponent<BoxCollider>().isTrigger,
+                  "The generated warehouse must have solid player stealth cover");
+            Check(cover.position.z > 28f && cover.position.z < guard.transform.position.z &&
+                  cover.localScale.y >= 1.4f && cover.localScale.y <= 1.6f,
+                  "Warehouse cover must be waist high and between player and guard");
             MethodInfo crouch = typeof(ThirdPersonMotor).GetMethod(
                 "UpdateCrouch", BindingFlags.Instance | BindingFlags.NonPublic);
             Check(crouch != null, "Cannot exercise the live crouch capsule");
-            var cover = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            cover.name = "Temporary guard cover regression";
-            cover.transform.SetParent(root, false);
-            cover.transform.position = new Vector3(0f, 0.75f, 30.5f);
-            cover.transform.localScale = new Vector3(2f, 1.5f, 0.6f);
             try
             {
                 player.transform.position = new Vector3(0f, 0.12f, 28f);
@@ -334,6 +336,13 @@ namespace Rabron.Prototype.Editor
                 Check(!player.IsCrouched && guard.CanSee(player.transform),
                       "Standing back up must restore guard visibility over cover");
 
+                // Stealth is due to the physical barrier, not an invisible
+                // gameplay flag: walking around it restores detection.
+                player.transform.position = new Vector3(3.5f, 0.12f, 28f);
+                Physics.SyncTransforms();
+                Check(guard.CanSee(player.transform),
+                      "Standing beside real warehouse cover must remain visible");
+
                 player.transform.position = new Vector3(0f, 20f, 28f);
                 Physics.SyncTransforms();
                 Check(!guard.CanSee(player.transform),
@@ -343,7 +352,6 @@ namespace Rabron.Prototype.Editor
             {
                 if (player.IsCrouched)
                     crouch.Invoke(player, new object[] { false });
-                UnityEngine.Object.DestroyImmediate(cover);
                 Physics.SyncTransforms();
             }
         }
