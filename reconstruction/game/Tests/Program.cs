@@ -747,7 +747,7 @@ internal static class Program
         game.CollectCounterCash();
 
         Throws<InvalidOperationException>(() =>
-            game.StartLaundering(20, 8, 100, 2));
+            game.StartLaundering(20, 9, 100, 2));
         Eq(HeistPhase.DirtyCashCollected, game.Phase);
         Eq(PlayerRole.Criminal, game.CurrentRole);
         Eq(Zone.City, game.CurrentZone);
