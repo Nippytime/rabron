@@ -344,6 +344,84 @@ namespace Rabron.Prototype.Tests
             Assert.That(unlockedWithoutMouse, Is.EqualTo(unlockedStick),
                         "Gamepad look must not require a connected mouse");
 
+            // Verify the real hold-to-crouch action and actual capsule
+            // geometry without injecting a synthetic gamepad or keypress.
+            var crouchField = typeof(ThirdPersonMotor).GetField("_crouch", PrivateInstance);
+            Assert.That(crouchField, Is.Not.Null);
+            var crouchInput = (InputAction)crouchField.GetValue(motor);
+            Assert.That(crouchInput, Is.Not.Null);
+            Assert.That(crouchInput.enabled, Is.True);
+            bool keyboardCrouch = false;
+            bool gamepadCrouch = false;
+            foreach (var binding in crouchInput.bindings)
+            {
+                keyboardCrouch |= binding.effectivePath == "<Keyboard>/leftCtrl";
+                gamepadCrouch |= binding.effectivePath == "<Gamepad>/rightStickPress";
+            }
+            Assert.That(keyboardCrouch && gamepadCrouch, Is.True,
+                        "Crouch must use dedicated Ctrl/right-stick-click bindings");
+
+            var setCrouch = typeof(ThirdPersonMotor).GetMethod(
+                "UpdateCrouch", PrivateInstance);
+            var canStand = typeof(ThirdPersonMotor).GetMethod(
+                "CanStand", PrivateInstance);
+            Assert.That(setCrouch, Is.Not.Null);
+            Assert.That(canStand, Is.Not.Null);
+            var playerCapsule = motor.GetComponent<CharacterController>();
+            var playerMesh = motor.transform.Find("Player mesh");
+            Assert.That(playerMesh, Is.Not.Null);
+            float fullHeight = playerCapsule.height;
+            float fullStep = playerCapsule.stepOffset;
+            float footY = playerCapsule.center.y - fullHeight * 0.5f;
+            Vector3 meshScale = playerMesh.localScale;
+            Vector3 meshPosition = playerMesh.localPosition;
+            var ceilingObstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            try
+            {
+                setCrouch.Invoke(motor, new object[] { true });
+                Assert.That(motor.IsCrouched, Is.True);
+                Assert.That(playerCapsule.height, Is.LessThan(fullHeight),
+                            "Crouch must shrink the real physical capsule");
+                Assert.That(playerCapsule.stepOffset, Is.LessThan(fullStep),
+                            "Crouch must reduce step climbing");
+                Assert.That(playerCapsule.center.y - playerCapsule.height * 0.5f,
+                            Is.EqualTo(footY).Within(0.001f),
+                            "Crouching must not lift or sink the player's feet");
+                Assert.That(playerMesh.localScale.y, Is.LessThan(meshScale.y),
+                            "Visual capsule must match the crouched collision height");
+
+                ceilingObstacle.name = "Temporary crouch headroom test";
+                ceilingObstacle.transform.position =
+                    motor.transform.position + Vector3.up * 1.53f;
+                ceilingObstacle.transform.localScale = new Vector3(1.8f, 0.3f, 1.8f);
+                Physics.SyncTransforms();
+                Assert.That((bool)canStand.Invoke(motor, null), Is.False,
+                            "Overhead solid geometry must prevent standing");
+                setCrouch.Invoke(motor, new object[] { false });
+                Assert.That(motor.IsCrouched, Is.True,
+                            "Releasing crouch under a ceiling must remain crouched");
+                Assert.That(playerCapsule.height, Is.LessThan(fullHeight),
+                            "Blocked stand must not resize the capsule through a ceiling");
+
+                ceilingObstacle.transform.position += Vector3.right * 20f;
+                Physics.SyncTransforms();
+                Assert.That((bool)canStand.Invoke(motor, null), Is.True,
+                            "Clear overhead volume must permit standing");
+                setCrouch.Invoke(motor, new object[] { false });
+                Assert.That(motor.IsCrouched, Is.False);
+                Assert.That(playerCapsule.height, Is.EqualTo(fullHeight).Within(0.001f));
+                Assert.That(playerCapsule.stepOffset, Is.EqualTo(fullStep).Within(0.001f));
+                Assert.That(playerMesh.localScale, Is.EqualTo(meshScale));
+                Assert.That(playerMesh.localPosition, Is.EqualTo(meshPosition));
+            }
+            finally
+            {
+                ceilingObstacle.transform.position += Vector3.right * 20f;
+                Physics.SyncTransforms();
+                setCrouch.Invoke(motor, new object[] { false });
+                UnityEngine.Object.Destroy(ceilingObstacle);
+            }
+
             Assert.That(camera, Is.Not.Null, "No runtime follow camera");
             Assert.That(camera.isActiveAndEnabled, Is.True);
             Assert.That(hud, Is.Not.Null, "No runtime HUD");
