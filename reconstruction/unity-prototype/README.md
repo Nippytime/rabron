@@ -318,6 +318,16 @@ instead of silently erasing them. The quarantine is not auto-deleted; store it
 safely if investigating lost progress. If either the quarantine move or copy
 fails, the game may resume from backup in memory but **autosave stays disabled**
 so that the validated backup cannot be lost during save rotation.
+
+A valid primary can also coexist with an **unreadable backup**. Before the next
+successful autosave replaces the backup, the old unreadable `.bak` is moved
+to a unique `.bak.corrupt-<random-id>` sibling without overwriting anything.
+The normal rotation then stores the previously valid primary as the new
+backup. If the damaged-backup move fails, the attempted save fails instead
+of destroying those bytes; the existing persistent write-error warning
+remains active until a successful save. These filesystem cases are covered
+by an authored isolated Unity Play Mode regression, **not executed** by
+hosted CI. Preserve quarantine files when collecting local recovery data.
 If **both** save and backup are unreadable, the demo starts a fresh in-memory
 session but **autosave is disabled** to avoid overwriting the damaged files.
 Copy or move the save and backup files to a safe location, then restart the
