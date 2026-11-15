@@ -25,6 +25,7 @@ namespace Rabron.Reconstruction
         public bool AlarmRaised { get; private set; }
         public bool StaffControlled { get; private set; }
         public bool BankAccountOpened { get; private set; }
+        public bool CarryingCourierParcel { get; private set; }
 
         public long DirtyCash { get; private set; }
         public long CounterCash { get; private set; }
@@ -47,15 +48,17 @@ namespace Rabron.Reconstruction
 
         public void Scout()
         {
-            Require(CurrentZone == Zone.City && Phase == HeistPhase.Idle,
-                    "Scouting is only available in the city before a heist.");
+            Require(CurrentZone == Zone.City && Phase == HeistPhase.Idle &&
+                    !CarryingCourierParcel,
+                    "Finish the courier delivery before scouting a heist.");
             Phase = HeistPhase.Scouted;
         }
 
         public void PutOnMask()
         {
-            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian,
-                    "Only a civilian in the city may enter criminal mode.");
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&
+                    !CarryingCourierParcel,
+                    "Only a civilian without courier cargo may enter criminal mode.");
             CurrentRole = PlayerRole.Criminal;
         }
 
@@ -163,7 +166,8 @@ namespace Rabron.Reconstruction
 
         public void LeaveCity()
         {
-            Require(CurrentZone == Zone.City, "Already outside the city.");
+            Require(CurrentZone == Zone.City && !CarryingCourierParcel,
+                    "Deliver courier cargo before leaving the city.");
             CurrentZone = Zone.Desert;
             if (CurrentRole == PlayerRole.Criminal)
                 CurrentRole = PlayerRole.Civilian; // Official status reset occurs on city exit.
@@ -173,6 +177,31 @@ namespace Rabron.Reconstruction
         {
             Require(CurrentZone == Zone.Desert, "Already inside the city.");
             CurrentZone = Zone.City;
+        }
+
+        /// <summary>
+        /// Independent civilian demo job. The pickup is persisted so a delivery
+        /// cannot pay twice without acquiring a new parcel first.
+        /// </summary>
+        public void PickUpCourierParcel()
+        {
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&
+                    Phase == HeistPhase.Idle && !CarryingCourierParcel,
+                    "Courier pickup requires an idle civilian in the city.");
+            CarryingCourierParcel = true;
+        }
+
+        public void DeliverCourierParcel(long verifiedCleanPayout)
+        {
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&
+                    Phase == HeistPhase.Idle && CarryingCourierParcel,
+                    "Pick up the courier parcel before completing the delivery.");
+            Require(verifiedCleanPayout > 0, "Courier payout must be positive.");
+            // One named, explicitly configured legal-job faucet; never a
+            // transfer from dirty cash or a client-authoritative server rule.
+            long next = checked(CleanCash + verifiedCleanPayout);
+            CleanCash = next;
+            CarryingCourierParcel = false;
         }
 
         public void OpenBankAccount()
@@ -214,6 +243,7 @@ namespace Rabron.Reconstruction
                 AlarmRaised = AlarmRaised,
                 StaffControlled = StaffControlled,
                 BankAccountOpened = BankAccountOpened,
+                CarryingCourierParcel = CarryingCourierParcel,
                 CounterCash = CounterCash,
                 DirtyCash = DirtyCash,
                 CleanCash = CleanCash,
@@ -268,6 +298,13 @@ namespace Rabron.Reconstruction
                     throw new ArgumentException("Save contains invalid or duplicate loot.", nameof(snapshot));
             }
 
+            // A courier parcel can only exist before any heist or scouting,
+            // in the city with its original civilian carrier.
+            if (snapshot.CarryingCourierParcel &&
+                (snapshot.Zone != Zone.City || snapshot.Role != PlayerRole.Civilian ||
+                 snapshot.Phase != HeistPhase.Idle))
+                throw new ArgumentException("Courier save contains an unreachable cargo state.", nameof(snapshot));
+
             bool isLaundering = snapshot.Phase == HeistPhase.Laundering;
             bool validJob = isLaundering
                 ? snapshot.LaunderingInput > 0 &&
@@ -301,6 +338,7 @@ namespace Rabron.Reconstruction
                 AlarmRaised = snapshot.AlarmRaised,
                 StaffControlled = snapshot.StaffControlled,
                 BankAccountOpened = snapshot.BankAccountOpened,
+                CarryingCourierParcel = snapshot.CarryingCourierParcel,
                 CounterCash = snapshot.CounterCash,
                 DirtyCash = snapshot.DirtyCash,
                 CleanCash = snapshot.CleanCash,
