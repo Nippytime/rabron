@@ -1,6 +1,7 @@
 """Source-integrity regression tests for two original shared environment props and Wwise battle LFS bundles."""
 import copy
 import hashlib
+import subprocess
 import tempfile
 import unittest
 from pathlib import Path
@@ -22,9 +23,14 @@ class SharedPropsWwiseLfsTests(unittest.TestCase):
                        "known_lfs_not_yet_scanned": []}
 
     def test_original_source_workflow_runs_when_stream_reader_or_tests_change(self):
-        workflow = (ROOT.parent / ".github/workflows/"
-                    "extract-shared-props-wwise-lfs-sources.yml").read_text(
-                        encoding="utf-8")
+        # The shared Python CI uses a sparse checkout of reconstruction/,
+        # so read the workflow from the *actual Git commit*, not the worktree.
+        # Git failures must fail this gate rather than skipping the assertion.
+        workflow = subprocess.check_output(
+            ["git", "show", "HEAD:.github/workflows/"
+             "extract-shared-props-wwise-lfs-sources.yml"],
+            cwd=ROOT.parent, text=True,
+        )
         paths = workflow.split("  pull_request:\n    paths:\n", 1)[1].split(
             "  workflow_dispatch:", 1)[0]
         for dependency in (
