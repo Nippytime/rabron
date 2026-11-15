@@ -16,3 +16,4 @@ namespace Rabron.Prototype
                 gameObject.SetActive(carrying);
         }
     }
+}
