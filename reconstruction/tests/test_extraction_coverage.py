@@ -22,9 +22,9 @@ def bundle(name):
 class ExtractionCoverageTests(unittest.TestCase):
     def test_documented_scans_account_for_verified_passes_and_older_caps(self):
         self.assertEqual(LEDGER["schema_version"], 1)
-        self.assertEqual(len(LEDGER["scans"]), 326)
+        self.assertEqual(len(LEDGER["scans"]), 328)
         self.assertEqual(sum(entry["monobehaviours_parsed"]
-                             for entry in LEDGER["scans"]), 128363)
+                             for entry in LEDGER["scans"]), 128390)
         self.assertEqual(sum(entry["numeric_field_cap_records"]
                              for entry in LEDGER["scans"]), 76)
         # The new Wwise source adds one explicitly unparsed oversized
@@ -37,7 +37,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         paths = [e["bundle"] for e in LEDGER["scans"]]
         paths.extend(e["bundle"] for e in LEDGER["known_lfs_not_yet_scanned"])
         known, pending = validate_ledger(LEDGER, paths)
-        self.assertEqual(len(known), 326)
+        self.assertEqual(len(known), 328)
         self.assertEqual(len(pending), 0)
 
     def test_actual_npc_and_tutorial_source_inventory_is_scoped(self):
@@ -71,7 +71,7 @@ class ExtractionCoverageTests(unittest.TestCase):
         statuses = {e["bundle"]: e["status"] for e in plan["backlog"]}
         self.assertEqual(statuses[tutorial["bundle"]],
                          "inspected_no_monobehaviours")
-        self.assertEqual(plan["historically_documented_scan_bundles"], 326)
+        self.assertEqual(plan["historically_documented_scan_bundles"], 328)
 
     def test_six_actual_gameplay_scans_have_source_ids_and_declared_limits(self):
         recent = [entry for entry in LEDGER["scans"]

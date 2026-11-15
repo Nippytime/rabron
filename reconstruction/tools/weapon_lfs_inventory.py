@@ -24,6 +24,7 @@ AG_EVIDENCE = "GitHub Actions W1-AG original global-hub LFS source inventory art
 AH_EVIDENCE = "GitHub Actions W1-AH original shared-props Wwise-battle LFS source inventory artifact"
 AI_EVIDENCE = "GitHub Actions W1-AI original sector-center common LFS source inventory artifact"
 AJ_EVIDENCE = "GitHub Actions W1-AJ original shared-characters legacy-props LFS source inventory artifact"
+AK_EVIDENCE = "GitHub Actions W1-AK original material-library desert LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
@@ -34,6 +35,7 @@ AG_NAMES = {"space-global_assets_all.bundle", "location-hub_standalone_scenes_al
 AH_NAMES = {"shared-environment-props_assets_all.bundle", "wwisedata_windows_battle_assets_all.bundle"}
 AI_NAMES = {"location-sectorcenter-standalone_scenes_all.bundle", "shared-environment-common_assets_all.bundle"}
 AJ_NAMES = {"shared-characters_assets_all.bundle", "environment-props-legacy_assets_all.bundle"}
+AK_NAMES = {"environment-materiallibrary-legacy_assets_all.bundle", "shared-environment-desert_assets_all.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -43,13 +45,15 @@ def load_targets(path):
     if data.get("schema_version") != 1 or len(data.get("sources", [])) != 2:
         raise ValueError("Exactly two versioned LFS source targets required")
     sources = data["sources"]
-    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES, AH_NAMES, AI_NAMES, AJ_NAMES):
+    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES, AH_NAMES, AI_NAMES, AJ_NAMES, AK_NAMES):
         raise ValueError("Unexpected original LFS source scope")
-    # Allow this exact pair's larger declared original objects without
-    # changing the existing bound for any historical source scope.
-    max_source_bytes = 185_000_000 if {
-        e["bundle"].removeprefix(PREFIX) for e in sources
-    } == AJ_NAMES else 150_000_000
+    # Keep previous bounds unchanged; the exact AK pair needs larger originals.
+    names = {e["bundle"].removeprefix(PREFIX) for e in sources}
+    max_source_bytes = (
+        245_000_000 if names == AK_NAMES else
+        185_000_000 if names == AJ_NAMES else
+        150_000_000
+    )
     for e in sources:
         if (set(e) != {"bundle", "git_blob_sha", "lfs_oid_sha256", "size_bytes"}
                 or not e["bundle"].startswith(PREFIX)
@@ -249,6 +253,8 @@ def main():
         evidence, log_prefix = AI_EVIDENCE, "W1AI"
     elif names == AJ_NAMES:
         evidence, log_prefix = AJ_EVIDENCE, "W1AJ"
+    elif names == AK_NAMES:
+        evidence, log_prefix = AK_EVIDENCE, "W1AK"
     else:
         evidence, log_prefix = EVIDENCE, "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
