@@ -76,13 +76,24 @@ namespace Rabron.Prototype
                 Debug.LogWarning("Recovered Rabron prototype save from " + backup);
                 try
                 {
-                    // Keep the recovered checkpoint safe before future writes.
-                    File.Copy(backup, primary, overwrite: true);
+                    // A damaged primary may still contain recoverable progress.
+                    // Move it aside instead of erasing it with the older backup.
+                    // Same-directory rename is non-destructive, and each
+                    // quarantine path is unique to avoid replacing prior data.
+                    if (File.Exists(primary))
+                    {
+                        string damaged = primary + ".corrupt-" + Guid.NewGuid().ToString("N");
+                        File.Move(primary, damaged);
+                        Debug.LogWarning("Preserved damaged primary checkpoint at " + damaged);
+                    }
+                    // Copy only into a vacant path: races must never overwrite
+                    // the primary or the sole validated backup.
+                    File.Copy(backup, primary, overwrite: false);
                 }
                 catch (Exception exception)
                 {
-                    // Backup is the only proven good checkpoint; never let
-                    // later File.Replace overwrite it with a corrupt primary.
+                    // Any failed move/repair leaves the validated backup
+                    // untouched. Pausing saves prevents an unsafe rotation.
                     _preserveUnreadableSaves = true;
                     message = "Backup restored in memory, but repairing the primary failed. " +
                               "Saves are paused; copy the save files to safety and restart.";
