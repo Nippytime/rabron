@@ -20,7 +20,11 @@ A pure C# 8 / .NET Standard 2.1 gameplay state machine covering this sequence:
 7. Only **after returning to the city as a civilian**, reset the completed
    heist cycle while preserving all remaining balances. Calling the core
    reset as a criminal or while still in the desert is rejected without
-   changing money, alarms, role or phase.
+   changing money, alarms, role or phase. A civilian returning from a
+   completed laundering cycle **cannot mask again** while still in the
+   `Laundered` phase: first explicitly reset to `Idle`, then mask before or
+   after scouting. This matches the existing Unity mask station and prevents
+   direct core callers from re-entering criminal status mid-reset.
 
 This implements a working rules **simulation**, with no 3D camera, UI,
 animation or multiplayer networking yet.
