@@ -14,6 +14,9 @@ namespace Rabron.Prototype
         private InputAction _stick = null!;
         private InputAction _sprint = null!;
         private InputAction _interact = null!;
+        private InputAction _jump = null!;
+        private const float DemoGravity = 20f;
+        private const float DemoJumpHeight = 1.15f;
         private float _pitch = 18f;
         private float _verticalVelocity;
         private readonly RaycastHit[] _cameraHits = new RaycastHit[24];
@@ -42,6 +45,10 @@ namespace Rabron.Prototype
             _interact = new InputAction("Interact", InputActionType.Button);
             _interact.AddBinding("<Keyboard>/e");
             _interact.AddBinding("<Gamepad>/buttonSouth");
+            // Keep existing A / south-face interaction; Y / north-face jumps.
+            _jump = new InputAction("Jump", InputActionType.Button);
+            _jump.AddBinding("<Keyboard>/space");
+            _jump.AddBinding("<Gamepad>/buttonNorth");
 
             var cam = new GameObject("Prototype Follow Camera");
             _camera = cam.AddComponent<Camera>();
@@ -59,6 +66,7 @@ namespace Rabron.Prototype
             _stick?.Enable();
             _sprint?.Enable();
             _interact?.Enable();
+            _jump?.Enable();
         }
 
         private void OnDisable()
@@ -68,6 +76,7 @@ namespace Rabron.Prototype
             _stick?.Disable();
             _sprint?.Disable();
             _interact?.Disable();
+            _jump?.Disable();
         }
 
         private void OnDestroy()
@@ -77,6 +86,7 @@ namespace Rabron.Prototype
             _stick?.Dispose();
             _sprint?.Dispose();
             _interact?.Dispose();
+            _jump?.Dispose();
             if (_camera != null)
                 Destroy(_camera.gameObject);
             if (Application.isPlaying)
@@ -110,10 +120,32 @@ namespace Rabron.Prototype
             Vector2 axis = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
             Vector3 planar = transform.right * axis.x + transform.forward * axis.y;
             float speed = _sprint.IsPressed() ? 7f : 4.5f;
-            _verticalVelocity = _character.isGrounded
-                ? -2f : _verticalVelocity - 20f * Time.deltaTime;
-            _character.Move((planar * speed + Vector3.up * _verticalVelocity)
-                            * Time.deltaTime);
+            _verticalVelocity = IntegrateVertical(_verticalVelocity,
+                _character.isGrounded, _jump.WasPressedThisFrame(), Time.deltaTime);
+            CollisionFlags collision = _character.Move(
+                (planar * speed + Vector3.up * _verticalVelocity) * Time.deltaTime);
+            _verticalVelocity = ResolveCeiling(_verticalVelocity, collision);
+        }
+
+        // Pure steps are shared by the motor and its real Unity test source.
+        // These are invented demo movement parameters, not source-game physics.
+        private static float IntegrateVertical(float velocity, bool grounded,
+                                                bool jumpPressed, float deltaSeconds)
+        {
+            if (grounded)
+            {
+                if (velocity < 0f)
+                    velocity = -2f;
+                if (jumpPressed)
+                    velocity = Mathf.Sqrt(2f * DemoGravity * DemoJumpHeight);
+            }
+            return velocity - DemoGravity * deltaSeconds;
+        }
+
+        private static float ResolveCeiling(float velocity, CollisionFlags collision)
+        {
+            return velocity > 0f && (collision & CollisionFlags.Above) != 0
+                ? 0f : velocity;
         }
 
         private void LateUpdate()
