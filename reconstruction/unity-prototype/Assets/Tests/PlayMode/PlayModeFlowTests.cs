@@ -49,6 +49,7 @@ namespace Rabron.Prototype.Tests
             byte[] originalPrimary = File.Exists(primary) ? File.ReadAllBytes(primary) : null;
             byte[] originalBackup = File.Exists(backup) ? File.ReadAllBytes(backup) : null;
             byte[] originalTemporary = File.Exists(temporary) ? File.ReadAllBytes(temporary) : null;
+            string retainedDamagedPrimary = null;
 
             try
             {
@@ -90,6 +91,21 @@ namespace Rabron.Prototype.Tests
                 Assert.That(recoveredMessage, Does.Contain("recovered"));
                 Assert.That(recovered.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(PrototypeSaveStore.SavingDisabled, Is.False);
+
+                // Recovering a valid backup must not destroy the damaged
+                // primary's original bytes. Verify the actual isolated
+                // filesystem and keep the saved bytes for later assertions.
+                string[] quarantines = Directory.GetFiles(
+                    Path.GetDirectoryName(primary),
+                    Path.GetFileName(primary) + ".corrupt-*");
+                Assert.That(quarantines.Length, Is.EqualTo(1),
+                            "Backup recovery must quarantine the old primary exactly once");
+                retainedDamagedPrimary = quarantines[0];
+                Assert.That(File.ReadAllBytes(retainedDamagedPrimary),
+                            Is.EqualTo(brokenPrimary),
+                            "Unreadable primary must survive backup recovery unchanged");
+                Assert.That(File.ReadAllText(primary), Is.EqualTo(File.ReadAllText(backup)),
+                            "Recovered primary must equal the validated backup");
                 hud.Render(recovered, "Delivery available", "", "",
                            PrototypeSaveStore.SavingDisabled,
                            PrototypeSaveStore.LastWriteFailed);
@@ -205,6 +221,9 @@ namespace Rabron.Prototype.Tests
                             "A confirmed checkpoint should clear the write-error banner");
                 Assert.That(PrototypeSaveStore.Load(out _).CarryingCourierParcel, Is.True,
                             "Successful retry must durably save the pending courier parcel");
+                Assert.That(File.ReadAllBytes(retainedDamagedPrimary),
+                            Is.EqualTo(brokenPrimary),
+                            "Later successful autosaves must retain the corrupt primary evidence");
             }
             finally
             {
@@ -214,6 +233,10 @@ namespace Rabron.Prototype.Tests
                 Restore(primary, originalPrimary);
                 Restore(backup, originalBackup);
                 Restore(temporary, originalTemporary);
+                // Clean only the quarantine created by this isolated test.
+                // Never delete a preexisting user or other-test checkpoint.
+                if (retainedDamagedPrimary != null && File.Exists(retainedDamagedPrimary))
+                    File.Delete(retainedDamagedPrimary);
                 // Do not leave a global write block affecting other tests.
                 PrototypeSaveStore.Load(out _);
             }
