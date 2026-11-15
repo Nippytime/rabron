@@ -15,6 +15,7 @@ internal static class Program
             EnforcesLaunderingDeadlineAndInput,
             RejectsDuplicateItems,
             ResetsOnlyTheHeistCycle,
+            CompletedHeistRequiresCivilianCityReturnBeforeReset,
             ControlledStaffPreventsFutureAlarmWithoutRewritingThePast,
             StaffControlMustOccurDuringHeist,
             SnapshotRestoresInFlightLootAndGuardState,
@@ -178,11 +179,64 @@ internal static class Program
         game.CollectCounterCash();
         game.StartLaundering(100, 60, 1000, 20);
         game.CompleteLaundering(1020);
+        game.LeaveCity();
+        game.EnterCity();
         game.BeginAnotherHeist();
         Eq(HeistPhase.Idle, game.Phase);
         Eq(60L, game.CleanCash);
         Eq(0, game.Loot.Count);
         True(!game.AlarmRaised);
+        game.Scout();
+    }
+
+    private static void CompletedHeistRequiresCivilianCityReturnBeforeReset()
+    {
+        var game = new HeistSession();
+        game.OpenBankAccount();
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(30);
+        game.DepositCleanCash(10);
+
+        game.Scout();
+        game.PutOnMask();
+        game.StartHeist();
+        game.RaiseAlarm();
+        game.ControlStaff();
+        game.TakeLoot("camera");
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 100 });
+        game.CollectCounterCash();
+        game.StartLaundering(100, 70, 1000, 5);
+        game.CompleteLaundering(1005);
+
+        Eq(HeistPhase.Laundered, game.Phase);
+        Eq(PlayerRole.Criminal, game.CurrentRole);
+        Eq(90L, game.CleanCash);
+        Eq(10L, game.BankBalance);
+        Throws<InvalidOperationException>(() => game.BeginAnotherHeist());
+        Eq(HeistPhase.Laundered, game.Phase);
+        True(game.AlarmRaised && game.StaffControlled);
+        Eq(90L, game.CleanCash);
+        Eq(10L, game.BankBalance);
+
+        game.LeaveCity();
+        Eq(PlayerRole.Civilian, game.CurrentRole);
+        Eq(Zone.Desert, game.CurrentZone);
+        Throws<InvalidOperationException>(() => game.BeginAnotherHeist());
+        Eq(HeistPhase.Laundered, game.Phase);
+        Eq(90L, game.CleanCash);
+        Eq(10L, game.BankBalance);
+
+        // Only after returning as a civilian may the next-heist marker
+        // semantics be satisfied by the portable state machine itself.
+        game.EnterCity();
+        game.BeginAnotherHeist();
+        Eq(HeistPhase.Idle, game.Phase);
+        Eq(PlayerRole.Civilian, game.CurrentRole);
+        Eq(Zone.City, game.CurrentZone);
+        True(!game.AlarmRaised && !game.StaffControlled);
+        Eq(90L, game.CleanCash);
+        Eq(10L, game.BankBalance);
         game.Scout();
     }
 
@@ -200,6 +254,8 @@ internal static class Program
         session.CollectCounterCash();
         session.StartLaundering(20, 15, 100, 2);
         session.CompleteLaundering(102);
+        session.LeaveCity();
+        session.EnterCity();
         session.BeginAnotherHeist();
         True(!session.StaffControlled);
         True(!session.AlarmRaised);
