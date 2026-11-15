@@ -182,6 +182,7 @@ namespace Rabron.Prototype.Editor
                 Check(!parcel.IsVisible, "Returned courier cargo must disappear");
 
                 ValidateHeistCore();
+                ValidateDemoEconomy();
             }
             finally
             {
@@ -208,6 +209,51 @@ namespace Rabron.Prototype.Editor
             Check(Directory.Exists(Path.Combine(outputDirectory, "RabronPrototype_Data")),
                   "Windows build data folder is missing");
             Debug.Log(BuildToken + ": " + executable);
+        }
+
+        private static void ValidateDemoEconomy()
+        {
+            // Exercise the live ScriptableObject formula in a real Unity
+            // Editor invocation. CI's Python audit cannot execute this code.
+            var economy = ScriptableObject.CreateInstance<PrototypeBalance>();
+            try
+            {
+                economy.CleanPayoutPercent = 80;
+                Check(economy.CleanPayoutFor(101) == 80,
+                      "Demo percentage must round down to whole cash units");
+                Check(economy.CleanPayoutFor(long.MaxValue) == 7378697629483820645L,
+                      "Large clean payout must not overflow a valid 80% offer");
+
+                economy.CleanPayoutPercent = 100;
+                Check(economy.CleanPayoutFor(long.MaxValue) == long.MaxValue,
+                      "100% payout must conserve an entire maximum-size balance");
+                economy.CleanPayoutPercent = 0;
+                Check(economy.CleanPayoutFor(long.MaxValue) == 0,
+                      "Zero-percent offer must not mint currency");
+                economy.CleanPayoutPercent = 1;
+                Check(economy.CleanPayoutFor(99) == 0 &&
+                      economy.CleanPayoutFor(101) == 1,
+                      "Low-rate payout must truncate exact integer fractions");
+
+                foreach (int invalid in new[] { -1, 101 })
+                {
+                    economy.CleanPayoutPercent = invalid;
+                    bool rejected = false;
+                    try { economy.CleanPayoutFor(10); }
+                    catch (ArgumentOutOfRangeException) { rejected = true; }
+                    Check(rejected, "Invalid demo percentage must fail closed: " + invalid);
+                }
+
+                economy.CleanPayoutPercent = 80;
+                bool zeroRejected = false;
+                try { economy.CleanPayoutFor(0); }
+                catch (ArgumentOutOfRangeException) { zeroRejected = true; }
+                Check(zeroRejected, "No payout is computed for zero dirty cash");
+            }
+            finally
+            {
+                UnityEngine.Object.DestroyImmediate(economy);
+            }
         }
 
         private static void ValidateHeistCore()
