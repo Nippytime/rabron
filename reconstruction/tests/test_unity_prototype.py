@@ -283,6 +283,9 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         validator_tests = (UNITY / "Tools/Test-PlayModeResults.ps1").read_text(
             encoding="utf-8"
         )
+        acceptance = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8"
+        )
         save = read("PrototypeSaveStore.cs")
 
         self.assertEqual(manifest["com.unity.test-framework"], "1.6.0")
@@ -297,6 +300,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
 
         self.assertIn('[Category("RabronPlayMode")]', tests)
         self.assertEqual(tests.count("[UnityTest]"), 2)
+        self.assertEqual(tests.count("[Test]"), 1)
+        self.assertIn("public void UnreadableCheckpointsMustSurviveLaterAutosaves()", tests)
         self.assertIn("SceneBootCreatesRuntimePlayerCameraHudAndStations", tests)
         self.assertIn("HeistMarkersDriveFullLoopAndPhysicalCounterMoney", tests)
         self.assertIn("FindFirstObjectByType<PrototypeDirector>()", tests)
@@ -319,6 +324,20 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("$missing.Count -gt 0", validator)
         self.assertIn("$duplicates.Count -gt 0", validator)
         self.assertIn("$UnityExitCode -ne 0", validator)
+        self.assertIn(
+            "Rabron.Prototype.Tests.PlayModeFlowTests.UnreadableCheckpointsMustSurviveLaterAutosaves",
+            validator
+        )
+        self.assertIn("$total -lt $expected.Count", validator)
+        self.assertIn("$testCount -lt 3", acceptance)
+        self.assertIn("all three named tests passed", validator_tests)
+        self.assertIn(
+            "green two-case report missing mandatory save-recovery test",
+            validator_tests
+        )
+        self.assertIn("unrelated third test cannot replace save recovery", validator_tests)
+        self.assertIn("failed save-recovery case hidden by green summary", validator_tests)
+        self.assertIn("skipped save-recovery case hidden by green summary", validator_tests)
         self.assertIn("Assert-Accepted", validator_tests)
         self.assertIn("Assert-Rejected", validator_tests)
         self.assertIn("zero-test run", validator_tests)
