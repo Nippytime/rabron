@@ -78,7 +78,7 @@ a zero Unity exit code and an explicit smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
-The Editor smoke checks generated procedural geometry, all 17 station
+The Editor smoke checks generated procedural geometry, all 18 station
 types and trigger colliders, solid-wall interaction occlusion, near-wall
 camera placement, the 0.65m step offset needed to climb the fence platform,
 and the heist-to-bank behavior contract. The optional
@@ -105,7 +105,8 @@ CI pipelines:
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
 
-The dispatcher test also checks the civilian courier pickup-to-bank path.
+The dispatcher test also checks courier pickup, no-payout return,
+parcel visibility on the player, save/restore, delivery and banking.
 Both paths call the production dispatcher directly via reflection,
 not synthetic keyboard input. Manual WASD/gamepad controls, live physics
 reachability, visual presentation and the packaged Windows EXE still
@@ -196,8 +197,12 @@ route for players who prefer not to join the criminal heist:
 
 1. From the starting street, walk to the western **Courier dispatch** kiosk
    (near the ATM) and interact with **Collect legal delivery parcel**.
-2. The parcel is remembered by the versioned checkpoint. You cannot scout,
-   wear the criminal mask or leave the city while the delivery is active.
+2. The parcel appears as a small box on your character and is remembered by
+   the versioned checkpoint. You cannot scout, wear the criminal mask or
+   leave the city while a delivery is active. To abandon the task, return
+   to the western dispatch kiosk and interact with **Return parcel without
+   payment**. The box disappears, no clean cash is awarded, and the heist
+   path is immediately available again.
 3. Cross to the eastern **Courier recipient** kiosk and interact with
    **Deliver legal parcel**. The configured demo quote credits **clean
    cash** once; repeating the delivery without another pickup cannot pay
@@ -210,7 +215,9 @@ configured in the existing `PrototypeBalance` ScriptableObject. This is a
 named local legal-job cash source, **not an original game reward formula, a
 server-authorized transaction or an anti-cheat system**. Earlier v1 saves
 without the optional parcel flag load with no parcel. The demo intentionally
-permits only one courier parcel at a time and contains no vehicle logistics,
+permits only one courier parcel at a time; the 18th world station is the
+no-payout return marker. The parcel mesh is presentation-only and its collider
+is disabled. The route contains no vehicle logistics,
 item weight, routing algorithm or mission generator.
 
 ## Complete sample loop

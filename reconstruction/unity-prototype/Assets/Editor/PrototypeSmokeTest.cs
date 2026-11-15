@@ -126,6 +126,17 @@ namespace Rabron.Prototype.Editor
                 Check(!cashPile.IsVisible,
                       "Collected cash must disappear from the fence");
 
+                // Parcel is strictly a visual child of the player; it cannot
+                // obstruct courier pickup, walls or other world interactions.
+                var parcel = player.GetComponentInChildren<CourierParcelPresenter>(true);
+                Check(parcel != null && !parcel.GetComponent<Collider>().enabled,
+                      "Courier cargo visual must exist without an active collider");
+                Check(!parcel.IsVisible, "Uncollected courier cargo must start hidden");
+                parcel.SetCarrying(true);
+                Check(parcel.IsVisible, "Courier cargo must be visible after pickup");
+                parcel.SetCarrying(false);
+                Check(!parcel.IsVisible, "Returned courier cargo must disappear");
+
                 ValidateHeistCore();
             }
             finally
@@ -166,6 +177,10 @@ namespace Rabron.Prototype.Editor
                 JsonUtility.ToJson(courier.ExportSnapshot())));
             Check(courier.CarryingCourierParcel,
                   "Unity JSON lost the unfinished legal delivery parcel");
+            courier.CancelCourierParcel();
+            Check(!courier.CarryingCourierParcel && courier.CleanCash == 0,
+                  "Courier return must clear the parcel without creating currency");
+            courier.PickUpCourierParcel();
             courier.DeliverCourierParcel(12); // Deliberate independent demo fixture.
             Check(!courier.CarryingCourierParcel && courier.CleanCash == 12 &&
                   courier.DirtyCash == 0 && courier.CounterCash == 0,

@@ -191,6 +191,18 @@ namespace Rabron.Reconstruction
             CarryingCourierParcel = true;
         }
 
+        /// <summary>
+        /// Returning the physical parcel ends the job without creating money.
+        /// The civilian can then enter another career immediately.
+        /// </summary>
+        public void CancelCourierParcel()
+        {
+            Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&
+                    Phase == HeistPhase.Idle && CarryingCourierParcel,
+                    "Only the active civilian courier can return a parcel.");
+            CarryingCourierParcel = false;
+        }
+
         public void DeliverCourierParcel(long verifiedCleanPayout)
         {
             Require(CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian &&

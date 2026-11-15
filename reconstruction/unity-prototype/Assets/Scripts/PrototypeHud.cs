@@ -86,7 +86,8 @@ namespace Rabron.Prototype
                           + "   Bank " + state.BankBalance
                           + "\nLoot carried: " + state.Loot.Count
                           + "   Alarm: " + (state.AlarmRaised ? "TRIGGERED" : "Quiet")
-                          + "   Guard: " + (state.StaffControlled ? "Controlled" : "Active");
+                          + "   Guard: " + (state.StaffControlled ? "Controlled" : "Active")
+                          + "\nCourier: " + (state.CarryingCourierParcel ? "PARCEL IN TRANSIT" : "no parcel");
             _objective.text = "OBJECTIVE\n" + objective;
             _prompt.text = string.IsNullOrEmpty(prompt)
                 ? "Find the highlighted world markers" : "E / A — " + prompt;

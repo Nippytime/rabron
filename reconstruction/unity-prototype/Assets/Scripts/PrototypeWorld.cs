@@ -14,7 +14,7 @@ namespace Rabron.Prototype
                                                                out CashPilePresenter cashPile,
                                                                out GuardSensor guard)
         {
-            var stations = new List<InteractionMarker>(17);
+            var stations = new List<InteractionMarker>(18);
             var asphalt = Hex("#242A34");
             var concrete = Hex("#56616F");
             var wall = Hex("#3E4858");
@@ -108,6 +108,8 @@ namespace Rabron.Prototype
                     new Vector3(-12, 0, -17), "#B9D09A");
             Station(parent, stations, StationAction.CourierDropoff, "Deliver legal parcel",
                     new Vector3(12, 0, -17), "#86CFB1");
+            Station(parent, stations, StationAction.CourierCancel, "Return parcel without payment",
+                    new Vector3(-12, 0, -21), "#B9D09A");
             Station(parent, stations, StationAction.Scout, "Scout building",
                     new Vector3(-3, 0, 11), "#80D6F2");
             Station(parent, stations, StationAction.Mask, "Put on criminal mask",
@@ -164,6 +166,18 @@ namespace Rabron.Prototype
                 Object.DestroyImmediate(bodyCollider);
             body.GetComponent<Renderer>().sharedMaterial = Swatch(Hex("#F2B76D"));
             player = actor.AddComponent<ThirdPersonMotor>();
+
+            // A small carried parcel attaches to the actor, never to the
+            // transaction ledger. No active collider can block the camera,
+            // station reachability or movement.
+            var parcel = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            parcel.name = "Carried courier parcel (visual only)";
+            parcel.transform.SetParent(actor.transform, false);
+            parcel.transform.localPosition = new Vector3(0.56f, 1.18f, 0.18f);
+            parcel.transform.localScale = new Vector3(0.5f, 0.42f, 0.48f);
+            parcel.GetComponent<Collider>().enabled = false;
+            parcel.GetComponent<Renderer>().sharedMaterial = Swatch(Hex("#C79A62"));
+            parcel.AddComponent<CourierParcelPresenter>().SetCarrying(false);
 
             var daylight = new GameObject("Daylight");
             daylight.transform.SetParent(parent, false);
