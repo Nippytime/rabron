@@ -213,6 +213,8 @@ internal static class Program
         session.ControlStaff();
         Throws<InvalidOperationException>(() => session.ControlStaff());
         True(session.StaffControlled);
+        // Escaping is now legal only when a real loot item was collected.
+        session.TakeLoot("control-guard-fixture");
         session.Escape();
         Throws<InvalidOperationException>(() => session.ControlStaff());
     }
