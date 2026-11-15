@@ -75,16 +75,35 @@ namespace Rabron.Prototype
             if (!Occupied || Mathf.Abs(_speed) > 0.5f)
                 return false;
 
+            // Use the passenger's actual full capsule, not a guessed probe
+            // that misses ankle-height obstructions when walking is restored.
+            // The motor disables its CharacterController while seated, but
+            // its dimensions remain available for an accurate clearance test.
+            CharacterController passengerBody = passenger.GetComponent<CharacterController>();
+            if (passengerBody == null)
+                return false;
+            Vector3 scale = passenger.lossyScale;
+            float radius = passengerBody.radius *
+                Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            float height = Mathf.Max(passengerBody.height * Mathf.Abs(scale.y),
+                                     radius * 2f);
+            float halfAxis = height * 0.5f - radius;
+            float clearanceRadius = radius + passengerBody.skinWidth *
+                Mathf.Max(Mathf.Abs(scale.x), Mathf.Abs(scale.z));
+            Vector3 centerOffset = passenger.rotation *
+                Vector3.Scale(passengerBody.center, scale);
+
             // Check both sides rather than ejecting a player through a wall.
             // Root/vehicle collider and the passenger are deliberately ignored.
             for (int side = 1; side >= -1; side -= 2)
             {
                 Vector3 candidate = transform.position + transform.right * (side * 2.3f);
                 candidate.y = transform.position.y + 0.1f;
+                Vector3 center = candidate + centerOffset;
                 int count = Physics.OverlapCapsuleNonAlloc(
-                    candidate + Vector3.up * 0.55f,
-                    candidate + Vector3.up * 1.55f,
-                    0.35f, _exitHits, ~0, QueryTriggerInteraction.Ignore);
+                    center - Vector3.up * halfAxis,
+                    center + Vector3.up * halfAxis,
+                    clearanceRadius, _exitHits, ~0, QueryTriggerInteraction.Ignore);
                 if (count == _exitHits.Length)
                     continue; // Cannot prove clearance on overflow.
 
