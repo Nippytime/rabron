@@ -170,6 +170,17 @@ namespace Rabron.Prototype
                     File.Move(temporary, preserved);
                     Debug.LogWarning("Preserved previous staged checkpoint at " + preserved);
                 }
+                // A valid primary can coexist with an unreadable older
+                // backup. File.Replace would erase that backup on rotation.
+                // Preserve it for manual recovery before any new write.
+                string backup = target + ".bak";
+                if (File.Exists(target) && File.Exists(backup) &&
+                    !TryRead(backup, out _))
+                {
+                    string damaged = backup + ".corrupt-" + Guid.NewGuid().ToString("N");
+                    File.Move(backup, damaged);
+                    Debug.LogWarning("Preserved unreadable backup checkpoint at " + damaged);
+                }
                 File.WriteAllText(temporary, json);
 
                 if (File.Exists(target))
