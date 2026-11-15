@@ -9758,6 +9758,73 @@
       "status": "documented_scan_not_fully_verified",
       "numeric_field_limit": 2048,
       "numeric_depth_limit": 32
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-characters_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "9bdba42ebe861b6fe666f38a5caf7bf6b9ea6b77",
+      "lfs_oid_sha256": "68048c1c9005a267508c3820be20c33bd702df926dd9121dc4a1265a9a38ded9",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "Animator": 2,
+        "AssetBundle": 1,
+        "Avatar": 2,
+        "GameObject": 340,
+        "LODGroup": 1,
+        "Material": 32,
+        "Mesh": 178,
+        "MeshFilter": 40,
+        "MeshRenderer": 40,
+        "SkinnedMeshRenderer": 41,
+        "Texture2D": 105,
+        "Transform": 340
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43670816316",
+      "scan_evidence": "GitHub Actions W1-AJ original shared-characters legacy-props LFS source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "68048c1c9005a267508c3820be20c33bd702df926dd9121dc4a1265a9a38ded9",
+      "size_bytes": 164119824,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
+    },
+    {
+      "bounded_numeric_scan_complete": true,
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/environment-props-legacy_assets_all.bundle",
+      "candidate_field_counts": {
+        "combat": 0,
+        "economy": 0,
+        "progression": 0,
+        "timing_and_world": 0
+      },
+      "git_blob_sha": "574f5ca4be39e2253fda58b53a48cac2c9e6741e",
+      "lfs_oid_sha256": "563a4fa9ef206103bfbcd2f33995b6964d9d268501762ce7df1a62fe32709e19",
+      "monobehaviours_parsed": 0,
+      "monobehaviours_total": 0,
+      "numeric_depth_limit": 32,
+      "numeric_field_cap_records": 0,
+      "numeric_field_limit": 2048,
+      "objects_by_type": {
+        "AssetBundle": 1,
+        "Material": 217,
+        "Texture2D": 404
+      },
+      "run_url": "https://github.com/Nippytime/rabron/actions/runs/43670816316",
+      "scan_evidence": "GitHub Actions W1-AJ original shared-characters legacy-props LFS source inventory artifact",
+      "scope": "bounded MonoBehaviour fields and object type counts only; not source code or game formulas",
+      "sha256": "563a4fa9ef206103bfbcd2f33995b6964d9d268501762ce7df1a62fe32709e19",
+      "size_bytes": 183967345,
+      "status": "documented_scan_not_fully_verified",
+      "unparsed_records": 0
     }
   ],
   "known_lfs_not_yet_scanned": [],

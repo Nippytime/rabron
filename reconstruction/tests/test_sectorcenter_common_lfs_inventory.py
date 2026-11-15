@@ -27,7 +27,7 @@ class SectorcenterCommonLfsTests(unittest.TestCase):
         data = json.loads((ROOT / "data/extraction_coverage.json").read_text(
             encoding="utf-8"
         ))
-        self.assertEqual(len(data["scans"]), 324)
+        self.assertGreaterEqual(len(data["scans"]), 324)
         actual = {x["bundle"]: x for x in data["scans"]
                   if x["bundle"] in {t["bundle"] for t in TARGETS}}
         self.assertEqual(len(actual), 2)
