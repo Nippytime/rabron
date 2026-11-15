@@ -17,6 +17,7 @@ namespace Rabron.Prototype
         private HeistSession _session = null!;
         private PrototypeBalance _balance = null!;
         private ThirdPersonMotor _player = null!;
+        private PrototypeVehicle _vehicle = null!;
         private GuardSensor _guard = null!;
         private CashPilePresenter _cashPile = null!;
         private CourierParcelPresenter _courierParcel = null!;
@@ -39,6 +40,7 @@ namespace Rabron.Prototype
             _stations = PrototypeWorld.Create(transform, out _player, out _cashPile,
                                               out _guard);
             _courierParcel = _player.GetComponentInChildren<CourierParcelPresenter>(true);
+            _vehicle = GetComponentInChildren<PrototypeVehicle>(true);
 
             var hudObject = new GameObject("Prototype HUD");
             hudObject.transform.SetParent(transform, false);
@@ -113,12 +115,21 @@ namespace Rabron.Prototype
             // Visual only. This does not credit money or change the game state.
             _cashPile.SetAmount(_session.CounterCash);
             _courierParcel.SetCarrying(_session.CarryingCourierParcel);
-            _hud.Render(_session, Objective(now), focused == null ? "" : focused.Label,
+            _hud.Render(_session, Objective(now),
+                        _player.IsDriving ? "Exit car after stopping" :
+                        focused == null ? "" : focused.Label,
                         Time.unscaledTime < _noticeUntil ? _notice : "");
         }
 
         private InteractionMarker? FindNearbyStation()
         {
+            if (_player.IsDriving)
+            {
+                foreach (var marker in _stations)
+                    if (marker.gameObject.activeSelf)
+                        marker.gameObject.SetActive(false);
+                return null;
+            }
             InteractionMarker? nearest = null;
             float best = InteractionRadius * InteractionRadius;
             foreach (var marker in _stations)
@@ -156,6 +167,10 @@ namespace Rabron.Prototype
             bool criminal = _session.CurrentRole == PlayerRole.Criminal;
             return action switch
             {
+                StationAction.VehicleEnter => city && civilian &&
+                    _session.Phase == HeistPhase.Idle &&
+                    !_session.CarryingCourierParcel && !_player.IsDriving &&
+                    _vehicle != null && !_vehicle.Occupied,
                 StationAction.ReleaseCustody => city &&
                     _session.Phase == HeistPhase.Arrested &&
                     _session.CurrentRole == PlayerRole.Criminal,
@@ -204,6 +219,9 @@ namespace Rabron.Prototype
         {
             switch (marker.Action)
             {
+                case StationAction.VehicleEnter:
+                    _player.BoardVehicle(_vehicle);
+                    break;
                 case StationAction.ReleaseCustody:
                     _session.ReleaseFromCustody();
                     _player.WarpTo(CivilianSpawn);
@@ -279,6 +297,8 @@ namespace Rabron.Prototype
 
         private string Objective(long now)
         {
+            if (_player.IsDriving)
+                return "DRIVING: W/S or left stick throttle, A/D steer. Space/Y brake. Stop, then E/A to exit.";
             return _session.Phase switch
             {
                 HeistPhase.Arrested
@@ -286,7 +306,7 @@ namespace Rabron.Prototype
                 HeistPhase.Idle when _session.CarryingCourierParcel
                     => "Deliver the parcel at the eastern kiosk, or return it to dispatch without payment.",
                 HeistPhase.Idle when _session.CurrentRole == PlayerRole.Civilian
-                    => "Choose a legal COURIER job to the west or SCOUT a heist to the north.",
+                    => "Try the parked CAR east of spawn, a legal COURIER job west, or SCOUT north.",
                 HeistPhase.Idle => "Travel to the warehouse to plan your next heist.",
                 HeistPhase.Scouted when _session.CurrentRole == PlayerRole.Civilian
                     => "Activate the red MASK marker beside the warehouse.",

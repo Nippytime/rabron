@@ -7,7 +7,7 @@ namespace Rabron.Prototype
         Scout, Mask, BeginRobbery, Artwork, Watch, ControlStaff, Escape, Fence,
         CollectCash, Launder, ExitCity, EnterCity, OpenBank, Deposit, Reset,
         CourierPickup, CourierDropoff, CourierCancel, ReleaseCustody,
-        WithdrawEmptyHanded
+        WithdrawEmptyHanded, VehicleEnter
     }
 
     /// <summary>Visible interaction target; state and finance live in HeistSession.</summary>

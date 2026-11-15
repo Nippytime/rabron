@@ -14,7 +14,7 @@ namespace Rabron.Prototype
                                                                out CashPilePresenter cashPile,
                                                                out GuardSensor guard)
         {
-            var stations = new List<InteractionMarker>(20);
+            var stations = new List<InteractionMarker>(21);
             var asphalt = Hex("#242A34");
             var concrete = Hex("#56616F");
             var wall = Hex("#3E4858");
@@ -106,6 +106,42 @@ namespace Rabron.Prototype
                  new Vector3(2, 2.7f, 1.1f), Hex("#367C9F"));
             Cube(parent, "ATM screen", new Vector3(0, 1.75f, -23.41f),
                  new Vector3(1.35f, 0.9f, 0.1f), Hex("#81DCFD"));
+
+            // One deliberately plain, physically bounded practice car.
+            // Vehicle position is transient; currency and saved role stay in
+            // HeistSession, and no original game vehicle media is imported.
+            var car = new GameObject("Driveable demo car");
+            car.transform.SetParent(parent, false);
+            car.transform.position = new Vector3(4f, 0.1f, -15f);
+            var carBody = car.AddComponent<CharacterController>();
+            carBody.height = 1.9f;
+            carBody.radius = 0.95f;
+            carBody.center = new Vector3(0f, 0.95f, 0f);
+            carBody.stepOffset = 0.4f;
+
+            var paint = Hex("#CC8A55");
+            var shell = Cube(car.transform, "Vehicle shell",
+                new Vector3(4f, 0.75f, -15f), new Vector3(2f, 0.7f, 3.3f), paint);
+            shell.GetComponent<Collider>().enabled = false;
+            var roof = Cube(car.transform, "Vehicle cabin",
+                new Vector3(4f, 1.3f, -15.35f), new Vector3(1.55f, 0.55f, 1.7f),
+                Hex("#61849C"));
+            roof.GetComponent<Collider>().enabled = false;
+            for (int side = -1; side <= 1; side += 2)
+            {
+                for (int axle = -1; axle <= 1; axle += 2)
+                {
+                    var wheel = Cube(car.transform, "Vehicle wheel",
+                        new Vector3(4f + side * 1.02f, 0.38f, -15f + axle * 1.1f),
+                        new Vector3(0.3f, 0.58f, 0.6f), Hex("#22272D"));
+                    wheel.GetComponent<Collider>().enabled = false;
+                }
+            }
+            car.AddComponent<PrototypeVehicle>();
+            // Enter marker follows the moving car; it is not a static
+            // road-side teleport or a second vehicle simulation.
+            Station(car.transform, stations, StationAction.VehicleEnter,
+                    "Enter practice car", new Vector3(1.5f, 0f, -16f), "#E9BD8A");
 
             Station(parent, stations, StationAction.ReleaseCustody, "Leave police custody",
                     new Vector3(16, 0, -38), "#98B6DD");
