@@ -17,6 +17,9 @@ namespace Rabron.Prototype
         // unreadable primary/backup that a player may still recover manually.
         // Reset only on a new Load after the player has moved those files.
         private static bool _preserveUnreadableSaves;
+        // Headless standalone acceptance must not touch real player saves.
+        private static readonly string PlayerSmokeInvocationId =
+            Guid.NewGuid().ToString("N");
         // Read-only UI signal; never interpret an in-memory fallback as saved.
         public static bool SavingDisabled => _preserveUnreadableSaves;
 #if UNITY_EDITOR
@@ -41,6 +44,13 @@ namespace Rabron.Prototype
                                         "rabron-playmode-tests", TestInvocationId,
                                         FileName);
 #endif
+                if (!Application.isEditor &&
+                    Array.Exists(Environment.GetCommandLineArgs(),
+                        arg => string.Equals(arg, "-rabronPlayerSmoke",
+                                             StringComparison.OrdinalIgnoreCase)))
+                    return Path.Combine(Application.temporaryCachePath,
+                                        "rabron-player-smoke", PlayerSmokeInvocationId,
+                                        FileName);
                 return Path.Combine(Application.persistentDataPath, FileName);
             }
         }
