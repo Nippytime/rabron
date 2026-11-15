@@ -727,6 +727,43 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("A confirmed checkpoint should clear", playmode)
         self.assertIn("failed disk writes", guide.lower())
 
+    def test_guard_alarm_and_custody_do_not_mask_checkpoint_failure(self):
+        director = read("PrototypeDirector.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # All three automatic outcome notices (laundering, alarm, custody)
+        # must precede their own SaveProgress call, not overwrite the error.
+        for message in (
+            'Notice("Laundering complete. Leave the city',
+            'Notice("ALARM RAISED! The guard spotted you.',
+            'Notice("ARRESTED. Carried loot and dirty cash confiscated.',
+        ):
+            pos = director.index(message)
+            after = director[pos : pos + 190]
+            self.assertIn("SaveProgress();", after)
+            self.assertLess(after.index("Notice("), after.index("SaveProgress();"))
+        self.assertIn('Notice("Progress could not be saved: " + error)', director)
+
+        # Real Unity Play Mode source forces a blocked atomic write, triggers
+        # both physical guard outcomes and inspects the actual director notice.
+        self.assertIn("Directory.CreateDirectory(temporary);", playmode)
+        self.assertIn("update.Invoke(director, null);", playmode)
+        self.assertIn("alarmed.AlarmRaised, Is.True", playmode)
+        self.assertIn("alarmed.Phase, Is.EqualTo(HeistPhase.Arrested)", playmode)
+        self.assertIn(
+            "Alarm notice must not overwrite failed checkpoint details", playmode
+        )
+        self.assertIn(
+            "Custody notice must not overwrite failed checkpoint details", playmode
+        )
+        self.assertIn("sessionField.SetValue(director, normalSession);", playmode)
+        self.assertIn("motor.WarpTo(normalPosition);", playmode)
+        self.assertIn("Failed alarm/custody saves must preserve", playmode)
+        self.assertIn("alarm", guide.lower())
+        self.assertIn("save", guide.lower())
+
     def test_batch_playmode_checkpoints_are_unique_per_editor_invocation(self):
         store = read("PrototypeSaveStore.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(

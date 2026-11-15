@@ -293,9 +293,13 @@ Ordinary **failed disk writes** (full storage, denied file permissions or a
 blocked temporary write path) do **not** mean that an otherwise valid saved
 checkpoint is corrupt. They instead show a persistent **LAST SAVE FAILED**
 banner while the game is running, warning that recent progress may be lost.
-Other notifications, including laundering completion, cannot mask this
-warning. Check free space and folder permissions and retry a normal
-interaction/checkpoint; only a confirmed successful write clears the banner.
+Other notifications, including laundering completion, guard alarm and
+arrest, cannot mask this warning. The immediate save-error notice also wins
+over the normal success, alarm or custody text when those transitions fail to
+write a checkpoint; the full disk error remains visible briefly while the
+persistent banner remains until a confirmed write. Check free space and
+folder permissions and retry a normal interaction/checkpoint; only a
+confirmed successful write clears the banner.
 Do not quit assuming the latest action was persisted. The existing valid
 primary/backup files remain protected when a write fails. The real Unity Play
 Mode save test deliberately occupies its isolated `.tmp` path with a
