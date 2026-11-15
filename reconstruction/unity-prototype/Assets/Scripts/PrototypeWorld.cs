@@ -14,7 +14,7 @@ namespace Rabron.Prototype
                                                                out CashPilePresenter cashPile,
                                                                out GuardSensor guard)
         {
-            var stations = new List<InteractionMarker>(19);
+            var stations = new List<InteractionMarker>(20);
             var asphalt = Hex("#242A34");
             var concrete = Hex("#56616F");
             var wall = Hex("#3E4858");
@@ -130,6 +130,9 @@ namespace Rabron.Prototype
                     new Vector3(3f, 0f, 34f), "#D99BB5");
             Station(parent, stations, StationAction.Escape, "Escape with loot",
                     new Vector3(0, 0, 5), "#86C8A5");
+            Station(parent, stations, StationAction.WithdrawEmptyHanded,
+                    "Withdraw from heist without payment",
+                    new Vector3(2.2f, 0, 5), "#C0AE84");
             Station(parent, stations, StationAction.Fence, "Sell loot at fence",
                     new Vector3(-19, 0.65f, -2.3f), "#D6BB83");
             Station(parent, stations, StationAction.CollectCash, "Collect cash on counter",
