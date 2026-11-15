@@ -158,6 +158,10 @@ CI pipelines:
 - Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
+- Save-corruption recovery: an isolated batch-only NUnit case deliberately
+  makes primary and backup unreadable, confirms autosave leaves their bytes
+  unchanged and keeps the persistent warning visible, then verifies recovery
+  from a valid backup without reading the player's normal save
 
 The dispatcher test also checks courier pickup, no-payout return,
 parcel visibility on the player, save/restore, delivery and banking.
@@ -193,8 +197,11 @@ The runner uses Unity's -runTests -testPlatform PlayMode commands WITHOUT
 -quit, which Unity does not support during tests. The selected test category
 is RabronPlayMode. It writes Logs/playmode-results.xml (NUnit) and
 Logs/playmode-tests.log. It removes stale results and requires a successful
-process exit, passing NUnit result, at least two passed cases, zero failed
-cases, and both named acceptance methods. Zero-test runs fail.
+process exit, passing NUnit result, **at least three passed cases**,
+zero failed/skipped cases, and **all three named acceptance methods**,
+including `UnreadableCheckpointsMustSurviveLaterAutosaves`. A green-looking
+two-case report, or a third unrelated passing test substituted for save
+recovery, now **fails closed**; zero-test runs also fail.
 
 During command-line `-runTests` Unity test runs, demo checkpoints use
 an isolated **per-invocation** folder under

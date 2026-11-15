@@ -11,6 +11,7 @@ $fixture = Join-Path $temporary 'result.xml'
 
 $one = 'Rabron.Prototype.Tests.PlayModeFlowTests.SceneBootCreatesRuntimePlayerCameraHudAndStations'
 $two = 'Rabron.Prototype.Tests.PlayModeFlowTests.HeistMarkersDriveFullLoopAndPhysicalCounterMoney'
+$three = 'Rabron.Prototype.Tests.PlayModeFlowTests.UnreadableCheckpointsMustSurviveLaterAutosaves'
 
 function New-TestCase([string]$name, [string]$result = 'Passed') {
     return '<test-case fullname="' + $name + '" result="' + $result + '" />'
@@ -55,34 +56,49 @@ function Assert-Rejected([string]$scenario, [int]$exitCode = 0) {
 }
 
 try {
-    $validCases = @((New-TestCase $one), (New-TestCase $two))
-    Write-Result $validCases 2 2 0
-    Assert-Accepted 'both expected tests passed'
+    # A clean-looking two-test report is no longer sufficient: data-loss
+    # recovery must have actually run, not merely exist as Unity test source.
+    $validCases = @((New-TestCase $one), (New-TestCase $two), (New-TestCase $three))
+    Write-Result $validCases 3 3 0
+    Assert-Accepted 'all three named tests passed'
 
     Assert-Rejected 'Unity process failed despite green XML' 2
 
-    Write-Result $validCases 2 2 0 'Failed'
+    Write-Result $validCases 3 3 0 'Failed'
     Assert-Rejected 'NUnit run marked failed'
 
     Write-Result @() 0 0 0
     Assert-Rejected 'zero-test run'
 
-    Write-Result @((New-TestCase $one)) 1 1 0
+    Write-Result @((New-TestCase $one), (New-TestCase $three)) 2 2 0
     Assert-Rejected 'second named test missing'
 
-    Write-Result @((New-TestCase $one), (New-TestCase $one), (New-TestCase $two)) 3 3 0
+    Write-Result @((New-TestCase $one), (New-TestCase $two)) 2 2 0
+    Assert-Rejected 'green two-case report missing mandatory save-recovery test'
+
+    Write-Result @((New-TestCase $one), (New-TestCase $two),
+                   (New-TestCase 'Some.Other.Test')) 3 3 0
+    Assert-Rejected 'unrelated third test cannot replace save recovery'
+
+    Write-Result @((New-TestCase $one), (New-TestCase $one),
+                   (New-TestCase $two), (New-TestCase $three)) 4 4 0
     Assert-Rejected 'duplicate expected case'
 
-    Write-Result @((New-TestCase $one 'Failed'), (New-TestCase $two)) 2 2 0
-    Assert-Rejected 'failed case hidden by green summary'
+    Write-Result @((New-TestCase $one), (New-TestCase $two),
+                   (New-TestCase $three 'Failed')) 3 3 0
+    Assert-Rejected 'failed save-recovery case hidden by green summary'
 
-    Write-Result $validCases 2 1 0
+    Write-Result @((New-TestCase $one), (New-TestCase $two),
+                   (New-TestCase $three 'Skipped')) 3 3 0
+    Assert-Rejected 'skipped save-recovery case hidden by green summary'
+
+    Write-Result $validCases 3 2 0
     Assert-Rejected 'passed count smaller than total'
 
-    Write-Result $validCases 3 3 0
+    Write-Result $validCases 4 4 0
     Assert-Rejected 'total mismatches case count'
 
-    Write-Result $validCases 2 1 1 'Failed'
+    Write-Result $validCases 3 2 1 'Failed'
     Assert-Rejected 'failure count is nonzero'
 
     Set-Content -LiteralPath $fixture -Value '<test-run invalid' -Encoding utf8
