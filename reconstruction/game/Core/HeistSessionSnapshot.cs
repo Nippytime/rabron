@@ -20,6 +20,8 @@ namespace Rabron.Reconstruction
         public bool AlarmRaised;
         public bool StaffControlled;
         public bool BankAccountOpened;
+        // Missing in older v1 JSON saves means false (no active delivery).
+        public bool CarryingCourierParcel;
         public long CounterCash;
         public long DirtyCash;
         public long CleanCash;
