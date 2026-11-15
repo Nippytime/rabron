@@ -58,7 +58,7 @@ $dirty = @(& git -C $repoRoot status --porcelain --untracked-files=no -- reconst
 if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {
     throw 'Tracked reconstruction source is dirty; commit and retry before acceptance.'
 }
-& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
 
 function Assert-NonemptyFile([string]$path) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
@@ -97,7 +97,7 @@ Copy-Item -LiteralPath $smoke -Destination $editorLogCopy
 # The Editor intentionally generates its single bootstrap scene. It is not
 # Git-tracked; fingerprint the actual scene used by every subsequent gate.
 $sceneAtSmoke = File-Summary $scene
-& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
 & (Join-Path $PSScriptRoot 'Verify-PlayMode.ps1') -EditorPath $EditorPath
 if ((File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256) {
     throw 'Generated Unity scene changed after the Editor smoke gate.'
@@ -133,7 +133,7 @@ $dirtyAfter = @(& git -C $repoRoot status --porcelain --untracked-files=no -- re
 if ($LASTEXITCODE -ne 0 -or $dirtyAfter.Count -gt 0) {
     throw 'Unity modified tracked reconstruction files; review changes before acceptance.'
 }
-& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
 if ((File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256) {
     throw 'Generated Unity scene changed after the Windows build gate.'
 }
