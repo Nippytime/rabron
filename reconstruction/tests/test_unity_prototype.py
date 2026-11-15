@@ -228,7 +228,10 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
             encoding="utf-8")
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        player_smoke = read("PrototypePlayerSmoke.cs")
 
+        self.assertIn("public bool CuesReady", audio)
+        self.assertIn("audio != null && audio.CuesReady", player_smoke)
         self.assertIn("[RequireComponent(typeof(AudioSource))]", audio)
         self.assertIn("private const int SampleRate = 24000;", audio)
         self.assertIn("AudioClip.Create(name, count, 1, SampleRate, false)", audio)
