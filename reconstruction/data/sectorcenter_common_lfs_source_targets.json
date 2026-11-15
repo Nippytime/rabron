@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AI original sector-center scene and environment-common LFS pointer identities (not actual verified binary evidence)",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/location-sectorcenter-standalone_scenes_all.bundle",
+      "git_blob_sha": "906d8a339dfc85d6d70421d801daf82d65f7f158",
+      "lfs_oid_sha256": "2d5fc983bb6f832e5ba331017180e6f0c86708e242bed4003815c93e7ab65e50",
+      "size_bytes": 120455935
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-environment-common_assets_all.bundle",
+      "git_blob_sha": "d28a772caad8a0b2fa0d6be9d33e92e99c9ab30f",
+      "lfs_oid_sha256": "a023695985095ae08f397ca8a46beb39a9091f06f46e75358ef7faad6e4f2d9c",
+      "size_bytes": 142691728
+    }
+  ]
+}
