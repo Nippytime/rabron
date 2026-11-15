@@ -452,8 +452,11 @@ around the city.
    The bundle meshes disappear and the balance moves from Counter Cash to
    Dirty Cash. The next destination is the **eastern** laundry workstation.
 8. Laundering finishes after an adjustable demo timer. Go **south** to the
-   city-exit marker to clear criminal status and use the return marker.
-   The live Unity exit marker is only available after laundering completes.
+   city-exit marker to clear criminal status. While outside the city, the HUD
+   explicitly says **RETURN TO CITY**: use the nearby purple return marker
+   at the southern road before looking for banking or NEXT HEIST stations.
+   Those city-only markers are unavailable in the desert. The live Unity
+   exit marker is only available after laundering completes.
    The independent core additionally permits travel during Idle or Scouted
    phases for compatible non-robbery paths, but never during an in-progress
    robbery, unsold fence payout, uncollected counter cash, dirty-cash

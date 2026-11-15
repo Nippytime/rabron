@@ -692,7 +692,28 @@ namespace Rabron.Prototype.Tests
                     "A completed heist must allow lawful city departure");
                 Interact(StationAction.ExitCity);
                 Assert.That(simulated.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
+                Assert.That(simulated.CurrentZone, Is.EqualTo(Zone.Desert));
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.EnterCity }), Is.True,
+                    "Return marker must remain available in the desert");
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.Reset }), Is.False,
+                    "Desert must never expose a next-heist marker");
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.OpenBank }), Is.False,
+                    "City-only banking must not appear available in the desert");
+                var objectiveMethod = typeof(PrototypeDirector).GetMethod(
+                    "Objective", PrivateInstance);
+                Assert.That(objectiveMethod, Is.Not.Null);
+                Assert.That((string)objectiveMethod.Invoke(director,
+                    new object[] { now }), Does.Contain("RETURN TO CITY"),
+                    "Desert objective must guide players to the nearby return marker");
+
                 Interact(StationAction.EnterCity);
+                Assert.That(simulated.CurrentZone, Is.EqualTo(Zone.City));
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.Reset }), Is.True,
+                    "Civilian city return must reenable the next-heist marker");
                 Interact(StationAction.OpenBank);
                 Interact(StationAction.Deposit);
                 Assert.That(simulated.BankBalance, Is.GreaterThan(0L));
