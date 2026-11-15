@@ -222,6 +222,40 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Guard should not see a player directly behind", smoke)
         self.assertIn("session.ControlStaff();", smoke)
 
+    def test_original_audio_cues_are_bounded_and_runtime_only(self):
+        audio = read("PrototypeAudioFeedback.cs")
+        director = read("PrototypeDirector.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("[RequireComponent(typeof(AudioSource))]", audio)
+        self.assertIn("private const int SampleRate = 24000;", audio)
+        self.assertIn("AudioClip.Create(name, count, 1, SampleRate, false)", audio)
+        self.assertIn("clip.SetData(samples, 0);", audio)
+        self.assertIn("float envelope = Mathf.Sin(Mathf.PI * t);", audio)
+        self.assertIn("_output.playOnAwake = false;", audio)
+        self.assertIn("_output.loop = false;", audio)
+        self.assertIn("_output.spatialBlend = 0f;", audio)
+        self.assertIn("!Application.isBatchMode", audio)
+        for cue in ("_success", "_rejected", "_alarm"):
+            self.assertIn(f"private AudioClip {cue}", audio)
+            self.assertIn(f"Destroy({cue});", audio)
+        self.assertNotIn("Update()", audio)
+        self.assertNotIn("Resources.Load", audio)
+        self.assertNotIn("HeistSession", audio)
+
+        self.assertIn("gameObject.AddComponent<PrototypeAudioFeedback>();", director)
+        self.assertIn("_audio.PlaySuccess();", director)
+        self.assertIn("_audio.PlayRejected();", director)
+        self.assertIn("_audio.PlayAlarm();", director)
+        self.assertIn("director.GetComponent<PrototypeAudioFeedback>()", playmode)
+        self.assertIn('"No original action audio presenter"', playmode)
+        self.assertIn("clip.GetData(samples, clip.samples / 2 - 256)", playmode)
+        self.assertIn("Generated cue must contain non-silent PCM samples", playmode)
+        self.assertIn("original", guide.lower())
+        self.assertIn("sound", guide.lower())
+
     def test_local_save_is_versioned_validated_and_written_after_actions(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(encoding="utf-8")
         model = (ROOT / "game/Core/HeistSessionSnapshot.cs").read_text(
