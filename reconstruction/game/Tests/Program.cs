@@ -406,7 +406,7 @@ internal static class Program
         Eq(PlayerRole.Civilian, HeistSession.FromSnapshot(
             game.ExportSnapshot()).CurrentRole);
         Eq(10L, game.BankBalance);
-        Eq(10L, game.CleanCash); // Prior legal payout remains intact
+        Eq(35L, game.CleanCash); // Prior legal cash plus completed laundering
     }
 
     private static void SnapshotRejectsUnreachablePoliceRobberyPhases()
