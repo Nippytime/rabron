@@ -45,7 +45,7 @@ namespace Rabron.Prototype.Tests
                         Is.GreaterThan(0), "HUD labels were not attached");
             Assert.That(guard, Is.Not.Null, "No guard sensor in runtime scene");
             Assert.That(cash, Is.Not.Null, "No collectible physical counter money");
-            Assert.That(stations.Length, Is.EqualTo(15));
+            Assert.That(stations.Length, Is.EqualTo(17));
             Assert.That(Application.isPlaying, Is.True);
         }
 
@@ -78,6 +78,22 @@ namespace Rabron.Prototype.Tests
             // collision-driven reachability and packaged EXE still need testing.
             try
             {
+                // The lawful civilian path must be actionable through the
+                // production world marker dispatcher, without a robbery.
+                var courier = new HeistSession();
+                field.SetValue(director, courier);
+                Interact(StationAction.CourierPickup);
+                Assert.That(courier.CarryingCourierParcel, Is.True);
+                courier = HeistSession.FromSnapshot(courier.ExportSnapshot());
+                field.SetValue(director, courier);
+                Interact(StationAction.CourierDropoff);
+                Assert.That(courier.CarryingCourierParcel, Is.False);
+                Assert.That(courier.CleanCash, Is.GreaterThan(0L));
+                Assert.That(courier.DirtyCash, Is.EqualTo(0L));
+                Interact(StationAction.OpenBank);
+                Interact(StationAction.Deposit);
+                Assert.That(courier.BankBalance, Is.GreaterThan(0L));
+
                 field.SetValue(director, simulated);
                 Interact(StationAction.Scout);
                 Interact(StationAction.Mask);
