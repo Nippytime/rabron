@@ -16,6 +16,7 @@ internal static class Program
             RejectsDuplicateItems,
             ResetsOnlyTheHeistCycle,
             CompletedHeistRequiresCivilianCityReturnBeforeReset,
+            MaskRequiresFreshIdleOrScoutedCycle,
             ControlledStaffPreventsFutureAlarmWithoutRewritingThePast,
             StaffControlMustOccurDuringHeist,
             SnapshotRestoresInFlightLootAndGuardState,
@@ -239,6 +240,60 @@ internal static class Program
         Eq(90L, game.CleanCash);
         Eq(10L, game.BankBalance);
         game.Scout();
+    }
+
+    private static void MaskRequiresFreshIdleOrScoutedCycle()
+    {
+        // Core callers must honor the same MASK availability as the Unity
+        // station, including after a completed heist and civilian city return.
+        var game = StartHeistWithOneItem();
+        game.RaiseAlarm();
+        game.ControlStaff();
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 40 });
+        game.CollectCounterCash();
+        game.StartLaundering(40, 30, 100, 2);
+        game.CompleteLaundering(102);
+        game.LeaveCity();
+        game.EnterCity();
+        game.OpenBankAccount();
+        game.DepositCleanCash(10);
+
+        Eq(PlayerRole.Civilian, game.CurrentRole);
+        Eq(HeistPhase.Laundered, game.Phase);
+        Throws<InvalidOperationException>(() => game.PutOnMask());
+        Eq(PlayerRole.Civilian, game.CurrentRole);
+        Eq(HeistPhase.Laundered, game.Phase);
+        Eq(Zone.City, game.CurrentZone);
+        Eq(20L, game.CleanCash);
+        Eq(10L, game.BankBalance);
+        Eq(0L, game.DirtyCash);
+        Eq(0L, game.CounterCash);
+        True(game.AlarmRaised && game.StaffControlled);
+
+        var resumed = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Throws<InvalidOperationException>(() => resumed.PutOnMask());
+        Eq(PlayerRole.Civilian, resumed.CurrentRole);
+        Eq(20L, resumed.CleanCash);
+        Eq(10L, resumed.BankBalance);
+
+        // A valid explicit reset re-enables idle masking without erasing
+        // earnings, and scout-first remains a separate legal path.
+        game.BeginAnotherHeist();
+        game.PutOnMask();
+        Eq(PlayerRole.Criminal, game.CurrentRole);
+        Eq(HeistPhase.Idle, game.Phase);
+        Eq(20L, game.CleanCash);
+        Eq(10L, game.BankBalance);
+        game.Scout();
+        game.StartHeist();
+        Eq(HeistPhase.Robbing, game.Phase);
+
+        var scoutFirst = new HeistSession();
+        scoutFirst.Scout();
+        scoutFirst.PutOnMask();
+        scoutFirst.StartHeist();
+        Eq(HeistPhase.Robbing, scoutFirst.Phase);
     }
 
     private static void ControlledStaffPreventsFutureAlarmWithoutRewritingThePast()
