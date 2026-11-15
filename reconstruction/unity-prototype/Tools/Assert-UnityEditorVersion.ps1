@@ -12,7 +12,7 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
-$required = '6000.3.18f1'
+$required = '6000.5.0f1'
 if (-not (Test-Path -LiteralPath $EditorPath -PathType Leaf)) {
     throw "Unity Editor missing: $EditorPath"
 }
