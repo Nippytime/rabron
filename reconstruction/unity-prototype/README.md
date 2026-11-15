@@ -128,12 +128,15 @@ actual freshly built Windows player** after the Unity build:
 ~~~
 
 The combined gate refuses a missing Editor, non-Windows host, dirty tracked
-reconstruction files, **unexpected untracked authored Assets** (such as C#
-scripts, custom ScriptableObjects, prefabs or extra scenes), missing Play Mode
-results, stale executable, empty build data, missing/failed/timed-out Windows
-Player startup, or a missing fresh runtime pass marker. Normal Unity-generated
-`.meta` files and the single auto-created
-`Assets/Scenes/Prototype.unity` are exceptions. The generated scene must be
+reconstruction files, **unexpected untracked Unity acceptance inputs**
+(any authored Assets, Packages, ProjectSettings, Tools or C# files in the linked
+`reconstruction/game/Core` package), missing Play Mode results, stale
+executable, empty build data, missing/failed/timed-out Windows Player startup,
+or a missing fresh runtime pass marker. Normal Unity-generated `.meta`
+files **inside Assets only** and the single auto-created
+`Assets/Scenes/Prototype.unity` are exceptions. Ignored Unity Library, Temp,
+build logs and IDE files remain excluded. Commit or remove unexpected inputs
+before producing evidence for a particular tracked Git revision. The generated scene must be
 nonempty after the Editor smoke gate and retain the exact same SHA-256 through
 Play Mode and the Windows build; a changed scene fails acceptance.
 
@@ -177,9 +180,12 @@ GitHub Actions only proves rejection of a missing Unity installation and
 stale green manifest; it **does not run any Unity test**.
 
 The synthetic provenance test in CI creates/removes temporary dummy
-`.cs`, alternate `.unity`, allowed `.meta` and known generated scene files.
-It proves the source preflight rejects surprises; it neither launches Unity
-nor validates real project contents on a Windows workstation.
+`.cs`, alternate `.unity`, allowed `.meta`, known generated scene, package
+manifest-like JSON, project setting, editor tool and linked core source files.
+It requires the preflight to reject every untracked code/configuration input
+outside the permitted Unity import outputs. This is **not a real Unity run**;
+it neither launches Unity nor validates real project contents on a Windows
+workstation.
 
 The manifest is local and can contain a machine-specific Unity installation
 path. Do not publish the raw log files or manifest without checking them for
