@@ -928,6 +928,35 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("RETURN TO CITY", guide)
         self.assertIn("desert", guide.lower())
 
+    def test_forged_desert_criminal_role_is_rejected_by_core_and_save_restore(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(encoding="utf-8")
+        tests = (ROOT / "game/Tests/Program.cs").read_text(encoding="utf-8")
+        save = read("PrototypeSaveStore.cs")
+        guide = (ROOT / "game/README.md").read_text(encoding="utf-8")
+
+        self.assertIn(
+            "initialZone == Zone.Desert && initialRole == PlayerRole.Criminal",
+            core,
+        )
+        self.assertIn("A criminal cannot start outside the city.", core)
+        self.assertIn(
+            "snapshot.Zone == Zone.Desert && snapshot.Role == PlayerRole.Criminal",
+            core,
+        )
+        self.assertIn("Save contains an unreachable desert criminal role.", core)
+        self.assertIn("CurrentRole = PlayerRole.Civilian;", core)
+        self.assertIn("RejectsUnreachableDesertCriminalRoles,", tests)
+        self.assertIn(
+            "new HeistSession(Zone.Desert, PlayerRole.Criminal)", tests
+        )
+        self.assertIn("forged.Role = PlayerRole.Criminal;", tests)
+        self.assertIn("Throws<ArgumentException>(() => HeistSession.FromSnapshot(forged))",
+                      tests)
+        self.assertIn("new HeistSession(Zone.Desert, PlayerRole.Police)", tests)
+        self.assertIn("HeistSession.FromSnapshot(checkpoint)", save)
+        self.assertIn("criminal", guide.lower())
+        self.assertIn("desert", guide.lower())
+
     def test_city_travel_rejects_active_heist_and_unreachable_desert_saves(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8")
