@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.IO;
 using System.Reflection;
 using NUnit.Framework;
 using Rabron.Reconstruction;
@@ -40,6 +41,33 @@ namespace Rabron.Prototype.Tests
             var director = UnityEngine.Object.FindFirstObjectByType<PrototypeDirector>();
             Assert.That(director, Is.Not.Null,
                         "PrototypeBoot did not instantiate the runtime director");
+
+            // The -runTests process must not reuse a previous run's save or
+            // ever read the developer's normal Editor/Windows demo checkpoint.
+            // Ordinary GUI play mode remains on the existing persistent path.
+            if (Array.Exists(Environment.GetCommandLineArgs(),
+                arg => string.Equals(arg, "-runTests",
+                                     StringComparison.OrdinalIgnoreCase)))
+            {
+                string testRoot = Path.GetFullPath(Path.Combine(
+                    Application.temporaryCachePath, "rabron-playmode-tests"))
+                    + Path.DirectorySeparatorChar;
+                string savePath = Path.GetFullPath(PrototypeSaveStore.SavePath);
+                Assert.That(savePath.StartsWith(testRoot,
+                    StringComparison.OrdinalIgnoreCase), Is.True,
+                    "Batch Unity tests must use the isolated temporary cache");
+                string invocationDirectory = Path.GetFileName(
+                    Path.GetDirectoryName(savePath));
+                Assert.That(Guid.TryParseExact(invocationDirectory, "N", out _),
+                            Is.True, "Batch save directory must be unique to the run");
+                Assert.That(Path.GetFullPath(PrototypeSaveStore.SavePath),
+                            Is.EqualTo(savePath),
+                            "Batch save path must stay stable within one run");
+                Assert.That(savePath, Is.Not.EqualTo(Path.GetFullPath(
+                    Path.Combine(Application.persistentDataPath,
+                                 "rabron-prototype-v1.json"))),
+                    "Batch Unity tests must never use normal player progress");
+            }
 
             var motor = UnityEngine.Object.FindFirstObjectByType<ThirdPersonMotor>();
             var camera = UnityEngine.Object.FindFirstObjectByType<Camera>();

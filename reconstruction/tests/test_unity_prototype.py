@@ -508,6 +508,27 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("BankBalance =", director)
         self.assertNotIn("DirtyCash =", director)
 
+    def test_batch_playmode_checkpoints_are_unique_per_editor_invocation(self):
+        store = read("PrototypeSaveStore.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # Each batch-mode test process must not inherit another invocation's
+        # arrest/courier checkpoint. Normal player saves are unchanged.
+        self.assertIn('TestInvocationId = Guid.NewGuid().ToString("N")', store)
+        self.assertIn('"rabron-playmode-tests", TestInvocationId,', store)
+        self.assertIn("Application.temporaryCachePath", store)
+        self.assertIn("Application.persistentDataPath, FileName", store)
+        self.assertIn('string.Equals(arg, "-runTests"', store)
+        self.assertIn("Path.Combine(Application.persistentDataPath, FileName)", store)
+        self.assertIn('Path.GetFullPath(PrototypeSaveStore.SavePath)', playmode)
+        self.assertIn('Guid.TryParseExact(invocationDirectory, "N"', playmode)
+        self.assertIn('"Batch save path must stay stable within one run"', playmode)
+        self.assertIn('"Batch Unity tests must never use normal player progress"', playmode)
+        self.assertIn("Application.temporaryCachePath", playmode)
+        self.assertIn("per-invocation", guide.lower())
+
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
         director = read("PrototypeDirector.cs")

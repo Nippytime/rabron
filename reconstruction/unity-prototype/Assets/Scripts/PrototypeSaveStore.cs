@@ -13,6 +13,13 @@ namespace Rabron.Prototype
     public static class PrototypeSaveStore
     {
         private const string FileName = "rabron-prototype-v1.json";
+#if UNITY_EDITOR
+        // A fixed test-cache path lets a later -runTests process reload stale
+        // arrests or courier jobs from an earlier NUnit execution. Generate one
+        // path per loaded Editor domain; all reads/writes within it stay stable.
+        // Normal gameplay never uses this identifier.
+        private static readonly string TestInvocationId = Guid.NewGuid().ToString("N");
+#endif
 
         public static string SavePath
         {
@@ -25,7 +32,8 @@ namespace Rabron.Prototype
                     arg => string.Equals(arg, "-runTests",
                                          StringComparison.OrdinalIgnoreCase)))
                     return Path.Combine(Application.temporaryCachePath,
-                                        "rabron-playmode-tests", FileName);
+                                        "rabron-playmode-tests", TestInvocationId,
+                                        FileName);
 #endif
                 return Path.Combine(Application.persistentDataPath, FileName);
             }
