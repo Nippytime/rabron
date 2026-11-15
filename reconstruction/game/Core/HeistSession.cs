@@ -40,6 +40,11 @@ namespace Rabron.Reconstruction
                 throw new ArgumentOutOfRangeException(nameof(initialZone));
             if (!Enum.IsDefined(typeof(PlayerRole), initialRole))
                 throw new ArgumentOutOfRangeException(nameof(initialRole));
+            // No legal transition can put a masked criminal in the desert:
+            // leaving the city always clears that role before zone travel.
+            if (initialZone == Zone.Desert && initialRole == PlayerRole.Criminal)
+                throw new ArgumentException(
+                    "A criminal cannot start outside the city.", nameof(initialRole));
 
             CurrentZone = initialZone;
             CurrentRole = initialRole;
@@ -340,6 +345,12 @@ namespace Rabron.Reconstruction
                 snapshot.Phase != HeistPhase.Scouted &&
                 snapshot.Phase != HeistPhase.Laundered)
                 throw new ArgumentException("Save contains an unreachable desert heist phase.", nameof(snapshot));
+
+            // City departure always clears criminal status; neither entering
+            // the desert nor a checkpoint can preserve a masked criminal.
+            if (snapshot.Zone == Zone.Desert && snapshot.Role == PlayerRole.Criminal)
+                throw new ArgumentException(
+                    "Save contains an unreachable desert criminal role.", nameof(snapshot));
 
             // Police may scout but cannot start a robbery in this state machine.
             // Reject unreachable later phases instead of loading a forged role.

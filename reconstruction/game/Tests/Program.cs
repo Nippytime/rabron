@@ -38,6 +38,7 @@ internal static class Program
             EmptyEscapeAndForgedCheckpointAreRejected,
             ActiveHeistsCannotLeaveCityOrForgeDesertSaves,
             IdleScoutedAndLaunderedCanTravelWithBalances,
+            RejectsUnreachableDesertCriminalRoles,
         };
 
         foreach (Action test in tests)
@@ -1019,6 +1020,67 @@ internal static class Program
         saved.EnterCity();
         saved.DepositCleanCash(60);
         Eq(60L, saved.BankBalance);
+    }
+
+    private static void RejectsUnreachableDesertCriminalRoles()
+    {
+        // No legitimate constructor or city-exit transition leaves a
+        // criminal outside the city. Other roles may still start there.
+        Throws<ArgumentException>(() =>
+            new HeistSession(Zone.Desert, PlayerRole.Criminal));
+        Eq(PlayerRole.Civilian, new HeistSession(Zone.Desert).CurrentRole);
+        Eq(PlayerRole.Police,
+            new HeistSession(Zone.Desert, PlayerRole.Police).CurrentRole);
+
+        var idle = new HeistSession();
+        idle.OpenBankAccount();
+        idle.PickUpCourierParcel();
+        idle.DeliverCourierParcel(25);
+        idle.DepositCleanCash(10);
+        idle.LeaveCity();
+
+        var scouted = new HeistSession();
+        scouted.Scout();
+        scouted.PutOnMask();
+        scouted.LeaveCity();
+
+        var finished = StartHeistWithOneItem();
+        finished.Escape();
+        finished.SellLoot(new Dictionary<string, long> { ["camera"] = 100 });
+        finished.CollectCounterCash();
+        finished.StartLaundering(100, 80, 1000, 10);
+        finished.CompleteLaundering(1010);
+        finished.LeaveCity();
+
+        foreach (HeistSession legal in new[] { idle, scouted, finished })
+        {
+            var original = legal.ExportSnapshot();
+            Eq(Zone.Desert, original.Zone);
+            Eq(PlayerRole.Civilian, original.Role);
+            var restored = HeistSession.FromSnapshot(original);
+            Eq(legal.Phase, restored.Phase);
+            Eq(legal.CleanCash, restored.CleanCash);
+            Eq(legal.BankBalance, restored.BankBalance);
+
+            // Forging the role on an otherwise legitimate v1 checkpoint
+            // must not enable a criminal to load into the desert.
+            var forged = legal.ExportSnapshot();
+            forged.Role = PlayerRole.Criminal;
+            Throws<ArgumentException>(() => HeistSession.FromSnapshot(forged));
+            Eq(PlayerRole.Civilian, legal.CurrentRole);
+            Eq(original.CleanCash, legal.CleanCash);
+            Eq(original.BankBalance, legal.BankBalance);
+        }
+
+        var police = new HeistSession(Zone.City, PlayerRole.Police);
+        police.Scout();
+        police.LeaveCity();
+        var policeRestored = HeistSession.FromSnapshot(police.ExportSnapshot());
+        Eq(Zone.Desert, policeRestored.CurrentZone);
+        Eq(PlayerRole.Police, policeRestored.CurrentRole);
+        Eq(HeistPhase.Scouted, policeRestored.Phase);
+        Eq(15L, idle.CleanCash);
+        Eq(10L, idle.BankBalance);
     }
 
     private static HeistSession StartHeistWithOneItem()
