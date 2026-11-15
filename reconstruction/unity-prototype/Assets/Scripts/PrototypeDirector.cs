@@ -224,8 +224,8 @@ namespace Rabron.Prototype
                 StationAction.OpenBank => city && civilian && !_session.BankAccountOpened,
                 StationAction.Deposit => city && civilian && _session.BankAccountOpened &&
                                          _session.CleanCash > 0,
-                StationAction.Reset => _session.Phase == HeistPhase.Laundered &&
-                                       _session.CurrentRole == PlayerRole.Civilian,
+                StationAction.Reset => city && civilian &&
+                                       _session.Phase == HeistPhase.Laundered,
                 _ => false,
             };
         }
@@ -314,6 +314,10 @@ namespace Rabron.Prototype
         {
             if (_player.IsDriving)
                 return "DRIVING: W/S or left stick throttle, A/D steer. Space/Y brake. Stop, then E/A to exit.";
+            // The desert is a transit checkpoint, not a second banking area.
+            // Show the nearby return marker before recommending city stations.
+            if (_session.CurrentZone == Zone.Desert)
+                return "OUTSIDE CITY: use the purple RETURN TO CITY marker nearby before banking or starting another heist.";
             return _session.Phase switch
             {
                 HeistPhase.Arrested
