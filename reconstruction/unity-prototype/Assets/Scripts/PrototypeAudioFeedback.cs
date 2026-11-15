@@ -15,6 +15,10 @@ namespace Rabron.Prototype
         private AudioClip _rejected = null!;
         private AudioClip _alarm = null!;
 
+        public bool CuesReady => _success != null && _success.samples > 0 &&
+            _rejected != null && _rejected.samples > 0 &&
+            _alarm != null && _alarm.samples > 0;
+
         private void Awake()
         {
             _output = GetComponent<AudioSource>();
