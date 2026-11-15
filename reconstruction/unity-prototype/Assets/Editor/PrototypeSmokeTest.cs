@@ -69,6 +69,10 @@ namespace Rabron.Prototype.Editor
                     new object[] { 0f, true, true, 0f });
                 float air = (float)integrate.Invoke(null,
                     new object[] { 0f, false, true, 0.1f });
+                float groundedNoJump = (float)integrate.Invoke(null,
+                    new object[] { launch, true, false, 0f });
+                Check(groundedNoJump < 0f,
+                      "Grounded motor cannot retain upward velocity without a jump");
                 Check(launch > 0f && air < 0f,
                       "Jump must require ground and never permit double jump");
                 Check((float)ceiling.Invoke(null,
