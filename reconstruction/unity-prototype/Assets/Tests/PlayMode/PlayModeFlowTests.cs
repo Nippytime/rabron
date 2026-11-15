@@ -20,6 +20,18 @@ namespace Rabron.Prototype.Tests
         private const BindingFlags PrivateInstance =
             BindingFlags.Instance | BindingFlags.NonPublic;
 
+        // The physical money starts inactive when the counter holds zero.
+        // Unity's active-only FindFirstObjectByType would miss it and fail
+        // the entire heist acceptance suite before payout is exercised.
+        private static CashPilePresenter FindCashPresenter()
+        {
+            var presenters = UnityEngine.Object.FindObjectsByType<CashPilePresenter>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            Assert.That(presenters.Length, Is.EqualTo(1),
+                        "Expected one physical cash presenter, even when hidden");
+            return presenters[0];
+        }
+
         [UnityTest]
         public IEnumerator SceneBootCreatesRuntimePlayerCameraHudAndStations()
         {
@@ -32,7 +44,7 @@ namespace Rabron.Prototype.Tests
             var motor = UnityEngine.Object.FindFirstObjectByType<ThirdPersonMotor>();
             var camera = UnityEngine.Object.FindFirstObjectByType<Camera>();
             var hud = UnityEngine.Object.FindFirstObjectByType<PrototypeHud>();
-            var cash = UnityEngine.Object.FindFirstObjectByType<CashPilePresenter>();
+            var cash = FindCashPresenter();
             var guard = UnityEngine.Object.FindFirstObjectByType<GuardSensor>();
             var stations = UnityEngine.Object.FindObjectsByType<InteractionMarker>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -93,6 +105,8 @@ namespace Rabron.Prototype.Tests
                         "Courier visual must not obstruct movement or interactions");
             var saved = (HeistSession)typeof(PrototypeDirector)
                 .GetField("_session", PrivateInstance).GetValue(director);
+            Assert.That(cash.IsVisible, Is.EqualTo(saved.CounterCash > 0L),
+                        "Physical counter cash visibility must match loaded checkpoint");
             Assert.That(parcel.IsVisible, Is.EqualTo(saved.CarryingCourierParcel));
             Assert.That(Application.isPlaying, Is.True);
         }
@@ -117,7 +131,7 @@ namespace Rabron.Prototype.Tests
 
             var original = (HeistSession)field.GetValue(director);
             var simulated = new HeistSession();
-            var cash = UnityEngine.Object.FindFirstObjectByType<CashPilePresenter>();
+            var cash = FindCashPresenter();
             Assert.That(cash, Is.Not.Null);
             var parcels = UnityEngine.Object.FindObjectsByType<CourierParcelPresenter>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None);
@@ -130,6 +144,13 @@ namespace Rabron.Prototype.Tests
             // collision-driven reachability and packaged EXE still need testing.
             try
             {
+                // Exercise discovery while the actual cash actor is inactive.
+                // Do not activate it to make the test pass.
+                cash.SetAmount(0);
+                Assert.That(cash.IsVisible, Is.False);
+                Assert.That(FindCashPresenter(), Is.SameAs(cash),
+                            "Hidden counter money must remain discoverable");
+
                 // The lawful civilian path must be actionable through the
                 // production world marker dispatcher, without a robbery.
                 var courier = new HeistSession();

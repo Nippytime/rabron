@@ -138,15 +138,20 @@ tests. These run **inside Unity** and are not simulated by the Python/.NET
 CI pipelines:
 
 - Runtime bootstrap: live director, player controller, camera, UI Toolkit
-  HUD, guard, cash presenter and 17 station markers
+  HUD, guard, cash presenter (including its intentionally inactive zero-cash
+  state) and 18 station markers
 - Full gameplay dispatcher: scout, mask, robbery, guard control, loot,
   escape, sell, physical counter pickup, laundering, city exit and return,
   bank deposit and next-heist reset
 
 The dispatcher test also checks courier pickup, no-payout return,
 parcel visibility on the player, save/restore, delivery and banking.
-Both paths call the production dispatcher directly via reflection,
-not synthetic keyboard input. Manual WASD/gamepad controls, live physics
+Both paths call the production dispatcher directly via reflection.
+The physical counter cash starts hidden at zero, so the Play Mode test
+discovers its presenter with Unity's include-inactive query and then checks
+the visible-on-fence/hidden-after-collection transitions without enabling
+the object merely for discovery. This behavior is **source-authored, not a
+completed Unity test run**. Manual WASD/gamepad controls, live physics
 reachability, visual presentation and the packaged Windows EXE still
 require a human playthrough.
 
