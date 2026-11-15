@@ -253,6 +253,7 @@ namespace Rabron.Prototype.Tests
             Assert.That(car, Is.Not.Null);
             var carPosition = car.transform.position;
             var carRotation = car.transform.rotation;
+            var exitBlockers = new GameObject[2];
             var simulated = new HeistSession();
             var cash = FindCashPresenter();
             Assert.That(cash, Is.Not.Null);
@@ -353,6 +354,32 @@ namespace Rabron.Prototype.Tests
                 car.Drive(Vector2.zero, true, 0.3f);
                 Assert.That(car.Speed, Is.EqualTo(0f).Within(0.001f),
                             "Brake must stop the car");
+
+                // These short solid obstacles reach the avatar's feet but
+                // end below the old +0.20m probe's first collision surface.
+                // Two blocked sides must refuse exit without altering role,
+                // carried money, vehicle occupancy or walking collision.
+                for (int side = 0; side < exitBlockers.Length; side++)
+                {
+                    var obstacle = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                    obstacle.name = "Synthetic ankle-height exit obstruction";
+                    obstacle.transform.position = car.transform.position +
+                        car.transform.right * (side == 0 ? 2.3f : -2.3f) +
+                        Vector3.up * 0.19f;
+                    obstacle.transform.localScale = new Vector3(0.7f, 0.18f, 0.7f);
+                    exitBlockers[side] = obstacle;
+                }
+                Physics.SyncTransforms();
+                Assert.That(motor.TryExitVehicle(), Is.False,
+                    "Full character capsule must reject ankle-height exit blockers");
+                Assert.That(motor.IsDriving && car.Occupied, Is.True);
+                Assert.That(motor.GetComponent<CharacterController>().enabled, Is.False);
+                Assert.That(driver.Phase, Is.EqualTo(HeistPhase.Idle));
+                Assert.That(driver.CleanCash, Is.EqualTo(0L));
+                foreach (var obstacle in exitBlockers)
+                    obstacle.GetComponent<Collider>().enabled = false;
+                Physics.SyncTransforms();
+
                 // Reproduce an on-foot heading mismatch before the safe exit.
                 // Returning to walking should inherit the car's heading,
                 // rather than snapping to an unrelated pre-drive view.
@@ -509,6 +536,14 @@ namespace Rabron.Prototype.Tests
             }
             finally
             {
+                foreach (var obstacle in exitBlockers)
+                {
+                    if (obstacle == null)
+                        continue;
+                    obstacle.GetComponent<Collider>().enabled = false;
+                    UnityEngine.Object.Destroy(obstacle);
+                }
+                Physics.SyncTransforms();
                 field.SetValue(director, original);
                 if (motor.IsDriving)
                     motor.TryExitVehicle();

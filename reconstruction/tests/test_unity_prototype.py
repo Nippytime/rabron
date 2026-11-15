@@ -779,6 +779,37 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("drive", guide.lower())
         self.assertIn("vehicle position", guide.lower())
 
+    def test_car_exit_checks_full_actual_passenger_capsule(self):
+        car = read("PrototypeVehicle.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # The old hardcoded +0.55m/+1.55m capsule missed ankle-height
+        # obstacles before the full-height on-foot collider was reenabled.
+        self.assertNotIn("candidate + Vector3.up * 0.55f", car)
+        self.assertNotIn("candidate + Vector3.up * 1.55f", car)
+        self.assertIn("passenger.GetComponent<CharacterController>()", car)
+        self.assertIn("passengerBody.radius", car)
+        self.assertIn("passengerBody.height", car)
+        self.assertIn("passengerBody.center", car)
+        self.assertIn("passengerBody.skinWidth", car)
+        self.assertIn("passenger.lossyScale", car)
+        self.assertIn("center - Vector3.up * halfAxis", car)
+        self.assertIn("center + Vector3.up * halfAxis", car)
+        self.assertIn("clearanceRadius, _exitHits", car)
+        self.assertIn("if (count == _exitHits.Length)", car)
+        self.assertIn("!hit.transform.IsChildOf(passenger)", car)
+
+        # These assertions are authored real-Unity Play Mode test source;
+        # hosted Python cannot claim collider execution or Windows acceptance.
+        self.assertIn("Synthetic ankle-height exit obstruction", playmode)
+        self.assertIn("Full character capsule must reject ankle-height exit blockers",
+                      playmode)
+        self.assertIn("motor.IsDriving && car.Occupied, Is.True", playmode)
+        self.assertIn("Stationary car must allow a collision-clear exit", playmode)
+        self.assertIn("ankle-height", guide)
+
     def test_driving_camera_look_stays_independent_of_vehicle_steering(self):
         motor = read("ThirdPersonMotor.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(

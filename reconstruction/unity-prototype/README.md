@@ -330,7 +330,11 @@ The boarding press is not also an exit press, regardless of Unity's
 component Update order; this protects against an immediate **same-frame**
 enter/exit input race. If both sides are blocked or the car is moving too
 quickly, exit is refused instead of placing the avatar inside a wall.
-No cash is paid for entering, driving or exiting.
+The exit clearance uses the walking avatar's **full CharacterController
+capsule**, including its lower section and skin-width margin, so ankle-height
+obstacles cannot be ignored by a high-only collision probe. If one side is
+clear the other may still be used. No cash is paid for entering, driving or
+exiting.
 
 This uses an invented, low-speed **CharacterController** car with a simple
 original cube body and wheels. It is not a professional wheel/suspension
