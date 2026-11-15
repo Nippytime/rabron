@@ -195,7 +195,7 @@ namespace Rabron.Prototype
             {
                 StationAction.VehicleEnter => city && civilian &&
                     _session.Phase == HeistPhase.Idle &&
-                    !_session.CarryingCourierParcel && !_player.IsDriving &&
+                    !_player.IsDriving &&
                     _vehicle != null && !_vehicle.Occupied,
                 StationAction.ReleaseCustody => city &&
                     _session.Phase == HeistPhase.Arrested &&

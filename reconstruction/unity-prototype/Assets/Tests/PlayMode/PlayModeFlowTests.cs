@@ -971,6 +971,31 @@ namespace Rabron.Prototype.Tests
                 update.Invoke(director, null);
                 Assert.That(parcel.IsVisible, Is.True,
                             "Parcel visibility must restore from saved cargo state");
+
+                // Lawful cargo should be deliverable by the existing practice
+                // car. Boarding must never cancel the delivery or mint pay.
+                Assert.That((bool)availableVehicle.Invoke(director,
+                    new object[] { StationAction.VehicleEnter }), Is.True,
+                    "Idle civilian with parcel must be allowed into the car");
+                Interact(StationAction.VehicleEnter);
+                Assert.That(motor.IsDriving && car.Occupied, Is.True);
+                Assert.That(courier.CarryingCourierParcel, Is.True,
+                    "Boarding must not silently return the carried parcel");
+                Assert.That(courier.CleanCash, Is.EqualTo(0L),
+                    "Boarding with cargo must not award delivery money");
+                Assert.That(parcel.GetComponent<Renderer>().enabled, Is.False,
+                    "Carried parcel renderer should be hidden while driving");
+                Assert.That((bool)availableVehicle.Invoke(director,
+                    new object[] { StationAction.VehicleEnter }), Is.False,
+                    "An occupied car cannot be entered again");
+                Assert.That(motor.TryExitVehicle(), Is.True,
+                    "Stopped courier car must allow safe exit");
+                Assert.That(motor.IsDriving || car.Occupied, Is.False);
+                Assert.That(parcel.GetComponent<Renderer>().enabled, Is.True,
+                    "Courier parcel renderer must restore after leaving car");
+                Assert.That(courier.CarryingCourierParcel, Is.True,
+                    "Cargo remains held after driving and exiting");
+                Assert.That(courier.CleanCash, Is.EqualTo(0L));
                 Interact(StationAction.CourierDropoff);
                 update.Invoke(director, null);
                 Assert.That(courier.CarryingCourierParcel, Is.False);
