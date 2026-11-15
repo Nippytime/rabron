@@ -389,9 +389,13 @@ enter/exit input race. If both sides are blocked or the car is moving too
 quickly, exit is refused instead of placing the avatar inside a wall.
 The exit clearance uses the walking avatar's **full CharacterController
 capsule**, including its lower section and skin-width margin, so ankle-height
-obstacles cannot be ignored by a high-only collision probe. If one side is
-clear the other may still be used. No cash is paid for entering, driving or
-exiting.
+obstacles cannot be ignored by a high-only collision probe. It also sweeps the
+full capsule from the parked car to each otherwise-clear landing point: a
+solid wall *between* the door and landing cannot be bypassed by teleporting
+through it. Nontrigger geometry blocks the swept path, both queries fail
+closed on overflow, and the car/driver themselves are ignored. If one side
+is blocked, the other may still be used. No cash is paid for entering,
+driving or exiting.
 
 This uses an invented, low-speed **CharacterController** car with a simple
 original cube body and wheels. It is not a professional wheel/suspension
