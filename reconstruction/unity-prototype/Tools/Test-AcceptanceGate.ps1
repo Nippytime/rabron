@@ -102,6 +102,27 @@ try {
     # Synthetic Git-based provenance tests: NO Unity executable is launched.
     $provenance = Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1'
     $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
+
+    # Use the real checkout HEAD; do not mutate branches or commits in CI.
+    $expectedHead = (& git -C $repoRoot rev-parse --verify HEAD)
+    if ($LASTEXITCODE -ne 0 -or $expectedHead -notmatch '^[0-9a-f]{40}$') {
+        throw 'Synthetic provenance test requires a valid Git HEAD.'
+    }
+    & $provenance -RepoRoot $repoRoot -ExpectedRevision $expectedHead | Out-Null
+    Write-Host 'PASS accepted: matching Unity acceptance Git HEAD'
+
+    $driftRejected = $false
+    try {
+        & $provenance -RepoRoot $repoRoot -ExpectedRevision ('0' * 40) | Out-Null
+    }
+    catch {
+        $driftRejected = $_.Exception.Message -like '*Git HEAD changed during Unity acceptance*'
+    }
+    if (-not $driftRejected) {
+        throw 'Mismatched Git HEAD did not fail provenance for the correct reason.'
+    }
+    Write-Host 'PASS rejected: changed Unity acceptance Git HEAD'
+
     $assets = Join-Path $repoRoot 'reconstruction/unity-prototype/Assets'
     $nonce = 'acceptance-provenance-' + [Guid]::NewGuid().ToString('N')
     $meta = Join-Path $assets ($nonce + '.meta')
