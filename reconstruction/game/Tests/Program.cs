@@ -661,6 +661,7 @@ internal static class Program
         Eq(40L, game.BankBalance);
         True(game.AlarmRaised);
         Throws<InvalidOperationException>(() => game.ArrestAfterAlarm());
+        Throws<InvalidOperationException>(() => game.LeaveCity());
         Throws<InvalidOperationException>(() => game.Escape());
         Throws<InvalidOperationException>(() => game.Scout());
 
