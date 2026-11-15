@@ -131,7 +131,7 @@ if ($null -eq $run -or $run.GetAttribute('result') -ne 'Passed') {
 }
 $testCount = [int]$run.GetAttribute('total')
 $passedCount = [int]$run.GetAttribute('passed')
-if ($testCount -lt 2 -or $testCount -ne $passedCount) {
+if ($testCount -lt 3 -or $testCount -ne $passedCount) {
     throw 'Play Mode test count is inconsistent with the required tests.'
 }
 
