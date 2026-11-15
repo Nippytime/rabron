@@ -97,8 +97,11 @@ Copy-Item -LiteralPath $smoke -Destination $editorLogCopy
 # The Editor intentionally generates its single bootstrap scene. It is not
 # Git-tracked; fingerprint the actual scene used by every subsequent gate.
 $sceneAtSmoke = File-Summary $scene
-& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
+$generatedInputs = @(& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') `
+    -RepoRoot $repoRoot -ExpectedRevision $revision -CaptureGeneratedInputs)
 & (Join-Path $PSScriptRoot 'Verify-PlayMode.ps1') -EditorPath $EditorPath
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') `
+    -RepoRoot $repoRoot -ExpectedRevision $revision -ExpectedGeneratedInputs $generatedInputs
 if ((File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256) {
     throw 'Generated Unity scene changed after the Editor smoke gate.'
 }
@@ -133,7 +136,8 @@ $dirtyAfter = @(& git -C $repoRoot status --porcelain --untracked-files=no -- re
 if ($LASTEXITCODE -ne 0 -or $dirtyAfter.Count -gt 0) {
     throw 'Unity modified tracked reconstruction files; review changes before acceptance.'
 }
-& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') `
+    -RepoRoot $repoRoot -ExpectedRevision $revision -ExpectedGeneratedInputs $generatedInputs
 if ((File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256) {
     throw 'Generated Unity scene changed after the Windows build gate.'
 }
@@ -153,6 +157,8 @@ $manifest = [ordered]@{
     schema_version = 1
     scope = 'local Windows Unity Editor, Play Mode, build and headless Player startup; manual gameplay not verified'
     git_revision = $revision
+    generated_inputs_fingerprinted_after_editor_smoke = $true
+    generated_untracked_inputs = @($generatedInputs)
     started_utc = $startedUtc.ToString('o')
     finished_utc = (Get-Date).ToUniversalTime().ToString('o')
     editor_executable = $EditorPath
