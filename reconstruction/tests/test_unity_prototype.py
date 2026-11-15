@@ -362,6 +362,42 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("station interactions", guide.lower())
         self.assertIn("not executed", guide.lower())
 
+    def test_real_guard_control_station_is_reachable_across_cover(self):
+        world = read("PrototypeWorld.cs")
+        director = read("PrototypeDirector.cs")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn('new Vector3(-1.3f, 0f, 31.9f)', world)
+        self.assertNotIn('new Vector3(3f, 0f, 34f)', world)
+        self.assertIn("private const float InteractionRadius = 3.8f;", director)
+        self.assertIn('"InteractionRadius", BindingFlags.Static', editor)
+        self.assertIn("radiusField.GetRawConstantValue()", editor)
+        self.assertIn('"Guard control must be inside the actual interaction radius"', editor)
+        self.assertIn('"Guard control must be the nearest station at test position"', editor)
+        self.assertIn("CheckControlInReach();", editor)
+        self.assertIn('new Vector3(-0.7f, 0.12f, 29.2f)', editor)
+        self.assertIn('new Vector3(-1.95f, 0.12f, 30.5f)', editor)
+
+        # A real Play Mode director uses its own station availability,
+        # distance and collision checks. Ray-only Editor checks are not enough.
+        self.assertIn('"FindNearbyStation", PrivateInstance', playmode)
+        self.assertIn("coverSession.StartHeist();", playmode)
+        self.assertIn('new Vector3(-0.7f, 0.12f, 29.2f)', playmode)
+        self.assertIn('"Control marker must win nearest-station selection"', playmode)
+        self.assertIn('updateCrouch.Invoke(motor, new object[] { true });', playmode)
+        self.assertIn('"Crouched player cannot select guard control through cover"', playmode)
+        self.assertIn('"Standing again must restore nearby guard-control focus"', playmode)
+        self.assertIn('"Walking around live cover must restore nearby station focus"', playmode)
+        self.assertIn("motor.WarpTo(originalPosition);", playmode)
+        self.assertIn("guard-control marker", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
     def test_alarm_is_single_shot_and_requires_uncontrolled_staff(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8"
