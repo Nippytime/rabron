@@ -157,11 +157,12 @@ def streamed_unityfs():
     """
     from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld
     from UnityPy.files import BundleFile, File, SerializedFile
+    from UnityPy.files.BundleFile import DirectoryInfoFS
     from UnityPy.helpers import ArchiveStorageManager, CompressionHelper, ImportHelper
     from UnityPy.streams import EndianBinaryReader
 
-    old_fs = BundleFile.BundleFile.read_fs
-    old_files = File.File.read_files
+    old_fs = BundleFile.read_fs
+    old_files = File.read_files
 
     def read_fs(self, reader):
         if self.signature != "UnityFS":
@@ -201,7 +202,7 @@ def streamed_unityfs():
         info.read_bytes(16)  # directory hash
         blocks = [CompressionHelper.BlockInfo.from_reader(info, self.version)
                   for _ in range(info.read_int())]
-        nodes = [BundleFile.DirectoryInfoFS(
+        nodes = [DirectoryInfoFS(
             info.read_long(), info.read_long(), info.read_u_int(),
             info.read_string_to_null()
         ) for _ in range(info.read_int())]
@@ -224,16 +225,16 @@ def streamed_unityfs():
             parsed = ImportHelper.parse_file(
                 sub_reader, self, node.path, is_dependency=self.is_dependency
             )
-            if isinstance(parsed, (EndianBinaryReader, SerializedFile.SerializedFile)):
+            if isinstance(parsed, (EndianBinaryReader, SerializedFile)):
                 if self.environment:
                     self.environment.register_cab(node.path, parsed)
             parsed.flags = getattr(node, "flags", 0)
             self.files[node.path] = parsed
 
-    BundleFile.BundleFile.read_fs = read_fs
-    File.File.read_files = read_files
+    BundleFile.read_fs = read_fs
+    File.read_files = read_files
     try:
         yield
     finally:
-        BundleFile.BundleFile.read_fs = old_fs
-        File.File.read_files = old_files
+        BundleFile.read_fs = old_fs
+        File.read_files = old_files
