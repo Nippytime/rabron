@@ -829,11 +829,8 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Phase == HeistPhase.Laundered", reset)
         self.assertIn("CounterCash == 0", reset)
         self.assertIn("_laundering == null && _loot.Count == 0", reset)
-        self.assertIn(
-            "StationAction.Reset => _session.Phase == HeistPhase.Laundered &&",
-            director,
-        )
-        self.assertIn("_session.CurrentRole == PlayerRole.Civilian", director)
+        self.assertIn("StationAction.Reset => city && civilian &&", director)
+        self.assertIn("_session.Phase == HeistPhase.Laundered,", director)
         self.assertIn("CompletedHeistRequiresCivilianCityReturnBeforeReset", tests)
         self.assertIn("Throws<InvalidOperationException>(() => game.BeginAnotherHeist())",
                       tests)
@@ -843,6 +840,34 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("10L, game.BankBalance", tests)
         self.assertIn("civilian", guide.lower())
         self.assertIn("city", core_guide.lower())
+
+    def test_desert_return_objective_and_next_heist_marker_are_city_gated(self):
+        director = read("PrototypeDirector.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(encoding="utf-8")
+
+        self.assertIn("StationAction.Reset => city && civilian &&", director)
+        self.assertIn("StationAction.EnterCity => !city,", director)
+        self.assertIn("StationAction.OpenBank => city && civilian", director)
+        self.assertIn("CurrentZone == Zone.City && CurrentRole == PlayerRole.Civilian", core)
+        self.assertIn(
+            'if (_session.CurrentZone == Zone.Desert)\\n'
+            '                return "OUTSIDE CITY: use the purple RETURN TO CITY marker nearby',
+            director.replace("\\r\\n", "\\n"),
+        )
+        self.assertLess(
+            director.index("if (_session.CurrentZone == Zone.Desert)"),
+            director.index("return _session.Phase switch"),
+        )
+        self.assertIn("Desert must never expose a next-heist marker", playmode)
+        self.assertIn("Return marker must remain available in the desert", playmode)
+        self.assertIn("City-only banking must not appear available", playmode)
+        self.assertIn("Desert objective must guide players", playmode)
+        self.assertIn("Civilian city return must reenable", playmode)
+        self.assertIn("RETURN TO CITY", guide)
+        self.assertIn("desert", guide.lower())
 
     def test_city_travel_rejects_active_heist_and_unreachable_desert_saves(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
