@@ -55,9 +55,14 @@ class SectorcenterCommonLfsTests(unittest.TestCase):
         self.assertEqual(common["monobehaviours_total"], 5)
         self.assertEqual(common["numeric_field_cap_records"], 0)
         self.assertIs(common["bounded_numeric_scan_complete"], True)
-        self.assertEqual([e["bundle"].rsplit("/", 1)[-1]
-                          for e in data["scans"] if e.get("unparsed_records", 0)],
-                         ["wwisedata_windows_battle_assets_all.bundle"])
+        unparsed = {
+            e["bundle"].rsplit("/", 1)[-1]: e["unparsed_records"]
+            for e in data["scans"] if e.get("unparsed_records", 0)
+        }
+        self.assertEqual(unparsed, {
+            "wwisedata_windows_battle_assets_all.bundle": 1,
+            "wwisedata_windows_assets_all.bundle": 1,
+        })
 
     def test_original_identity_and_exact_two_source_plan(self):
         self.assertEqual(len(TARGETS), 2)
