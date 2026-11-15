@@ -25,6 +25,7 @@ jobs:
           sparse-checkout: |
             reconstruction/
             .github/workflows/extract-gameplay-bundles.yml
+            .github/workflows/reconstruction-tests.yml
           sparse-checkout-cone-mode: false
       - name: Set up Python
         uses: actions/setup-python@v5
