@@ -103,87 +103,14 @@ try {
     $provenance = Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1'
     $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot '../../..')).Path
 
-    # Never mutate the checkout in CI: compare its real HEAD to an identical
-    # expected SHA, then a different but syntactically valid 40-hex SHA.
+    # Use the real checkout HEAD; do not mutate branches or commits in CI.
     $expectedHead = (& git -C $repoRoot rev-parse --verify HEAD)
-    if ($LASTEXITCODE -ne 0 -or $expectedHead -notmatch '^[0-9a-f]{40}
-    $nonce = 'acceptance-provenance-' + [Guid]::NewGuid().ToString('N')
-    $meta = Join-Path $assets ($nonce + '.meta')
-    $untrackedSource = Join-Path $assets ($nonce + '.cs')
-    $sceneFolder = Join-Path $assets 'Scenes'
-    $scene = Join-Path $sceneFolder 'Prototype.unity'
-    $alternate = Join-Path $sceneFolder ($nonce + '.unity')
-    $untrackedPackage = Join-Path $repoRoot (
-        'reconstruction/unity-prototype/Packages/' + $nonce + '.json')
-    $untrackedSettings = Join-Path $repoRoot (
-        'reconstruction/unity-prototype/ProjectSettings/' + $nonce + '.asset')
-    $untrackedTool = Join-Path $repoRoot (
-        'reconstruction/unity-prototype/Tools/' + $nonce + '.ps1')
-    $untrackedCore = Join-Path $repoRoot (
-        'reconstruction/game/Core/' + $nonce + '.cs')
-    $unexpectedInputs = @($untrackedSource, $alternate, $untrackedPackage,
-                          $untrackedSettings, $untrackedTool, $untrackedCore)
-    $createdScene = $false
-    $createdSceneFolder = $false
-
-    try {
-        & $provenance -RepoRoot $repoRoot | Out-Null
-
-        Set-Content -LiteralPath $meta -Value 'synthetic Unity import metadata'
-        & $provenance -RepoRoot $repoRoot | Out-Null
-
-        if (-not (Test-Path -LiteralPath $sceneFolder)) {
-            New-Item -ItemType Directory -Path $sceneFolder | Out-Null
-            $createdSceneFolder = $true
-        }
-        if (-not (Test-Path -LiteralPath $scene)) {
-            Set-Content -LiteralPath $scene -Value 'synthetic bootstrap scene'
-            $createdScene = $true
-        }
-        & $provenance -RepoRoot $repoRoot | Out-Null
-
-        # Test every untracked input that may change the real Editor import,
-        # tests or linked game core without changing the recorded Git HEAD.
-        foreach ($bad in $unexpectedInputs) {
-            Set-Content -LiteralPath $bad -Value 'synthetic untracked source'
-            $rejected = $false
-            try {
-                & $provenance -RepoRoot $repoRoot | Out-Null
-            }
-            catch {
-                $rejected = $true
-            }
-            Remove-Item -LiteralPath $bad -Force
-            if (-not $rejected) {
-                throw "Untracked authored Unity file was incorrectly accepted: $bad"
-            }
-        }
-
-        & $provenance -RepoRoot $repoRoot | Out-Null
-        Write-Host 'PASS rejected: untracked Assets, Packages, ProjectSettings, Tools and linked core; allowed generated metadata/bootstrap scene'
-    }
-    finally {
-        foreach ($file in @($meta) + $unexpectedInputs) {
-            if (Test-Path -LiteralPath $file) {
-                Remove-Item -LiteralPath $file -Force
-            }
-        }
-        if ($createdScene -and (Test-Path -LiteralPath $scene)) {
-            Remove-Item -LiteralPath $scene -Force
-        }
-        if ($createdSceneFolder) {
-            Remove-Item -LiteralPath $sceneFolder -Force -ErrorAction SilentlyContinue
-        }
-    }
-}
-finally {
-    Remove-Item -LiteralPath $temp -Recurse -Force
-}
-) {
-        throw 'Synthetic provenance test needs a real Git HEAD.'
+    if ($LASTEXITCODE -ne 0 -or $expectedHead -notmatch '^[0-9a-f]{40}$') {
+        throw 'Synthetic provenance test requires a valid Git HEAD.'
     }
     & $provenance -RepoRoot $repoRoot -ExpectedRevision $expectedHead | Out-Null
     Write-Host 'PASS accepted: matching Unity acceptance Git HEAD'
+
     $driftRejected = $false
     try {
         & $provenance -RepoRoot $repoRoot -ExpectedRevision ('0' * 40) | Out-Null
