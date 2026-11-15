@@ -166,9 +166,12 @@ namespace Rabron.Prototype
                     new Vector3(-3, 1.3f, 26), "#F2BD64");
             Station(parent, stations, StationAction.Watch, "Take watch",
                     new Vector3(3, 1.3f, 29), "#F2BD64");
+            // Close enough to approach from the front of the low cover:
+            // standing can reach over it, crouching must flank instead.
+            // Keep the station clear of the guard placeholder's trigger mesh.
             Station(parent, stations, StationAction.ControlStaff,
                     "Control guard without raising alarm",
-                    new Vector3(3f, 0f, 34f), "#D99BB5");
+                    new Vector3(-1.3f, 0f, 31.9f), "#D99BB5");
             Station(parent, stations, StationAction.Escape, "Escape with loot",
                     new Vector3(0, 0, 5), "#86C8A5");
             Station(parent, stations, StationAction.WithdrawEmptyHanded,
