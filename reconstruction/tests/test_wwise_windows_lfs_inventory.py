@@ -51,7 +51,7 @@ class WwiseWindowsLfsTests(unittest.TestCase):
         # Before original-byte CI the record is absent; after measured PR
         # update it must match exact source fingerprint and evidence tag.
         self.assertEqual(len(records), 1)
-        self.assertEqual(len(data["scans"]), 329)
+        self.assertEqual(len(data["scans"]), 330)
         for row in records:
             for key, expected in (
                 ("sha256", self.target["lfs_oid_sha256"]),

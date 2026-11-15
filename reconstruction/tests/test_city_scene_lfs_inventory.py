@@ -64,8 +64,8 @@ class CitySceneLfsTests(unittest.TestCase):
                    if x["bundle"] == self.target["bundle"]]
         # Before actual source CI it must be absent; afterward it must retain
         # exactly measured original SHA, source and incomplete numeric status.
-        self.assertIn(len(matches), (0, 1))
-        self.assertGreaterEqual(len(ledger["scans"]), 329)
+        self.assertEqual(len(matches), 1)
+        self.assertEqual(len(ledger["scans"]), 330)
         for item in matches:
             for key, expected in (
                 ("sha256", self.target["lfs_oid_sha256"]),
@@ -75,6 +75,28 @@ class CitySceneLfsTests(unittest.TestCase):
                 ("scan_evidence", AM_EVIDENCE),
             ):
                 self.assertEqual(item[key], expected)
+
+    def test_measured_city_object_and_bounded_numeric_counts(self):
+        ledger = json.loads((ROOT / "data/extraction_coverage.json").read_text())
+        record = next(x for x in ledger["scans"]
+                      if x["bundle"] == self.target["bundle"])
+        self.assertEqual(sum(record["objects_by_type"].values()), 366174)
+        self.assertEqual(record["objects_by_type"]["MonoBehaviour"], 14467)
+        self.assertEqual(record["objects_by_type"]["GameObject"], 97446)
+        self.assertEqual(record["objects_by_type"]["Transform"], 97437)
+        self.assertEqual(record["monobehaviours_total"], 14467)
+        self.assertEqual(record["monobehaviours_parsed"], 14467)
+        self.assertEqual(record["unparsed_records"], 0)
+        self.assertEqual(record["numeric_field_cap_records"], 5)
+        self.assertIs(record["bounded_numeric_scan_complete"], False)
+        self.assertEqual(record["candidate_field_counts"], {
+            "combat": 195, "economy": 133,
+            "progression": 144, "timing_and_world": 8201,
+        })
+        self.assertEqual(record["numeric_field_limit"], 2048)
+        self.assertEqual(record["numeric_depth_limit"], 32)
+        self.assertEqual(record["run_url"],
+                         "https://github.com/Nippytime/rabron/actions/runs/43675221667")
 
     def test_only_named_city_and_wwise_singletons_allowed(self):
         self.assertEqual(self.plan()["mode"], "new")

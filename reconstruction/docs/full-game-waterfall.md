@@ -569,6 +569,25 @@ in versioned data definitions, not scattered in MonoBehaviour scripts.
   A fresh exact-current-head full-original recheck and all CI are still
   required before a merge into `dev`.
 
+- W1-AM original standalone city scene LFS source was selectively fetched
+  and **verified against 549,566,135 full-original bytes** and exact Git LFS
+  SHA-256/UnityFS magic in [first real source scan #43675221667](https://github.com/Nippytime/rabron/actions/runs/43675221667).
+  All 3 plan/worker/strict-reconcile jobs succeeded. The bounded original
+  scanner counted **366,174 typed Unity object headers**, **14,467/14,467
+  parsed MonoBehaviours** (none unparsed), and **5 explicit numeric-field
+  caps**, so *bounded numeric extraction remains incomplete*. Numeric
+  candidate fields in bounded readable client metadata: combat **195**,
+  economy **133**, progression **144**, timing/world **8,201** (not recovered
+  authoritative server/game rules). Proposed original source-path coverage
+  becomes **330/330**, with **143,131 parsed MonoBehaviours**, **355 numeric
+  capped records** (**325 unresolved** under current recovery accounting),
+  and **2 separately unparsed older Wwise MonoBehaviours**. Source coverage
+  does NOT resolve existing caps/IL2CPP/server logic, media rights, Unity
+  Editor/Play Mode or Windows EXE requirements. See
+  reconstruction/docs/city-scene-lfs-source-audit.md.
+  Latest-head full-original `recheck`, complete green CI and postmerge `dev`
+  Python verification are still required.
+
 ### Exhaustive extraction checklist (the recovery gate)
 
 1. Freeze source inventory: git path, Git blob ID, declared LFS OID, file
