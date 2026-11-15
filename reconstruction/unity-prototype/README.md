@@ -342,6 +342,7 @@ its result can be claimed as verified.
 | Move | WASD | Left stick |
 | Look | Mouse | Right stick |
 | Sprint | Left Shift | Left-stick click |
+| Hold crouch (on foot) | Left Ctrl | Right-stick click |
 | Jump (grounded only) | Space | North face button (Y / Triangle) |
 | Interact at a highlighted pillar | E | South face button (A) |
 | Enter/exit the parked practice car | E (exit only when stopped) | South face button (A) |
@@ -359,9 +360,14 @@ does not require a mouse or a left click for camera movement.
 The independently authored motor uses a provisional jump height and gravity.
 Jumping requires ground contact and cancels upward velocity when the player
 hits a ceiling. The north-face gamepad button was selected to retain the
-existing south-face interact control. Air jumping, vaulting and crouching are
-not implemented. The movement and camera must still be manually validated
-in an actual Unity Editor and Windows build.
+existing south-face interact control. Hold **Left Ctrl / right-stick click**
+to crouch on foot with a shorter physical collision capsule, slower walking
+and a lower camera. Releasing crouch restores standing only when the upper
+capsule has enough nontrigger headroom; a low ceiling leaves the player
+crouched until a clear space is reached. Sprint cannot override crouched
+speed. Air jumping and vaulting are not implemented. The movement, crouch
+clearance and camera must still be manually validated in a real Unity Editor
+and Windows build.
 
 ## Original practice car (no vehicle economy)
 
