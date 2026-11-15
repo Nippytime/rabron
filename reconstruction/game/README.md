@@ -17,7 +17,10 @@ A pure C# 8 / .NET Standard 2.1 gameplay state machine covering this sequence:
    deadline**. The job only completes when the supplied time has elapsed.
 6. Exit the city to clear criminal status; return as a civilian to open a
    bank account and deposit cleaned cash.
-7. Start the next heist while preserving the remaining balances.
+7. Only **after returning to the city as a civilian**, reset the completed
+   heist cycle while preserving all remaining balances. Calling the core
+   reset as a criminal or while still in the desert is rejected without
+   changing money, alarms, role or phase.
 
 This implements a working rules **simulation**, with no 3D camera, UI,
 animation or multiplayer networking yet.
