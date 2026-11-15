@@ -30,6 +30,7 @@ internal static class Program
             ConstructorRejectsUnknownRolesAndZones,
             SnapshotRejectsUnreachablePoliceEconomy,
             LaunderingRejectsUnrestorableTimestamps,
+            LaunderingRejectsUnpayableCleanWalletCredits,
             CourierDeliveryPaysOnceAndDepositsCleanCash,
             CourierCargoPersistsAndRejectsUnreachableSaves,
             CourierDeliveryOverflowIsAtomic,
@@ -725,6 +726,68 @@ internal static class Program
         Throws<InvalidOperationException>(() => restored.CompleteLaundering(0));
         restored.CompleteLaundering(1);
         Eq(25L, restored.CleanCash);
+    }
+
+    private static void LaunderingRejectsUnpayableCleanWalletCredits()
+    {
+        // An otherwise legal job can be impossible to complete if the clean
+        // wallet is already near long.MaxValue. Reject BEFORE reserving dirty
+        // funds, rather than persisting an unfinishable Laundering phase.
+        var game = new HeistSession();
+        game.OpenBankAccount();
+        game.PickUpCourierParcel();
+        game.DeliverCourierParcel(long.MaxValue - 7);
+        game.DepositCleanCash(1); // Keep a separate real bank balance.
+        game.Scout();
+        game.PutOnMask();
+        game.StartHeist();
+        game.TakeLoot("capacity-fixture");
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["capacity-fixture"] = 20 });
+        game.CollectCounterCash();
+
+        Throws<InvalidOperationException>(() =>
+            game.StartLaundering(20, 8, 100, 2));
+        Eq(HeistPhase.DirtyCashCollected, game.Phase);
+        Eq(PlayerRole.Criminal, game.CurrentRole);
+        Eq(Zone.City, game.CurrentZone);
+        Eq(20L, game.DirtyCash);
+        Eq(0L, game.CounterCash);
+        Eq(long.MaxValue - 8, game.CleanCash);
+        Eq(1L, game.BankBalance);
+        True(!game.LaunderingReadyAt.HasValue);
+
+        // The rejected call must not poison the restorable checkpoint.
+        var preflight = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Eq(20L, preflight.DirtyCash);
+        Eq(long.MaxValue - 8, preflight.CleanCash);
+
+        // A smaller valid offer is still payable and survives a mid-job
+        // roundtrip; no money is lost or minted during the failed attempt.
+        game.StartLaundering(8, 8, 100, 2);
+        Eq(HeistPhase.Laundering, game.Phase);
+        Eq(12L, game.DirtyCash);
+        Eq(long.MaxValue - 8, game.CleanCash);
+
+        var forged = game.ExportSnapshot();
+        forged.CleanCash = long.MaxValue;
+        Throws<ArgumentException>(() => HeistSession.FromSnapshot(forged));
+        Eq(long.MaxValue - 8, game.CleanCash);
+        Eq(HeistPhase.Laundering, game.Phase);
+
+        var recovered = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Throws<InvalidOperationException>(() => recovered.CompleteLaundering(101));
+        recovered.CompleteLaundering(102);
+        Eq(HeistPhase.Laundered, recovered.Phase);
+        Eq(long.MaxValue, recovered.CleanCash);
+        Eq(12L, recovered.DirtyCash);
+        Eq(1L, recovered.BankBalance);
+        recovered.LeaveCity();
+        recovered.EnterCity();
+        recovered.BeginAnotherHeist();
+        Eq(HeistPhase.Idle, recovered.Phase);
+        Eq(long.MaxValue, recovered.CleanCash);
+        Eq(1L, recovered.BankBalance);
     }
 
     private static void CourierDeliveryPaysOnceAndDepositsCleanCash()
