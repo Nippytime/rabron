@@ -437,7 +437,9 @@ around the city.
    and bank balance remain intact. The game warps you to the simple
    **police custody** desk in the southern district. Interact with the
    **Leave police custody** marker to return as a civilian and restart.
-   Alternatively, evade the guard and collect one or both loot objects.
+   This needs a **new press of E / gamepad A after arrival**: an interaction
+   pressed before the automatic arrest cannot release custody on the same
+   frame. Alternatively, evade the guard and collect one or both loot objects.
 5. Leave the building; use the **Escape** pillar on the road **after
    collecting at least one loot item**. If you choose not to take anything,
    use the neighboring **Withdraw from heist without payment** pillar
