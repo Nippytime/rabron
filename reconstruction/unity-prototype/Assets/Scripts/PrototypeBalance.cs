@@ -24,7 +24,16 @@ namespace Rabron.Prototype
         {
             if (amount <= 0)
                 throw new ArgumentOutOfRangeException(nameof(amount));
-            return checked(amount * CleanPayoutPercent / 100);
+            if (CleanPayoutPercent < 0 || CleanPayoutPercent > 100)
+                throw new ArgumentOutOfRangeException(nameof(CleanPayoutPercent));
+
+            // Integer floor(amount * percent / 100) without multiplying
+            // the full 64-bit balance first. Each term fits because the
+            // validated percentage is between 0 and 100.
+            long whole = amount / 100;
+            long remainder = amount % 100;
+            return checked(whole * CleanPayoutPercent +
+                           remainder * CleanPayoutPercent / 100);
         }
     }
 }
