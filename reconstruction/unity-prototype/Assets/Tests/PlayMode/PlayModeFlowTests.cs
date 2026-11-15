@@ -65,11 +65,13 @@ namespace Rabron.Prototype.Tests
                 var hud = UnityEngine.Object.FindFirstObjectByType<PrototypeHud>();
                 Assert.That(hud, Is.Not.Null, "Actual runtime HUD must exist");
                 hud.Render(fresh, "Recover progress", "", message,
-                           PrototypeSaveStore.SavingDisabled);
+                           PrototypeSaveStore.SavingDisabled,
+                           PrototypeSaveStore.LastWriteFailed);
                 Assert.That(hud.SaveWarningVisible, Is.True,
                             "Blocked autosave must have a persistent HUD warning");
                 hud.Render(fresh, "Different activity", "", "",
-                           PrototypeSaveStore.SavingDisabled);
+                           PrototypeSaveStore.SavingDisabled,
+                           PrototypeSaveStore.LastWriteFailed);
                 Assert.That(hud.SaveWarningVisible, Is.True,
                             "Temporary notices must not clear the unsaved-session warning");
                 Assert.That(PrototypeSaveStore.TrySave(fresh, out string error),
@@ -89,14 +91,64 @@ namespace Rabron.Prototype.Tests
                 Assert.That(recovered.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(PrototypeSaveStore.SavingDisabled, Is.False);
                 hud.Render(recovered, "Delivery available", "", "",
-                           PrototypeSaveStore.SavingDisabled);
+                           PrototypeSaveStore.SavingDisabled,
+                           PrototypeSaveStore.LastWriteFailed);
                 Assert.That(hud.SaveWarningVisible, Is.False,
                             "Valid backup recovery must clear the persistent warning");
                 Assert.That(PrototypeSaveStore.TrySave(recovered, out string saveError),
                             Is.True, saveError);
+
+                // Reproduce a normal file write failure without touching an
+                // actual player's save or relying on machine permissions:
+                // an existing directory at the atomic .tmp path refuses
+                // File.WriteAllText on Windows and Linux alike.
+                byte[] previousCheckpoint = File.ReadAllBytes(primary);
+                Assert.That(File.Exists(temporary) || Directory.Exists(temporary),
+                            Is.False, "The isolated .tmp fixture must start clear");
+                Directory.CreateDirectory(temporary);
+                var pending = new HeistSession();
+                pending.PickUpCourierParcel();
+                Assert.That(PrototypeSaveStore.TrySave(pending, out string writeError),
+                            Is.False, "Directory occupying .tmp must reject disk writes");
+                Assert.That(writeError, Is.Not.Empty);
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.False,
+                            "Transient write errors must not trigger corruption lockout");
+                Assert.That(PrototypeSaveStore.LastWriteFailed, Is.True);
+                Assert.That(File.ReadAllBytes(primary), Is.EqualTo(previousCheckpoint),
+                            "A failed write must preserve the prior valid checkpoint");
+
+                hud.Render(pending, "Delivery started", "", "Save failed",
+                           PrototypeSaveStore.SavingDisabled,
+                           PrototypeSaveStore.LastWriteFailed);
+                Assert.That(hud.SaveWarningVisible, Is.True,
+                            "A failed disk write must retain a persistent warning");
+                var warning = (Label)typeof(PrototypeHud)
+                    .GetField("_saveWarning", PrivateInstance).GetValue(hud);
+                Assert.That(warning.text, Does.Contain("LAST SAVE FAILED"));
+                hud.Render(pending, "Delivery in progress", "", "Other notice",
+                           PrototypeSaveStore.SavingDisabled,
+                           PrototypeSaveStore.LastWriteFailed);
+                Assert.That(hud.SaveWarningVisible, Is.True,
+                            "A different notice must not hide unsaved progress");
+
+                Directory.Delete(temporary);
+                Assert.That(PrototypeSaveStore.TrySave(pending, out string retryError),
+                            Is.True, retryError);
+                Assert.That(PrototypeSaveStore.LastWriteFailed, Is.False,
+                            "Only a successful write clears the transient warning");
+                hud.Render(pending, "Delivery in progress", "", "",
+                           PrototypeSaveStore.SavingDisabled,
+                           PrototypeSaveStore.LastWriteFailed);
+                Assert.That(hud.SaveWarningVisible, Is.False,
+                            "A confirmed checkpoint should clear the write-error banner");
+                Assert.That(PrototypeSaveStore.Load(out _).CarryingCourierParcel, Is.True,
+                            "Successful retry must durably save the pending courier parcel");
             }
             finally
             {
+                // .tmp can be a deliberately blocking directory in this test.
+                if (Directory.Exists(temporary))
+                    Directory.Delete(temporary, recursive: true);
                 Restore(primary, originalPrimary);
                 Restore(backup, originalBackup);
                 Restore(temporary, originalTemporary);
