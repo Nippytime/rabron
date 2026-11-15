@@ -352,6 +352,17 @@ of destroying those bytes; the existing persistent write-error warning
 remains active until a successful save. These filesystem cases are covered
 by an authored isolated Unity Play Mode regression, **not executed** by
 hosted CI. Preserve quarantine files when collecting local recovery data.
+
+A primary may also become corrupted **after a successful Load** while the
+game remains open. The next autosave revalidates the committed primary before
+writing any staged checkpoint or rotating the backup. If it is unreadable,
+saving is disabled for the rest of the session: the damaged primary and
+previous valid backup remain byte-for-byte untouched, and the persistent HUD
+warning appears. Copy the files before restarting; a subsequent explicit Load
+may recover the backup, quarantine the newly damaged primary and re-enable
+saving. This regression is authored in the isolated Unity Play Mode test but
+**not executed** by hosted Python/.NET CI.
+
 If **both** save and backup are unreadable, the demo starts a fresh in-memory
 session but **autosave is disabled** to avoid overwriting the damaged files.
 Copy or move the save and backup files to a safe location, then restart the

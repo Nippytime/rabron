@@ -52,6 +52,7 @@ namespace Rabron.Prototype.Tests
             string retainedDamagedPrimary = null;
             string retainedStagedCheckpoint = null;
             string retainedDamagedBackup = null;
+            string retainedLiveDamagedPrimary = null;
 
             try
             {
@@ -224,6 +225,49 @@ namespace Rabron.Prototype.Tests
                             Is.EqualTo(uncommittedBytes),
                     "Backup rotation must not destroy older uncommitted stage evidence");
 
+                // Corruption AFTER a valid Load must not be rotated over the
+                // last good backup. All original bytes survive the rejected
+                // autosave, and only a deliberate Load may recover from .bak.
+                var loadedBeforeDamage = PrototypeSaveStore.Load(out _);
+                byte[] lastGoodBackup = File.ReadAllBytes(backup);
+                File.WriteAllText(primary, "{primary corrupted during live session");
+                byte[] liveBrokenPrimary = File.ReadAllBytes(primary);
+                Assert.That(PrototypeSaveStore.TrySave(loadedBeforeDamage,
+                            out string liveError), Is.False,
+                            "Live primary corruption must reject rotation");
+                Assert.That(liveError, Does.Contain("unreadable"));
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.True,
+                            "Further autosaves must be blocked until recovery");
+                Assert.That(PrototypeSaveStore.LastWriteFailed, Is.True);
+                Assert.That(File.ReadAllBytes(primary), Is.EqualTo(liveBrokenPrimary),
+                            "Rejected autosave must retain the new corrupt primary bytes");
+                Assert.That(File.ReadAllBytes(backup), Is.EqualTo(lastGoodBackup),
+                            "Rejected autosave must preserve the last good backup");
+                Assert.That(File.Exists(temporary), Is.False,
+                            "Rejection must precede writing a new staging checkpoint");
+                Assert.That(PrototypeSaveStore.TrySave(loadedBeforeDamage, out _),
+                            Is.False, "Corruption lockout must reject retries");
+
+                var restoredAfterLiveDamage =
+                    PrototypeSaveStore.Load(out string liveRecoveryMessage);
+                Assert.That(liveRecoveryMessage, Does.Contain("recovered"));
+                Assert.That(PrototypeSaveStore.SavingDisabled, Is.False);
+                string[] allDamagedPrimaries = Directory.GetFiles(
+                    Path.GetDirectoryName(primary),
+                    Path.GetFileName(primary) + ".corrupt-*");
+                Assert.That(allDamagedPrimaries.Length, Is.EqualTo(2),
+                            "Each distinct corrupt primary must have its own quarantine");
+                retainedLiveDamagedPrimary = Array.Find(allDamagedPrimaries,
+                    path => path != retainedDamagedPrimary);
+                Assert.That(retainedLiveDamagedPrimary, Is.Not.Null);
+                Assert.That(File.ReadAllBytes(retainedLiveDamagedPrimary),
+                            Is.EqualTo(liveBrokenPrimary),
+                            "Recovery must quarantine the late-corrupted primary unchanged");
+                Assert.That(PrototypeSaveStore.TrySave(restoredAfterLiveDamage,
+                            out string restoredError), Is.True, restoredError);
+                Assert.That(PrototypeSaveStore.LastWriteFailed, Is.False,
+                            "Successful recovery and save must restore write capability");
+
                 // Reproduce a normal file write failure without touching an
                 // actual player's save or relying on machine permissions:
                 // an existing directory at the atomic .tmp path refuses
@@ -351,6 +395,8 @@ namespace Rabron.Prototype.Tests
                     File.Delete(retainedStagedCheckpoint);
                 if (retainedDamagedBackup != null && File.Exists(retainedDamagedBackup))
                     File.Delete(retainedDamagedBackup);
+                if (retainedLiveDamagedPrimary != null && File.Exists(retainedLiveDamagedPrimary))
+                    File.Delete(retainedLiveDamagedPrimary);
                 // Do not leave a global write block affecting other tests.
                 PrototypeSaveStore.Load(out _);
             }

@@ -1221,6 +1221,33 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("unreadable backup", guide.lower())
         self.assertIn("not executed", guide.lower())
 
+    def test_live_primary_corruption_cannot_rotate_over_valid_backup(self):
+        store = read("PrototypeSaveStore.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        saving = store.split("public static bool TrySave(", 1)[1].split(
+            "private static bool TryRead(", 1
+        )[0]
+        guard = "File.Exists(target) && !TryRead(target, out _)"
+        self.assertIn(guard, saving)
+        self.assertLess(saving.index(guard), saving.index("if (File.Exists(temporary))"))
+        self.assertLess(saving.index(guard), saving.index("File.Replace(temporary, target"))
+        self.assertIn("_preserveUnreadableSaves = true;", saving)
+        self.assertIn("throw new InvalidDataException(", saving)
+        self.assertIn("LastWriteFailed = true;", saving)
+        self.assertIn("liveBrokenPrimary = File.ReadAllBytes(primary)", playmode)
+        self.assertIn("lastGoodBackup = File.ReadAllBytes(backup)", playmode)
+        self.assertIn("Is.EqualTo(liveBrokenPrimary)", playmode)
+        self.assertIn("Is.EqualTo(lastGoodBackup)", playmode)
+        self.assertIn("PrototypeSaveStore.SavingDisabled, Is.True", playmode)
+        self.assertIn("retainedLiveDamagedPrimary", playmode)
+        self.assertIn("File.Delete(retainedLiveDamagedPrimary)", playmode)
+        self.assertIn("restoredAfterLiveDamage", playmode)
+        self.assertIn("after a successful load", guide.lower())
+        self.assertIn("not executed", guide.lower())
+
     def test_unsaved_checkpoint_warning_remains_visible_in_live_hud(self):
         store = read("PrototypeSaveStore.cs")
         director = read("PrototypeDirector.cs")
