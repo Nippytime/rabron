@@ -150,6 +150,45 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("overflow-safe", guide.lower())
         self.assertIn("not yet", guide.lower())
 
+    def test_laundering_jobs_cannot_overflow_clean_cash_on_completion(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8"
+        )
+        tests = (ROOT / "game/Tests/Program.cs").read_text(
+            encoding="utf-8"
+        )
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (ROOT / "game/README.md").read_text(encoding="utf-8")
+
+        starting = core.split("public void StartLaundering(", 1)[1].split(
+            "public void CompleteLaundering(", 1
+        )[0]
+        restoring = core.split(
+            "public static HeistSession FromSnapshot(", 1
+        )[1].split("private static void Require(", 1)[0]
+        self.assertIn(
+            "Require(cleanPayout <= long.MaxValue - CleanCash,", starting
+        )
+        self.assertLess(
+            starting.index("cleanPayout <= long.MaxValue - CleanCash"),
+            starting.index("DirtyCash -= dirtyAmount;"),
+        )
+        self.assertIn(
+            "snapshot.LaunderingPayout > long.MaxValue - snapshot.CleanCash",
+            restoring,
+        )
+        self.assertIn("Save contains an unpayable laundering job.", restoring)
+        self.assertIn("LaunderingRejectsUnpayableCleanWalletCredits,", tests)
+        self.assertIn("game.StartLaundering(20, 9, 100, 2)", tests)
+        self.assertIn("game.StartLaundering(8, 8, 100, 2)", tests)
+        self.assertIn("forged.CleanCash = long.MaxValue;", tests)
+        self.assertIn("ValidateLaunderingCapacity();", smoke)
+        self.assertIn("JsonUtility.FromJson<HeistSessionSnapshot>", smoke)
+        self.assertIn("Unpayable laundering must not debit dirty cash", smoke)
+        self.assertIn("unpayable", guide.lower())
+
     def test_fence_cash_is_physical_but_only_session_credits_money(self):
         world = read("PrototypeWorld.cs")
         director = read("PrototypeDirector.cs")
