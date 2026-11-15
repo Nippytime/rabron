@@ -540,6 +540,29 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("BankBalance =", director)
         self.assertNotIn("DirtyCash =", director)
 
+    def test_unreadable_primary_and_backup_are_not_overwritten(self):
+        store = read("PrototypeSaveStore.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("private static bool _preserveUnreadableSaves;", store)
+        self.assertIn("_preserveUnreadableSaves = false;", store)
+        self.assertIn("_preserveUnreadableSaves = File.Exists(primary) || File.Exists(backup);", store)
+        self.assertIn("if (_preserveUnreadableSaves)", store)
+        self.assertIn("Autosave disabled to preserve unreadable checkpoints.", store)
+        self.assertIn("copy or move the existing save and backup files", store)
+        self.assertIn('File.Copy(backup, primary, overwrite: true)', store)
+        self.assertIn('File.Replace(temporary, target, target + ".bak")', store)
+        self.assertIn("public void UnreadableCheckpointsMustSurviveLaterAutosaves()", playmode)
+        self.assertIn('"-runTests"', playmode)
+        self.assertIn("File.ReadAllBytes(primary), Is.EqualTo(brokenPrimary)", playmode)
+        self.assertIn("File.ReadAllBytes(backup), Is.EqualTo(brokenBackup)", playmode)
+        self.assertIn('"Auto-save must fail closed on corruption"', playmode)
+        self.assertIn("PrototypeSaveStore.Load(out _);", playmode)
+        self.assertIn("move the save", guide.lower())
+        self.assertIn("autosave", guide.lower())
+
     def test_batch_playmode_checkpoints_are_unique_per_editor_invocation(self):
         store = read("PrototypeSaveStore.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(

@@ -147,8 +147,9 @@ Windows EXE—remain required before closing playable acceptance issue #9.
 
 ## Real Unity Play Mode acceptance (Windows)
 
-The prototype now includes two Unity Test Framework Play Mode acceptance
-tests. These run **inside Unity** and are not simulated by the Python/.NET
+The prototype now includes three Unity Test Framework Play Mode acceptance
+tests (two gameplay paths and one isolated save-recovery regression). They
+run **inside Unity** and are not simulated by the Python/.NET
 CI pipelines:
 
 - Runtime bootstrap: live director, player controller, camera, UI Toolkit
@@ -232,6 +233,14 @@ The app saves via a temporary file and replacement, preserving the earlier
 version on each completed write. It validates restored roles, stages, loot,
 balances, and any pending laundering payout/deadline; corrupt or unsupported
 checkpoints are rejected, with a previous valid backup used if available.
+If **both** save and backup are unreadable, the demo starts a fresh in-memory
+session but **autosave is disabled** to avoid overwriting the damaged files.
+Copy or move the save and backup files to a safe location, then restart the
+game to enable a new checkpoint; do not continue expecting this temporary
+session to be saved. If a good backup is loaded but cannot be copied back to
+the primary path, saves are also paused so the remaining valid backup is
+not overwritten. The HUD reports the save failure rather than silently
+discarding potential recovery data.
 No game binaries or personal account credentials are stored.
 
 To start a clean demo, **close Play Mode/the game**, then remove both
@@ -241,6 +250,12 @@ checkpoint**, not the original game's server save, multiplayer account,
 seven-day wipe, or protected bank ledger. Only gameplay state is saved;
 the character respawns at the city start (or the desert return marker
 when outside the city), not at the previous exact coordinate.
+
+The batch-only Unity Play Mode test writes intentionally invalid checkpoint
+files **inside the isolated per-invocation test directory**, confirms that
+subsequent autosave does not alter either file, and checks that a valid backup
+can be loaded and saved again. It skips GUI test sessions to avoid touching
+normal player saves; actual Unity execution is still required.
 
 The Unity Editor smoke test additionally exercises real \`JsonUtility\`
 roundtrips for collectible counter cash and an in-progress laundering
