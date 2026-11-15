@@ -185,11 +185,17 @@ fingerprint the machine's Unity-generated scene, settings or installed packages.
 No original game resources are copied into the manifest.
 
 A prior acceptance manifest is **deleted before every attempt**, including
-a failed attempt. If Unity modifies tracked source or settings while importing,
-inspect and commit those changes, rerun from a clean revision, and do not
-treat the failed attempt as accepted. The separate synthetic gate test in
-GitHub Actions only proves rejection of a missing Unity installation and
-stale green manifest; it **does not run any Unity test**.
+a failed attempt. The Git HEAD captured at the start is checked again at the
+source-provenance boundaries before Editor smoke, after the Editor smoke, and
+after the Windows build/Player run. A changed Git HEAD **rejects local Unity
+acceptance** even if the newly checked-out tree is clean: the manifest must
+never attribute one revision's work to another. If Unity modifies tracked
+source or settings while importing, inspect and commit those changes, rerun
+from a clean revision, and do not treat the failed attempt as accepted.
+The synthetic CI gate verifies acceptance of the actual matching Git HEAD
+and rejection of a deliberately mismatched 40-character SHA, **without
+changing branches or launching Unity**. It also rejects a missing Unity
+installation and stale green manifest; this is **not a real Unity run**.
 
 The synthetic provenance test in CI creates/removes temporary dummy
 `.cs`, alternate `.unity`, allowed `.meta`, known generated scene, package
