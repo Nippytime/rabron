@@ -66,7 +66,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertEqual(enum_cases, dispatch)
         self.assertEqual(enum_cases, available)
         self.assertEqual(enum_cases, placed)
-        self.assertEqual(len(enum_cases), 19)
+        self.assertEqual(len(enum_cases), 20)
 
     def test_play_mode_bootstrap_and_editor_scene(self):
         boot = read("PrototypeBoot.cs")
@@ -305,7 +305,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("StationAction.Deposit", tests)
         self.assertIn("Is.EqualTo(HeistPhase.Idle)", tests)
         self.assertIn("field.SetValue(director, original)", tests)
-        self.assertIn("Is.EqualTo(19)", tests)
+        self.assertIn("Is.EqualTo(20)", tests)
 
         self.assertIn("'-runTests'", runner)
         self.assertIn("'-testPlatform', 'PlayMode'", runner)
@@ -349,7 +349,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("snapshot.CarryingCourierParcel", core)
         self.assertIn("StationAction.CourierPickup", world)
         self.assertIn("StationAction.CourierDropoff", world)
-        self.assertIn("new List<InteractionMarker>(19)", world)
+        self.assertIn("new List<InteractionMarker>(20)", world)
         self.assertIn("_session.PickUpCourierParcel()", director)
         self.assertIn("_session.DeliverCourierParcel(_balance.CourierReward)", director)
         self.assertIn("public int CourierReward = 35", balance)
@@ -527,7 +527,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Phase != HeistPhase.Arrested", core)
         self.assertIn("ReleaseCustody", marker)
         self.assertIn("StationAction.ReleaseCustody", world)
-        self.assertIn('new List<InteractionMarker>(19)', world)
+        self.assertIn('new List<InteractionMarker>(20)', world)
         self.assertIn("_session.ArrestAfterAlarm();", director)
         self.assertIn("_session.ReleaseFromCustody();", director)
         self.assertIn("_guard.CanSee(_player.transform)", director)
@@ -560,6 +560,36 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn('"Batch Unity tests must never use normal player progress"', playmode)
         self.assertIn("Application.temporaryCachePath", playmode)
         self.assertIn("per-invocation", guide.lower())
+
+    def test_empty_heist_withdrawal_has_no_cash_faucet_or_stuck_escape(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8")
+        world = read("PrototypeWorld.cs")
+        director = read("PrototypeDirector.cs")
+        marker = read("InteractionMarker.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("public void WithdrawEmptyHanded()", core)
+        self.assertIn("Phase == HeistPhase.Robbing && _loot.Count == 0", core)
+        self.assertIn("Phase == HeistPhase.Robbing && _loot.Count > 0", core)
+        self.assertIn("snapshot.Phase != HeistPhase.Escaped || loot.Length > 0", core)
+        self.assertIn("StationAction.WithdrawEmptyHanded", director)
+        self.assertIn("_session.WithdrawEmptyHanded();", director)
+        self.assertIn("_session.Loot.Count == 0", director)
+        self.assertIn("WithdrawEmptyHanded", marker)
+        self.assertIn("new List<InteractionMarker>(20)", world)
+        self.assertIn('StationAction.WithdrawEmptyHanded,', world)
+        self.assertIn("WITHDRAW", director)
+        self.assertIn("retreat.WithdrawEmptyHanded();", editor)
+        self.assertIn("Interact(StationAction.WithdrawEmptyHanded)", playmode)
+        self.assertIn("StationAction.Escape }), Is.False", playmode)
+        self.assertIn("no reward", guide.lower())
+        self.assertNotIn("DirtyCash =", director)
+        self.assertNotIn("CounterCash =", director)
 
     def test_controls_and_game_logic_are_not_duplicated(self):
         motor = read("ThirdPersonMotor.cs")
