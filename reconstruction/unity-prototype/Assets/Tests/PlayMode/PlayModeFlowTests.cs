@@ -45,7 +45,14 @@ namespace Rabron.Prototype.Tests
                         Is.GreaterThan(0), "HUD labels were not attached");
             Assert.That(guard, Is.Not.Null, "No guard sensor in runtime scene");
             Assert.That(cash, Is.Not.Null, "No collectible physical counter money");
-            Assert.That(stations.Length, Is.EqualTo(17));
+            Assert.That(stations.Length, Is.EqualTo(18));
+            var parcel = motor.GetComponentInChildren<CourierParcelPresenter>(true);
+            Assert.That(parcel, Is.Not.Null, "No physical courier cargo visual");
+            Assert.That(parcel.GetComponent<Collider>().enabled, Is.False,
+                        "Courier visual must not obstruct movement or interactions");
+            var saved = (HeistSession)typeof(PrototypeDirector)
+                .GetField("_session", PrivateInstance).GetValue(director);
+            Assert.That(parcel.IsVisible, Is.EqualTo(saved.CarryingCourierParcel));
             Assert.That(Application.isPlaying, Is.True);
         }
 
@@ -71,6 +78,10 @@ namespace Rabron.Prototype.Tests
             var simulated = new HeistSession();
             var cash = UnityEngine.Object.FindFirstObjectByType<CashPilePresenter>();
             Assert.That(cash, Is.Not.Null);
+            var parcels = UnityEngine.Object.FindObjectsByType<CourierParcelPresenter>(
+                FindObjectsInactive.Include, FindObjectsSortMode.None);
+            Assert.That(parcels.Length, Is.EqualTo(1));
+            var parcel = parcels[0];
             long now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             // Direct dispatcher calls deliberately avoid modifying existing
@@ -83,11 +94,29 @@ namespace Rabron.Prototype.Tests
                 var courier = new HeistSession();
                 field.SetValue(director, courier);
                 Interact(StationAction.CourierPickup);
+                update.Invoke(director, null);
                 Assert.That(courier.CarryingCourierParcel, Is.True);
+                Assert.That(parcel.IsVisible, Is.True,
+                            "Carried parcel should appear on the player");
+
+                Interact(StationAction.CourierCancel);
+                update.Invoke(director, null);
+                Assert.That(courier.CarryingCourierParcel, Is.False);
+                Assert.That(courier.CleanCash, Is.EqualTo(0L),
+                            "Returning a parcel must never pay currency");
+                Assert.That(parcel.IsVisible, Is.False,
+                            "Returned parcel should disappear from player");
+
+                Interact(StationAction.CourierPickup);
                 courier = HeistSession.FromSnapshot(courier.ExportSnapshot());
                 field.SetValue(director, courier);
+                update.Invoke(director, null);
+                Assert.That(parcel.IsVisible, Is.True,
+                            "Parcel visibility must restore from saved cargo state");
                 Interact(StationAction.CourierDropoff);
+                update.Invoke(director, null);
                 Assert.That(courier.CarryingCourierParcel, Is.False);
+                Assert.That(parcel.IsVisible, Is.False);
                 Assert.That(courier.CleanCash, Is.GreaterThan(0L));
                 Assert.That(courier.DirtyCash, Is.EqualTo(0L));
                 Interact(StationAction.OpenBank);
@@ -142,6 +171,7 @@ namespace Rabron.Prototype.Tests
             {
                 field.SetValue(director, original);
                 cash.SetAmount(original.CounterCash);
+                parcel.SetCarrying(original.CarryingCourierParcel);
             }
 
             void Interact(StationAction action)
