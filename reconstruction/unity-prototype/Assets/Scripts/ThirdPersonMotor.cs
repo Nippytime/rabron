@@ -134,10 +134,10 @@ namespace Rabron.Prototype
         {
             if (grounded)
             {
-                if (velocity < 0f)
-                    velocity = -2f;
-                if (jumpPressed)
-                    velocity = Mathf.Sqrt(2f * DemoGravity * DemoJumpHeight);
+                // Reset old ascent when touching ground; a held button is not
+                // another jump without a fresh WasPressedThisFrame event.
+                velocity = jumpPressed ? Mathf.Sqrt(2f * DemoGravity * DemoJumpHeight)
+                                       : -2f;
             }
             return velocity - DemoGravity * deltaSeconds;
         }
