@@ -29,7 +29,8 @@ $cases = @($xml.SelectNodes('//test-case'))
 
 $expected = @(
     'Rabron.Prototype.Tests.PlayModeFlowTests.SceneBootCreatesRuntimePlayerCameraHudAndStations',
-    'Rabron.Prototype.Tests.PlayModeFlowTests.HeistMarkersDriveFullLoopAndPhysicalCounterMoney'
+    'Rabron.Prototype.Tests.PlayModeFlowTests.HeistMarkersDriveFullLoopAndPhysicalCounterMoney',
+    'Rabron.Prototype.Tests.PlayModeFlowTests.UnreadableCheckpointsMustSurviveLaterAutosaves'
 )
 
 $actual = @($cases | ForEach-Object { $_.GetAttribute('fullname') })
