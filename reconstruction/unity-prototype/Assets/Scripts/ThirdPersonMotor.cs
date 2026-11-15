@@ -1,3 +1,5 @@
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -19,9 +21,54 @@ namespace Rabron.Prototype
         private const float DemoJumpHeight = 1.15f;
         private float _pitch = 18f;
         private float _verticalVelocity;
+        private PrototypeVehicle? _vehicle;
+        private readonly List<Renderer> _hiddenRenderers = new List<Renderer>();
         private readonly RaycastHit[] _cameraHits = new RaycastHit[24];
+        private int _exitInteractFrame = -1;
 
-        public bool InteractPressed => _interact != null && _interact.WasPressedThisFrame();
+        public bool IsDriving => _vehicle != null;
+        public bool InteractPressed => _vehicle == null && _interact != null &&
+            _exitInteractFrame != Time.frameCount && _interact.WasPressedThisFrame();
+
+        public void BoardVehicle(PrototypeVehicle vehicle)
+        {
+            if (_vehicle != null || vehicle == null || !vehicle.BeginDriving())
+                throw new InvalidOperationException("Car is already occupied.");
+
+            _vehicle = vehicle;
+            _character.enabled = false;
+            foreach (Renderer visual in GetComponentsInChildren<Renderer>(true))
+            {
+                if (!visual.enabled)
+                    continue;
+                visual.enabled = false;
+                _hiddenRenderers.Add(visual);
+            }
+            transform.position = vehicle.transform.position;
+        }
+
+        public bool TryExitVehicle()
+        {
+            if (_vehicle == null || !_vehicle.TryFindExit(transform, out Vector3 position))
+                return false;
+
+            _vehicle.EndDriving();
+            _vehicle = null;
+            transform.position = position;
+            _verticalVelocity = 0f;
+            _character.enabled = true;
+            RestoreVisuals();
+            _exitInteractFrame = Time.frameCount;
+            return true;
+        }
+
+        private void RestoreVisuals()
+        {
+            foreach (Renderer visual in _hiddenRenderers)
+                if (visual != null)
+                    visual.enabled = true;
+            _hiddenRenderers.Clear();
+        }
 
         private void Awake()
         {
@@ -77,6 +124,13 @@ namespace Rabron.Prototype
             _sprint?.Disable();
             _interact?.Disable();
             _jump?.Disable();
+            if (_vehicle != null)
+            {
+                _vehicle.EndDriving();
+                _vehicle = null;
+                _character.enabled = true;
+                RestoreVisuals();
+            }
         }
 
         private void OnDestroy()
@@ -107,6 +161,19 @@ namespace Rabron.Prototype
             {
                 Cursor.lockState = CursorLockMode.Locked;
                 Cursor.visible = false;
+            }
+
+            if (_vehicle != null)
+            {
+                if (_interact.WasPressedThisFrame())
+                    TryExitVehicle();
+                if (_vehicle != null)
+                {
+                    Vector2 drive = Vector2.ClampMagnitude(_move.ReadValue<Vector2>(), 1f);
+                    _vehicle.Drive(drive, _jump.IsPressed(), Time.deltaTime);
+                    transform.position = _vehicle.transform.position;
+                    return;
+                }
             }
 
             if (Cursor.lockState == CursorLockMode.Locked)
@@ -150,18 +217,19 @@ namespace Rabron.Prototype
 
         private void LateUpdate()
         {
-            Quaternion yaw = Quaternion.Euler(0f, transform.eulerAngles.y, 0f);
+            Transform focus = _vehicle != null ? _vehicle.transform : transform;
+            Quaternion yaw = Quaternion.Euler(0f, focus.eulerAngles.y, 0f);
             Quaternion pitch = Quaternion.Euler(_pitch, 0f, 0f);
-            Vector3 pivot = transform.position + Vector3.up * 1.6f;
+            Vector3 pivot = focus.position + Vector3.up * 1.6f;
             Vector3 target = pivot + yaw * pitch * new Vector3(0f, 0.9f, -5.5f);
-            target = WorldOcclusion.ClampCamera(pivot, target, transform, _cameraHits);
+            target = WorldOcclusion.ClampCamera(pivot, target, focus, _cameraHits);
 
             // Smooth only when moving away from obstacles. Moving toward a
             // blocked wall must be immediate or the camera can clip through it.
             float damping = 1f - Mathf.Exp(-12f * Time.deltaTime);
             Vector3 eased = Vector3.Lerp(_camera.transform.position, target, damping);
             _camera.transform.position = WorldOcclusion.ClampCamera(pivot, eased,
-                                                                  transform, _cameraHits);
+                                                                  focus, _cameraHits);
             _camera.transform.LookAt(pivot);
         }
 
