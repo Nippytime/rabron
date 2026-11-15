@@ -23,6 +23,8 @@ internal static class Program
             SnapshotPreservesBankAcrossHeists,
             SnapshotRejectsInvalidOrTamperedState,
             SnapshotRejectsUnreachablePoliceRobberyPhases,
+            ConstructorRejectsUnknownRolesAndZones,
+            SnapshotRejectsUnreachablePoliceEconomy,
             LaunderingRejectsUnrestorableTimestamps,
         };
 
@@ -376,6 +378,95 @@ internal static class Program
         // Leaving the city legitimately resets a criminal to civilian.
         game.LeaveCity();
         Eq(PlayerRole.Civilian, HeistSession.FromSnapshot(game.ExportSnapshot()).CurrentRole);
+    }
+
+    private static void ConstructorRejectsUnknownRolesAndZones()
+    {
+        Throws<ArgumentOutOfRangeException>(() => new HeistSession((Zone)123));
+        Throws<ArgumentOutOfRangeException>(() => new HeistSession((Zone)(-1)));
+        Throws<ArgumentOutOfRangeException>(() =>
+            new HeistSession(Zone.City, (PlayerRole)123));
+        Throws<ArgumentOutOfRangeException>(() =>
+            new HeistSession(Zone.Desert, (PlayerRole)(-1)));
+
+        // Legitimate Police and civilian initial states remain available in both zones.
+        foreach (Zone zone in new[] { Zone.City, Zone.Desert })
+        {
+            Eq(zone, new HeistSession(zone, PlayerRole.Police).CurrentZone);
+            Eq(zone, new HeistSession(zone, PlayerRole.Civilian).CurrentZone);
+        }
+    }
+
+    private static void SnapshotRejectsUnreachablePoliceEconomy()
+    {
+        // Police can legitimately be idle or scouted, in the city or desert.
+        // Neither opening an account nor earning cash is reachable for Police.
+        foreach (Zone zone in new[] { Zone.City, Zone.Desert })
+        {
+            foreach (bool scouted in new[] { false, true })
+            {
+                var police = new HeistSession(Zone.City, PlayerRole.Police);
+                if (scouted)
+                    police.Scout();
+                if (zone == Zone.Desert)
+                    police.LeaveCity();
+
+                var baseline = police.ExportSnapshot();
+                Eq(zone, HeistSession.FromSnapshot(baseline).CurrentZone);
+                Eq(scouted ? HeistPhase.Scouted : HeistPhase.Idle,
+                   HeistSession.FromSnapshot(baseline).Phase);
+                Eq(PlayerRole.Police, HeistSession.FromSnapshot(baseline).CurrentRole);
+
+                var fakeAccount = police.ExportSnapshot();
+                fakeAccount.BankAccountOpened = true;
+                Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeAccount));
+
+                var fakeCounter = police.ExportSnapshot();
+                fakeCounter.CounterCash = 1;
+                Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeCounter));
+
+                var fakeDirty = police.ExportSnapshot();
+                fakeDirty.DirtyCash = 1;
+                Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeDirty));
+
+                var fakeClean = police.ExportSnapshot();
+                fakeClean.CleanCash = 1;
+                Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeClean));
+
+                var fakeBank = police.ExportSnapshot();
+                fakeBank.BankAccountOpened = true;
+                fakeBank.BankBalance = 1;
+                Throws<ArgumentException>(() => HeistSession.FromSnapshot(fakeBank));
+            }
+        }
+
+        // A civilian may legitimately hold an opened account with no funds.
+        var civilian = new HeistSession(Zone.City, PlayerRole.Civilian);
+        civilian.OpenBankAccount();
+        True(HeistSession.FromSnapshot(civilian.ExportSnapshot()).BankAccountOpened);
+
+        // A criminal's legitimate funds and bank account must not be rejected.
+        civilian.Scout();
+        civilian.PutOnMask();
+        civilian.StartHeist();
+        civilian.TakeLoot("camera");
+        civilian.Escape();
+        civilian.SellLoot(new Dictionary<string, long> { ["camera"] = 100 });
+        civilian.CollectCounterCash();
+        civilian.StartLaundering(60, 45, 10, 2);
+        civilian.CompleteLaundering(12);
+        var criminal = HeistSession.FromSnapshot(civilian.ExportSnapshot());
+        Eq(40L, criminal.DirtyCash);
+        Eq(45L, criminal.CleanCash);
+        True(criminal.BankAccountOpened);
+
+        criminal.LeaveCity();
+        criminal.EnterCity();
+        criminal.DepositCleanCash(45);
+        var returnedCivilian = HeistSession.FromSnapshot(criminal.ExportSnapshot());
+        Eq(PlayerRole.Civilian, returnedCivilian.CurrentRole);
+        Eq(45L, returnedCivilian.BankBalance);
+        Eq(40L, returnedCivilian.DirtyCash);
     }
 
     private static void LaunderingRejectsUnrestorableTimestamps()

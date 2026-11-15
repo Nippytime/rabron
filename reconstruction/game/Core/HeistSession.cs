@@ -35,6 +35,11 @@ namespace Rabron.Reconstruction
 
         public HeistSession(Zone initialZone = Zone.City, PlayerRole initialRole = PlayerRole.Civilian)
         {
+            if (!Enum.IsDefined(typeof(Zone), initialZone))
+                throw new ArgumentOutOfRangeException(nameof(initialZone));
+            if (!Enum.IsDefined(typeof(PlayerRole), initialRole))
+                throw new ArgumentOutOfRangeException(nameof(initialRole));
+
             CurrentZone = initialZone;
             CurrentRole = initialRole;
             Phase = HeistPhase.Idle;
@@ -241,6 +246,14 @@ namespace Rabron.Reconstruction
             if (snapshot.Role == PlayerRole.Police &&
                 snapshot.Phase != HeistPhase.Idle && snapshot.Phase != HeistPhase.Scouted)
                 throw new ArgumentException("Police role cannot occupy a robbery state.", nameof(snapshot));
+
+            // No operation in this local state machine grants Police money or
+            // a civilian bank account. They also cannot switch to civilian.
+            if (snapshot.Role == PlayerRole.Police &&
+                (snapshot.BankAccountOpened || snapshot.CounterCash != 0 ||
+                 snapshot.DirtyCash != 0 || snapshot.CleanCash != 0 ||
+                 snapshot.BankBalance != 0))
+                throw new ArgumentException("Police role cannot own civilian funds or an account.", nameof(snapshot));
 
             if (snapshot.CounterCash < 0 || snapshot.DirtyCash < 0 ||
                 snapshot.CleanCash < 0 || snapshot.BankBalance < 0 ||
