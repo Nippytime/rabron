@@ -544,6 +544,60 @@ namespace Rabron.Prototype.Tests
                 Assert.That(FindCashPresenter(), Is.SameAs(cash),
                             "Hidden counter money must remain discoverable");
 
+                // Exercise the REAL director station picker, not just a
+                // raycast in the Editor. The control marker has to be in
+                // interaction range and nearer than any competing station.
+                var coverSession = new HeistSession();
+                coverSession.Scout();
+                coverSession.PutOnMask();
+                coverSession.StartHeist();
+                var findStation = typeof(PrototypeDirector).GetMethod(
+                    "FindNearbyStation", PrivateInstance);
+                var updateCrouch = typeof(ThirdPersonMotor).GetMethod(
+                    "UpdateCrouch", PrivateInstance);
+                Assert.That(findStation, Is.Not.Null);
+                Assert.That(updateCrouch, Is.Not.Null);
+                try
+                {
+                    field.SetValue(director, coverSession);
+                    motor.WarpTo(new Vector3(-0.7f, 0.12f, 29.2f));
+                    Physics.SyncTransforms();
+                    var standingFocus = (InteractionMarker)findStation.Invoke(
+                        director, null);
+                    Assert.That(standingFocus, Is.Not.Null,
+                        "Real station picker must reach guard control above cover");
+                    Assert.That(standingFocus.Action,
+                        Is.EqualTo(StationAction.ControlStaff),
+                        "Control marker must win nearest-station selection");
+
+                    updateCrouch.Invoke(motor, new object[] { true });
+                    Physics.SyncTransforms();
+                    Assert.That(motor.IsCrouched, Is.True);
+                    Assert.That(findStation.Invoke(director, null), Is.Null,
+                        "Crouched player cannot select guard control through cover");
+
+                    updateCrouch.Invoke(motor, new object[] { false });
+                    Physics.SyncTransforms();
+                    Assert.That(motor.IsCrouched, Is.False);
+                    Assert.That(((InteractionMarker)findStation.Invoke(director, null))
+                        .Action, Is.EqualTo(StationAction.ControlStaff),
+                        "Standing again must restore nearby guard-control focus");
+
+                    motor.WarpTo(new Vector3(-1.95f, 0.12f, 30.5f));
+                    Physics.SyncTransforms();
+                    Assert.That(((InteractionMarker)findStation.Invoke(director, null))
+                        .Action, Is.EqualTo(StationAction.ControlStaff),
+                        "Walking around live cover must restore nearby station focus");
+                }
+                finally
+                {
+                    motor.WarpTo(originalPosition);
+                    if (motor.IsCrouched)
+                        updateCrouch.Invoke(motor, new object[] { false });
+                    field.SetValue(director, original);
+                    Physics.SyncTransforms();
+                }
+
                 // Board and leave the actual collider-backed car through
                 // production station dispatch, without changing money or role.
                 var driver = new HeistSession();

@@ -326,14 +326,38 @@ namespace Rabron.Prototype.Editor
                 root.GetComponentsInChildren<InteractionMarker>(true),
                 marker => marker.Action == StationAction.ControlStaff);
             Check(control != null, "Generated guard-control station is missing");
+            // Read the production radius, not a synthetic test-only budget.
+            FieldInfo radiusField = typeof(PrototypeDirector).GetField(
+                "InteractionRadius", BindingFlags.Static | BindingFlags.NonPublic);
+            Check(radiusField != null, "Director interaction radius is missing");
+            float reach = (float)radiusField.GetRawConstantValue();
+            Check(reach > 0f, "Director interaction radius must be positive");
             var interactionHits = new RaycastHit[24];
             bool CanReachControl() => WorldOcclusion.HasClearLine(
                 WorldOcclusion.UpperBodyPoint(player.transform),
                 control.transform.position, player.transform, interactionHits);
+            // Use a reachable, collider-clear point directly in front of
+            // the shipped cover. A sightline test alone is not an action test.
+            void CheckControlInReach()
+            {
+                float distanceSq = (control.transform.position -
+                                    player.transform.position).sqrMagnitude;
+                Check(distanceSq < reach * reach,
+                      "Guard control must be inside the actual interaction radius");
+                foreach (InteractionMarker marker in
+                         root.GetComponentsInChildren<InteractionMarker>(true))
+                {
+                    if (marker != control)
+                        Check((marker.transform.position - player.transform.position)
+                                  .sqrMagnitude > distanceSq,
+                              "Guard control must be the nearest station at test position");
+                }
+            }
             try
             {
-                player.transform.position = new Vector3(0f, 0.12f, 28f);
+                player.transform.position = new Vector3(-0.7f, 0.12f, 29.2f);
                 Physics.SyncTransforms();
+                CheckControlInReach();
                 Check(guard.CanSee(player.transform),
                       "Standing player must be visible over low solid cover");
                 Check(CanReachControl(),
@@ -355,8 +379,9 @@ namespace Rabron.Prototype.Editor
 
                 // Stealth is due to the physical barrier, not an invisible
                 // gameplay flag: walking around it restores detection.
-                player.transform.position = new Vector3(3.5f, 0.12f, 28f);
+                player.transform.position = new Vector3(-1.95f, 0.12f, 30.5f);
                 Physics.SyncTransforms();
+                CheckControlInReach();
                 Check(guard.CanSee(player.transform),
                       "Standing beside real warehouse cover must remain visible");
                 Check(CanReachControl(),
