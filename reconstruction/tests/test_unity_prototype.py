@@ -670,7 +670,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("HeistPhase.Arrested", director)
         self.assertIn("Unity JSON lost the alarm/custody confiscation", editor)
         self.assertIn("Interact(StationAction.ReleaseCustody)", playmode)
-        self.assertIn('"Visible close guard must cause confiscation', playmode)
+        self.assertIn('"Overlapping guard must cause confiscation after alarm"', playmode)
         self.assertIn("police custody", guide.lower())
         self.assertNotIn("BankBalance =", director)
         self.assertNotIn("DirtyCash =", director)
