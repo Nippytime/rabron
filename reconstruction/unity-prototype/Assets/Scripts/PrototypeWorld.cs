@@ -55,6 +55,11 @@ namespace Rabron.Prototype
                  new Vector3(1.6f, 1.2f, 1.6f), wood);
             Cube(parent, "Watch display", new Vector3(3, 0.6f, 29),
                  new Vector3(1.6f, 1.2f, 1.6f), wood);
+            // Real waist-high cover between the front approach and the guard.
+            // A crouched capsule can hide behind this opaque BoxCollider;
+            // standing exposes the upper body, and both sides remain walkable.
+            Cube(parent, "Warehouse stealth cover", new Vector3(0f, 0.75f, 30f),
+                 new Vector3(2.8f, 1.5f, 0.6f), wood);
 
             // Original primitive guard, not an extracted game NPC. He faces
             // the entrance and has a configurable demo-only sight cone.
