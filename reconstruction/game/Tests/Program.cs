@@ -18,6 +18,7 @@ internal static class Program
             CompletedHeistRequiresCivilianCityReturnBeforeReset,
             MaskRequiresFreshIdleOrScoutedCycle,
             ControlledStaffPreventsFutureAlarmWithoutRewritingThePast,
+            GuardAlarmIsSingleShotAndRequiresActiveStaff,
             StaffControlMustOccurDuringHeist,
             SnapshotRestoresInFlightLootAndGuardState,
             SnapshotPreservesPhysicalCounterCash,
@@ -317,6 +318,69 @@ internal static class Program
         True(!session.AlarmRaised);
     }
 
+    private static void GuardAlarmIsSingleShotAndRequiresActiveStaff()
+    {
+        // Match the production guard's uncontrolled-staff/no-prior-alarm gate
+        // while retaining prior lawful funds and loot on rejected detection.
+        var controlled = new HeistSession();
+        controlled.OpenBankAccount();
+        controlled.PickUpCourierParcel();
+        controlled.DeliverCourierParcel(45);
+        controlled.DepositCleanCash(20);
+        controlled.Scout();
+        controlled.PutOnMask();
+        controlled.StartHeist();
+        controlled.TakeLoot("camera");
+        controlled.ControlStaff();
+        Throws<InvalidOperationException>(() => controlled.RaiseAlarm());
+        Eq(HeistPhase.Robbing, controlled.Phase);
+        Eq(PlayerRole.Criminal, controlled.CurrentRole);
+        Eq(1, controlled.Loot.Count);
+        Eq(25L, controlled.CleanCash);
+        Eq(20L, controlled.BankBalance);
+        Eq(0L, controlled.DirtyCash);
+        True(controlled.StaffControlled && !controlled.AlarmRaised);
+
+        var reloadedControl = HeistSession.FromSnapshot(controlled.ExportSnapshot());
+        Throws<InvalidOperationException>(() => reloadedControl.RaiseAlarm());
+        True(!reloadedControl.AlarmRaised && reloadedControl.StaffControlled);
+        Eq(25L, reloadedControl.CleanCash);
+        Eq(20L, reloadedControl.BankBalance);
+
+        // Once detected, re-triggering the alarm must not replay it, yet
+        // controlling staff later must not erase the earlier alert.
+        var alerted = StartHeistWithOneItem();
+        alerted.RaiseAlarm();
+        Throws<InvalidOperationException>(() => alerted.RaiseAlarm());
+        True(alerted.AlarmRaised && !alerted.StaffControlled);
+        alerted.ControlStaff();
+        Throws<InvalidOperationException>(() => alerted.RaiseAlarm());
+        True(alerted.AlarmRaised && alerted.StaffControlled);
+        Eq(1, alerted.Loot.Count);
+        var restored = HeistSession.FromSnapshot(alerted.ExportSnapshot());
+        True(restored.AlarmRaised && restored.StaffControlled);
+        Throws<InvalidOperationException>(() => restored.RaiseAlarm());
+
+        // A completed, civilian-returned/reset cycle can alert again only
+        // after a new lawful robbery begins.
+        restored.Escape();
+        restored.SellLoot(new Dictionary<string, long> { ["camera"] = 50 });
+        restored.CollectCounterCash();
+        restored.StartLaundering(50, 40, 100, 2);
+        restored.CompleteLaundering(102);
+        restored.LeaveCity();
+        restored.EnterCity();
+        restored.BeginAnotherHeist();
+        True(!restored.AlarmRaised && !restored.StaffControlled);
+        Throws<InvalidOperationException>(() => restored.RaiseAlarm());
+        restored.Scout();
+        restored.PutOnMask();
+        restored.StartHeist();
+        restored.RaiseAlarm();
+        True(restored.AlarmRaised);
+        Eq(40L, restored.CleanCash);
+    }
+
     private static void StaffControlMustOccurDuringHeist()
     {
         var session = new HeistSession();
@@ -337,8 +401,8 @@ internal static class Program
     private static void SnapshotRestoresInFlightLootAndGuardState()
     {
         var game = StartHeistWithOneItem();
-        game.ControlStaff();
         game.RaiseAlarm();
+        game.ControlStaff(); // Existing alarm survives later staff control.
 
         HeistSessionSnapshot data = game.ExportSnapshot();
         Eq(HeistSessionSnapshot.CurrentVersion, data.Version);
