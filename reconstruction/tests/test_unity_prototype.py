@@ -642,13 +642,14 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
 
         self.assertIn("public static bool SavingDisabled => _preserveUnreadableSaves", store)
-        self.assertIn("PrototypeSaveStore.SavingDisabled);", director)
-        self.assertIn("bool savingDisabled)", hud)
+        self.assertIn("PrototypeSaveStore.SavingDisabled,", director)
+        self.assertIn("PrototypeSaveStore.LastWriteFailed);", director)
+        self.assertIn("bool savingDisabled, bool lastWriteFailed)", hud)
         self.assertIn("public bool SaveWarningVisible { get; private set; }", hud)
-        self.assertIn("_saveWarning.style.display = savingDisabled", hud)
+        self.assertIn("_saveWarning.style.display = SaveWarningVisible", hud)
         self.assertIn("SAVING DISABLED — THIS SESSION WILL NOT BE SAVED", hud)
         self.assertIn("Copy or move damaged save and .bak files", hud)
-        self.assertIn("SaveWarningVisible = savingDisabled;", hud)
+        self.assertIn("SaveWarningVisible = savingDisabled || lastWriteFailed;", hud)
         self.assertIn("Temporary notices must not clear the unsaved-session warning", playmode)
         self.assertIn("Blocked autosave must have a persistent HUD warning", playmode)
         self.assertIn("Valid backup recovery must clear the persistent warning", playmode)
@@ -656,6 +657,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("PrototypeSaveStore.SavingDisabled, Is.False", playmode)
         self.assertIn("persistent", guide.lower())
         self.assertIn("saving disabled", guide.lower())
+
+    def test_failed_disk_writes_keep_a_distinct_visible_warning_until_retry(self):
+        store = read("PrototypeSaveStore.cs")
+        director = read("PrototypeDirector.cs")
+        hud = read("PrototypeHud.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("public static bool LastWriteFailed { get; private set; }", store)
+        self.assertIn("LastWriteFailed = true;", store)
+        self.assertEqual(store.count("LastWriteFailed = false;"), 2)
+        self.assertIn("error = exception.Message;", store)
+        self.assertIn("SaveWarningVisible = savingDisabled || lastWriteFailed;", hud)
+        self.assertIn("LAST SAVE FAILED — RECENT PROGRESS IS NOT SAVED", hud)
+        self.assertIn("Check free space and folder permissions", hud)
+        self.assertIn("PrototypeSaveStore.LastWriteFailed);", director)
+        self.assertLess(
+            director.index('Notice("Laundering complete. Leave the city'),
+            director.index("SaveProgress();"),
+            "Laundering success notice must not overwrite a save failure",
+        )
+
+        # These are authored Play Mode assertions: a .tmp directory forces a
+        # failed actual filesystem write in the isolated -runTests directory.
+        self.assertIn("Directory.CreateDirectory(temporary);", playmode)
+        self.assertIn("Directory.Delete(temporary);", playmode)
+        self.assertIn("PrototypeSaveStore.LastWriteFailed, Is.True", playmode)
+        self.assertIn("PrototypeSaveStore.LastWriteFailed, Is.False", playmode)
+        self.assertIn("LAST SAVE FAILED", playmode)
+        self.assertIn("A confirmed checkpoint should clear", playmode)
+        self.assertIn("failed disk writes", guide.lower())
 
     def test_batch_playmode_checkpoints_are_unique_per_editor_invocation(self):
         store = read("PrototypeSaveStore.cs")
