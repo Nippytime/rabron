@@ -21,6 +21,21 @@ class SharedPropsWwiseLfsTests(unittest.TestCase):
         self.ledger = {"schema_version": 1, "scans": [],
                        "known_lfs_not_yet_scanned": []}
 
+    def test_original_source_workflow_runs_when_stream_reader_or_tests_change(self):
+        workflow = (ROOT.parent / ".github/workflows/"
+                    "extract-shared-props-wwise-lfs-sources.yml").read_text(
+                        encoding="utf-8")
+        paths = workflow.split("  pull_request:\n    paths:\n", 1)[1].split(
+            "  workflow_dispatch:", 1)[0]
+        for dependency in (
+            "reconstruction/tools/streamed_unityfs.py",
+            "reconstruction/tests/test_streamed_unityfs.py",
+            "reconstruction/tools/weapon_lfs_inventory.py",
+            "reconstruction/tests/test_shared_props_wwise_lfs_inventory.py",
+        ):
+            with self.subTest(dependency=dependency):
+                self.assertIn(f'      - "{dependency}"', paths)
+
     def test_original_pointer_pins_and_two_source_plan(self):
         self.assertEqual(len(TARGETS), 2)
         self.assertEqual(

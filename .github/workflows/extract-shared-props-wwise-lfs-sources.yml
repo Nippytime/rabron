@@ -13,6 +13,8 @@ on:
       - "reconstruction/tools/validate_source_inventory.py"
       - "reconstruction/tools/summarize_numeric_evidence.py"
       - "reconstruction/tests/test_shared_props_wwise_lfs_inventory.py"
+      - "reconstruction/tests/test_streamed_unityfs.py"
+      - "reconstruction/tools/streamed_unityfs.py"
   workflow_dispatch:
 
 permissions:
