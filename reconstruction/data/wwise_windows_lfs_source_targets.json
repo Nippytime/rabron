@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AL exact original Wwise Windows LFS singleton pointer; not original-byte evidence",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/wwisedata_windows_assets_all.bundle",
+      "git_blob_sha": "40324cc5a4281d764319e2291e9fb7c142208c57",
+      "lfs_oid_sha256": "d84888fe94f74b5cb817749abbcb1af59225300523ad9a1a14e01f475e08fb35",
+      "size_bytes": 170634407
+    }
+  ]
+}

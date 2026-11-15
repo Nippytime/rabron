@@ -42,7 +42,7 @@ class MateriallibraryDesertLfsTests(unittest.TestCase):
                    if s["bundle"] in {t["bundle"] for t in TARGETS}]
         # Never infer an original scan from a Git LFS pointer.
         self.assertEqual(len(records), 2)
-        self.assertEqual(len(ledger["scans"]), 328)
+        self.assertEqual(len(ledger["scans"]), 329)
         for row in records:
             target = next(t for t in TARGETS if t["bundle"] == row["bundle"])
             for key, expected in (

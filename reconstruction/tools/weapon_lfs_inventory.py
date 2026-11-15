@@ -25,6 +25,7 @@ AH_EVIDENCE = "GitHub Actions W1-AH original shared-props Wwise-battle LFS sourc
 AI_EVIDENCE = "GitHub Actions W1-AI original sector-center common LFS source inventory artifact"
 AJ_EVIDENCE = "GitHub Actions W1-AJ original shared-characters legacy-props LFS source inventory artifact"
 AK_EVIDENCE = "GitHub Actions W1-AK original material-library desert LFS source inventory artifact"
+AL_EVIDENCE = "GitHub Actions W1-AL original Wwise Windows LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
@@ -36,20 +37,25 @@ AH_NAMES = {"shared-environment-props_assets_all.bundle", "wwisedata_windows_bat
 AI_NAMES = {"location-sectorcenter-standalone_scenes_all.bundle", "shared-environment-common_assets_all.bundle"}
 AJ_NAMES = {"shared-characters_assets_all.bundle", "environment-props-legacy_assets_all.bundle"}
 AK_NAMES = {"environment-materiallibrary-legacy_assets_all.bundle", "shared-environment-desert_assets_all.bundle"}
+AL_NAMES = {"wwisedata_windows_assets_all.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
 
 def load_targets(path):
     data = json.loads(Path(path).read_text(encoding="utf-8"))
-    if data.get("schema_version") != 1 or len(data.get("sources", [])) != 2:
-        raise ValueError("Exactly two versioned LFS source targets required")
-    sources = data["sources"]
-    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES, AH_NAMES, AI_NAMES, AJ_NAMES, AK_NAMES):
+    sources = data.get("sources", [])
+    if data.get("schema_version") != 1 or not isinstance(sources, list):
+        raise ValueError("Versioned original LFS source targets required")
+    names = {e.get("bundle", "").removeprefix(PREFIX) for e in sources}
+    pairs = (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES,
+             AH_NAMES, AI_NAMES, AJ_NAMES, AK_NAMES)
+    if not ((len(sources) == 2 and names in pairs)
+            or (len(sources) == 1 and names == AL_NAMES)):
         raise ValueError("Unexpected original LFS source scope")
-    # Keep previous bounds unchanged; the exact AK pair needs larger originals.
-    names = {e["bundle"].removeprefix(PREFIX) for e in sources}
+    # Bounds are exact-scope allowances, never a global binary size relaxation.
     max_source_bytes = (
+        175_000_000 if names == AL_NAMES else
         245_000_000 if names == AK_NAMES else
         185_000_000 if names == AJ_NAMES else
         150_000_000
@@ -78,6 +84,9 @@ def verify_pointer(entry):
 
 def source_plan(sources, ledger, entries, *, expected_tracked=330,
                 scan_evidence=EVIDENCE):
+    names = {e["bundle"].removeprefix(PREFIX) for e in sources}
+    if len(sources) != (1 if names == AL_NAMES else 2):
+        raise ValueError("Unapproved original source count")
     if len(entries) != expected_tracked:
         raise ValueError("Tracked original Git bundle count changed")
     scanned, pending = validate_ledger(ledger, sorted(entries))
@@ -108,7 +117,8 @@ def source_plan(sources, ledger, entries, *, expected_tracked=330,
 def scan(entry, run_url, *, scan_evidence=EVIDENCE):
     path = Path(entry["bundle"])
     verified = verify_source(path, entry, phase="bytes")
-    if path.name == "wwisedata_windows_battle_assets_all.bundle":
+    if path.name in ("wwisedata_windows_battle_assets_all.bundle",
+                     "wwisedata_windows_assets_all.bundle"):
         from reconstruction.tools.streamed_unityfs import streamed_unityfs
         with streamed_unityfs():
             raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
@@ -144,11 +154,16 @@ def scan(entry, run_url, *, scan_evidence=EVIDENCE):
 
 def reconcile(plan, records, ledger, run_url, tracked, *,
               scan_evidence=EVIDENCE):
-    if (plan["tracked_bundles"] != len(tracked) or
+    source_count = len(plan.get("sources", []))
+    names = {e["bundle"].removeprefix(PREFIX)
+             for e in plan.get("sources", [])}
+    if (source_count not in (1, 2) or
+            (source_count == 1 and names != AL_NAMES) or
+            plan["tracked_bundles"] != len(tracked) or
             plan["documented_before"] != len(ledger["scans"]) or
-            len(records) != 2 or
-            len({r.get("bundle") for r in records}) != 2):
-        raise ValueError("Two-original LFS coverage/accounting changed")
+            len(records) != source_count or
+            len({r.get("bundle") for r in records}) != source_count):
+        raise ValueError("Original LFS coverage/accounting changed")
     expected = {e["bundle"]: e for e in plan["sources"]}
     if set(expected) != {e["bundle"] for e in records}:
         raise ValueError("Missing, swapped or duplicate LFS source result")
@@ -197,7 +212,7 @@ def reconcile(plan, records, ledger, run_url, tracked, *,
         if any(e["bundle"] in old for e in records):
             raise ValueError("Original source was documented before scan")
         proposed = {**ledger, "scans": [*ledger["scans"], *records]}
-        new_count = 2
+        new_count = source_count
     elif plan["mode"] == "recheck":
         compare = ("sha256", "size_bytes", "git_blob_sha", "lfs_oid_sha256",
                    "monobehaviours_total", "monobehaviours_parsed",
@@ -218,7 +233,7 @@ def reconcile(plan, records, ledger, run_url, tracked, *,
         "documented_before": len(ledger["scans"]),
         "documented_after": len(proposed["scans"]),
         "new_documented": new_count,
-        "source_reverified": 2 - new_count,
+        "source_reverified": source_count - new_count,
         "unscanned_after": len(tracked) - len(proposed["scans"]),
         "tracked_bundles": len(tracked), "unparseable_attempts": [],
         "source_run_url": run_url,
@@ -255,6 +270,8 @@ def main():
         evidence, log_prefix = AJ_EVIDENCE, "W1AJ"
     elif names == AK_NAMES:
         evidence, log_prefix = AK_EVIDENCE, "W1AK"
+    elif names == AL_NAMES:
+        evidence, log_prefix = AL_EVIDENCE, "W1AL"
     else:
         evidence, log_prefix = EVIDENCE, "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))
@@ -286,7 +303,7 @@ def main():
             args.matrix.write_text(json.dumps({"include": [
                 {"name": e["bundle"].removeprefix(PREFIX)} for e in targets
             ]}, separators=(",", ":")) + "\n")
-            print(json.dumps({"mode": plan["mode"], "source_count": 2,
+            print(json.dumps({"mode": plan["mode"], "source_count": len(targets),
                               "documented_before": plan["documented_before"]}))
         else:
             if not args.plan or not args.evidence_dir or not args.run_url or not args.output:
