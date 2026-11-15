@@ -62,8 +62,9 @@ namespace Rabron.Prototype
                 _session.LaunderingReadyAt <= now)
             {
                 _session.CompleteLaundering(now);
-                SaveProgress();
+                // Any failed save notice must take precedence over completion.
                 Notice("Laundering complete. Leave the city to clear criminal status.");
+                SaveProgress();
             }
 
             if (_session.Phase == HeistPhase.Robbing &&
@@ -119,7 +120,8 @@ namespace Rabron.Prototype
                         _player.IsDriving ? "Exit car after stopping" :
                         focused == null ? "" : focused.Label,
                         Time.unscaledTime < _noticeUntil ? _notice : "",
-                        PrototypeSaveStore.SavingDisabled);
+                        PrototypeSaveStore.SavingDisabled,
+                        PrototypeSaveStore.LastWriteFailed);
         }
 
         private InteractionMarker? FindNearbyStation()

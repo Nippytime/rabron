@@ -22,6 +22,8 @@ namespace Rabron.Prototype
             Guid.NewGuid().ToString("N");
         // Read-only UI signal; never interpret an in-memory fallback as saved.
         public static bool SavingDisabled => _preserveUnreadableSaves;
+        // Set after an I/O failure; cleared only by a confirmed write or a new Load.
+        public static bool LastWriteFailed { get; private set; }
 #if UNITY_EDITOR
         // A fixed test-cache path lets a later -runTests process reload stale
         // arrests or courier jobs from an earlier NUnit execution. Generate one
@@ -58,6 +60,7 @@ namespace Rabron.Prototype
         public static HeistSession Load(out string message)
         {
             _preserveUnreadableSaves = false;
+            LastWriteFailed = false;
             string primary = SavePath;
             string backup = primary + ".bak";
             Debug.Log("Rabron demo save path: " + primary);
@@ -124,10 +127,12 @@ namespace Rabron.Prototype
                     File.Move(temporary, target);
 
                 error = "";
+                LastWriteFailed = false;
                 return true;
             }
             catch (Exception exception)
             {
+                LastWriteFailed = true;
                 error = exception.Message;
                 Debug.LogWarning("Local prototype save failed: " + exception);
                 return false;
