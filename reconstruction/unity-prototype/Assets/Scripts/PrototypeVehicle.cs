@@ -16,6 +16,7 @@ namespace Rabron.Prototype
         private const float BrakeDeceleration = 18f;
         private const float SteeringDegrees = 66f;
         private readonly Collider[] _exitHits = new Collider[32];
+        private readonly RaycastHit[] _pathHits = new RaycastHit[32];
         private CharacterController _body = null!;
         private float _speed;
 
@@ -111,6 +112,33 @@ namespace Rabron.Prototype
                 for (int i = 0; i < count; i++)
                 {
                     Collider hit = _exitHits[i];
+                    if (hit != null && !hit.transform.IsChildOf(transform) &&
+                        !hit.transform.IsChildOf(passenger))
+                    {
+                        blocked = true;
+                        break;
+                    }
+                }
+                if (blocked)
+                    continue;
+
+                // A clear landing point is insufficient if a solid wall is
+                // between the car and that point. Sweep the same full capsule
+                // along the actual egress path; never teleport through it.
+                Vector3 start = new Vector3(transform.position.x, candidate.y,
+                                            transform.position.z);
+                Vector3 travel = candidate - start;
+                Vector3 startCenter = start + centerOffset;
+                int swept = Physics.CapsuleCastNonAlloc(
+                    startCenter - Vector3.up * halfAxis,
+                    startCenter + Vector3.up * halfAxis,
+                    clearanceRadius, travel.normalized, _pathHits,
+                    travel.magnitude, ~0, QueryTriggerInteraction.Ignore);
+                if (swept == _pathHits.Length)
+                    continue; // Truncated sweep cannot prove safe passage.
+                for (int i = 0; i < swept; i++)
+                {
+                    Collider hit = _pathHits[i].collider;
                     if (hit != null && !hit.transform.IsChildOf(transform) &&
                         !hit.transform.IsChildOf(passenger))
                     {
