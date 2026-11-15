@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
 using Rabron.Reconstruction;
 using UnityEditor;
 using UnityEngine;
@@ -54,6 +55,25 @@ namespace Rabron.Prototype.Editor
                       "Fencing platform is not reachable by walking");
                 Check(root.transform.Find("Ground") != null,
                       "No collidable ground was created");
+
+                // Source-side step verification in the actual Unity Editor.
+                // This does not simulate pressing a jump key or prove traversal.
+                var flags = BindingFlags.Static | BindingFlags.NonPublic;
+                MethodInfo integrate = typeof(ThirdPersonMotor).GetMethod(
+                    "IntegrateVertical", flags);
+                MethodInfo ceiling = typeof(ThirdPersonMotor).GetMethod(
+                    "ResolveCeiling", flags);
+                Check(integrate != null && ceiling != null,
+                      "Missing grounded jump/ceiling movement integration");
+                float launch = (float)integrate.Invoke(null,
+                    new object[] { 0f, true, true, 0f });
+                float air = (float)integrate.Invoke(null,
+                    new object[] { 0f, false, true, 0.1f });
+                Check(launch > 0f && air < 0f,
+                      "Jump must require ground and never permit double jump");
+                Check((float)ceiling.Invoke(null,
+                    new object[] { launch, CollisionFlags.Above }) == 0f,
+                      "Jump must stop rising when colliding with a ceiling");
 
                 // The heist wall must block both interaction and camera.
                 // Probe the actual generated colliders, not a mock scene.
