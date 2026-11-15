@@ -239,8 +239,12 @@ Copy or move the save and backup files to a safe location, then restart the
 game to enable a new checkpoint; do not continue expecting this temporary
 session to be saved. If a good backup is loaded but cannot be copied back to
 the primary path, saves are also paused so the remaining valid backup is
-not overwritten. The HUD reports the save failure rather than silently
-discarding potential recovery data.
+not overwritten. The HUD shows a **persistent SAVING DISABLED warning** at the top of the
+gameplay panel for the entire unsaved session, regardless of temporary
+interaction notices; it warns that new progress will not be kept. A successful
+new load of a valid checkpoint clears it. The warning does not reveal the
+user's filesystem paths. The HUD also reports the immediate save failure
+rather than silently discarding potential recovery data.
 No game binaries or personal account credentials are stored.
 
 To start a clean demo, **close Play Mode/the game**, then remove both
