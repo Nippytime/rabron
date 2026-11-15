@@ -1,0 +1,179 @@
+{
+  "numeric_caps_resolved": 0,
+  "numeric_extraction_complete": false,
+  "outcomes": [
+    {
+      "fields": [
+        {
+          "element_count": 0,
+          "field": "<EntityRooms>k__BackingField",
+          "first_element_members": [],
+          "kind": "array"
+        },
+        {
+          "element_count": 1986,
+          "field": "<HidingObjectRenderers>k__BackingField",
+          "first_element_members": [
+            "m_FileID",
+            "m_PathID"
+          ],
+          "kind": "array"
+        },
+        {
+          "element_count": 41623,
+          "field": "<Renderers>k__BackingField",
+          "first_element_members": [
+            "m_FileID",
+            "m_PathID"
+          ],
+          "kind": "array"
+        },
+        {
+          "element_count": 0,
+          "field": "<RoomParts>k__BackingField",
+          "first_element_members": [],
+          "kind": "array"
+        },
+        {
+          "element_count": 0,
+          "field": "<RoomVolumes>k__BackingField",
+          "first_element_members": [],
+          "kind": "array"
+        },
+        {
+          "element_count": null,
+          "field": "m_Enabled",
+          "first_element_members": [],
+          "kind": "integer"
+        },
+        {
+          "element_count": 2,
+          "field": "m_GameObject",
+          "first_element_members": [],
+          "kind": "object"
+        },
+        {
+          "element_count": null,
+          "field": "m_Name",
+          "first_element_members": [],
+          "kind": "text"
+        },
+        {
+          "element_count": 2,
+          "field": "m_Script",
+          "first_element_members": [],
+          "kind": "object"
+        }
+      ],
+      "object_byte_size": 523360,
+      "path_id": "344196",
+      "root_member_count": 9,
+      "root_member_names_truncated": false,
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf"
+    },
+    {
+      "fields": [
+        {
+          "element_count": 42266,
+          "field": "<MeshRenderers>k__BackingField",
+          "first_element_members": [
+            "m_FileID",
+            "m_PathID"
+          ],
+          "kind": "array"
+        },
+        {
+          "element_count": null,
+          "field": "m_Enabled",
+          "first_element_members": [],
+          "kind": "integer"
+        },
+        {
+          "element_count": 2,
+          "field": "m_GameObject",
+          "first_element_members": [],
+          "kind": "object"
+        },
+        {
+          "element_count": null,
+          "field": "m_Name",
+          "first_element_members": [],
+          "kind": "text"
+        },
+        {
+          "element_count": 2,
+          "field": "m_Script",
+          "first_element_members": [],
+          "kind": "object"
+        }
+      ],
+      "object_byte_size": 507228,
+      "path_id": "344248",
+      "root_member_count": 5,
+      "root_member_names_truncated": false,
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf"
+    },
+    {
+      "fields": [
+        {
+          "element_count": 16810,
+          "field": "Nodes",
+          "first_element_members": [
+            "Count",
+            "Deepness",
+            "MaxWorldPosition",
+            "MinWorldPosition",
+            "Node0",
+            "Node1",
+            "Node2",
+            "Node3"
+          ],
+          "kind": "array"
+        },
+        {
+          "element_count": 225,
+          "field": "RootNodeIds",
+          "first_element_members": [],
+          "kind": "array"
+        },
+        {
+          "element_count": null,
+          "field": "m_Enabled",
+          "first_element_members": [],
+          "kind": "integer"
+        },
+        {
+          "element_count": 2,
+          "field": "m_GameObject",
+          "first_element_members": [],
+          "kind": "object"
+        },
+        {
+          "element_count": null,
+          "field": "m_Name",
+          "first_element_members": [],
+          "kind": "text"
+        },
+        {
+          "element_count": 2,
+          "field": "m_Script",
+          "first_element_members": [],
+          "kind": "object"
+        }
+      ],
+      "object_byte_size": 673360,
+      "path_id": "7968",
+      "root_member_count": 6,
+      "root_member_names_truncated": false,
+      "serialized_file": "CAB-198a5be741d1a7bef84198e0c583d1cf.sharedAssets"
+    }
+  ],
+  "schema_version": 1,
+  "scope": "serialized member names, kinds and lengths only; no values, game formulas or media",
+  "selected_count": 3,
+  "size_bytes": 549566135,
+  "source": "StreamingAssets/aa/StandaloneWindows64/location-city-standalone_scenes_city_standalone.unity.bundle",
+  "source_monobehaviours": 14467,
+  "source_object_count": 366174,
+  "source_sha256": "5c06c4527fa48871b842e76d8dab5e37f9fde91da9b99a806270a763becadc7f"
+}
