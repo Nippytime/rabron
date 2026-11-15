@@ -308,7 +308,8 @@ look around independently while driving**: camera yaw orbits relative to the
 car's heading without steering it, with the same limited pitch as on foot.
 Once nearly stopped, **release and press E / A again on a later frame** to exit
 on a collision-clear side. The driving camera orbit resets on boarding and
-exiting; after a safe exit the walking heading matches the parked car. The boarding press is not also an exit press, regardless of Unity's
+exiting; after a safe exit the walking heading matches the parked car.
+The boarding press is not also an exit press, regardless of Unity's
 component Update order; this protects against an immediate **same-frame**
 enter/exit input race. If both sides are blocked or the car is moving too
 quickly, exit is refused instead of placing the avatar inside a wall.
