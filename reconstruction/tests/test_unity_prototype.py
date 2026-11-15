@@ -728,6 +728,43 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("drive", guide.lower())
         self.assertIn("vehicle position", guide.lower())
 
+    def test_driving_camera_look_stays_independent_of_vehicle_steering(self):
+        motor = read("ThirdPersonMotor.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        # Driver look must be applied before the vehicle branch returns,
+        # with an orbit offset rather than moving the steering transform.
+        self.assertIn("private void ApplyLookDelta(Vector2 look)", motor)
+        self.assertLess(
+            motor.index("ApplyLookDelta(look);"),
+            motor.index("if (ExitPressAfterBoard(_boardedVehicleFrame, Time.frameCount,"),
+        )
+        self.assertIn("if (_vehicle == null)\n                transform.Rotate", motor)
+        self.assertIn(
+            "_drivingLookYaw = Mathf.Repeat(_drivingLookYaw + look.x + 180f, 360f) - 180f;",
+            motor,
+        )
+        self.assertIn(
+            "focus.eulerAngles.y + (_vehicle != null ? _drivingLookYaw : 0f)",
+            motor,
+        )
+        self.assertIn("_pitch = Mathf.Clamp(_pitch - look.y, -45f, 70f);", motor)
+        self.assertIn(
+            "transform.rotation = Quaternion.Euler(0f, parkedCar.transform.eulerAngles.y, 0f);",
+            motor,
+        )
+        self.assertIn("private float _drivingLookYaw;", motor)
+
+        # These are test sources, not evidence that Unity ran.
+        self.assertIn('GetMethod(\n                    "ApplyLookDelta"', playmode)
+        self.assertIn('"Driver look accumulation must wrap without drifting"', playmode)
+        self.assertIn('"Camera orbit must not steer the car"', playmode)
+        self.assertIn('"Vehicle orbit must reset after a safe exit"', playmode)
+        self.assertIn('"On-foot camera heading should match the parked car"', playmode)
+        self.assertIn("mouse and right stick", guide.lower())
+
     def test_car_board_press_cannot_same_frame_exit(self):
         motor = read("ThirdPersonMotor.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
