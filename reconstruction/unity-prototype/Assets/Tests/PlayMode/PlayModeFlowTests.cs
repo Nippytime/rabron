@@ -650,6 +650,29 @@ namespace Rabron.Prototype.Tests
                 Assert.That(alarmed.Loot.Count, Is.EqualTo(0));
                 Assert.That(alarmed.DirtyCash, Is.EqualTo(0L));
                 Assert.That(alarmed.CurrentRole, Is.EqualTo(PlayerRole.Criminal));
+                Assert.That((bool)available.Invoke(director,
+                    new object[] { StationAction.ReleaseCustody }), Is.True,
+                    "Custody release marker should be ready after an actual arrest");
+
+                // The production update must ignore a pre-arrest E/A press
+                // on the capture frame, even though the release pillar has
+                // become available beside the teleported actor.
+                var canConsume = typeof(PrototypeDirector).GetMethod(
+                    "CanConsumeInteraction", BindingFlags.Static | BindingFlags.NonPublic);
+                Assert.That(canConsume, Is.Not.Null);
+                Assert.That((bool)canConsume.Invoke(null, new object[] { true, true }),
+                            Is.False,
+                            "Arrest frame must not reuse an earlier press to release custody");
+                Assert.That((bool)canConsume.Invoke(null, new object[] { false, true }),
+                            Is.False, "No button press must remain inert during capture");
+                Assert.That((bool)canConsume.Invoke(null, new object[] { false, false }),
+                            Is.False, "No press on later frames must remain inert");
+                Assert.That((bool)canConsume.Invoke(null, new object[] { true, false }),
+                            Is.True,
+                            "A fresh later-frame press must allow release from custody");
+                Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Arrested),
+                            "Guard capture must remain active until a new release interaction");
+
                 Interact(StationAction.ReleaseCustody);
                 Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(alarmed.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
