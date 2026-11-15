@@ -136,6 +136,9 @@ namespace Rabron.Reconstruction
                     "Conversion quote must be non-negative and cannot mint value.");
             Require(durationSeconds > 0,
                     "A positive laundering duration must be supplied.");
+            // Checkpoints require a positive completion timestamp on reload.
+            Require(nowSeconds >= 0,
+                    "Laundering start time cannot be negative.");
             long finish = checked(nowSeconds + durationSeconds);
             _laundering = new LaunderingJob(dirtyAmount, cleanPayout, finish);
             DirtyCash -= dirtyAmount;
@@ -232,6 +235,12 @@ namespace Rabron.Reconstruction
                 Enum.IsDefined(typeof(HeistPhase), snapshot.Phase);
             if (!supported)
                 throw new ArgumentException("Unsupported or invalid session save.", nameof(snapshot));
+
+            // Police may scout but cannot start a robbery in this state machine.
+            // Reject unreachable later phases instead of loading a forged role.
+            if (snapshot.Role == PlayerRole.Police &&
+                snapshot.Phase != HeistPhase.Idle && snapshot.Phase != HeistPhase.Scouted)
+                throw new ArgumentException("Police role cannot occupy a robbery state.", nameof(snapshot));
 
             if (snapshot.CounterCash < 0 || snapshot.DirtyCash < 0 ||
                 snapshot.CleanCash < 0 || snapshot.BankBalance < 0 ||

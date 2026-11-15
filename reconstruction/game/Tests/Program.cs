@@ -22,6 +22,8 @@ internal static class Program
             SnapshotPreservesLaunderingDeadline,
             SnapshotPreservesBankAcrossHeists,
             SnapshotRejectsInvalidOrTamperedState,
+            SnapshotRejectsUnreachablePoliceRobberyPhases,
+            LaunderingRejectsUnrestorableTimestamps,
         };
 
         foreach (Action test in tests)
@@ -342,6 +344,59 @@ internal static class Program
         Throws<ArgumentException>(() => HeistSession.FromSnapshot(missingJob));
 
         Throws<ArgumentNullException>(() => HeistSession.FromSnapshot(null!));
+    }
+
+    private static void SnapshotRejectsUnreachablePoliceRobberyPhases()
+    {
+        var police = new HeistSession(Zone.City, PlayerRole.Police);
+        Eq(PlayerRole.Police, HeistSession.FromSnapshot(police.ExportSnapshot()).CurrentRole);
+        police.Scout();
+        Eq(HeistPhase.Scouted, HeistSession.FromSnapshot(police.ExportSnapshot()).Phase);
+
+        var game = StartHeistWithOneItem();
+        void RejectSpoofedPolice()
+        {
+            var snapshot = game.ExportSnapshot();
+            snapshot.Role = PlayerRole.Police;
+            Throws<ArgumentException>(() => HeistSession.FromSnapshot(snapshot));
+        }
+
+        RejectSpoofedPolice(); // Robbing
+        game.Escape();
+        RejectSpoofedPolice(); // Escaped
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 30 });
+        RejectSpoofedPolice(); // CashOnCounter
+        game.CollectCounterCash();
+        RejectSpoofedPolice(); // DirtyCashCollected
+        game.StartLaundering(30, 25, 0, 2);
+        RejectSpoofedPolice(); // Laundering
+        game.CompleteLaundering(2);
+        RejectSpoofedPolice(); // Laundered
+
+        // Leaving the city legitimately resets a criminal to civilian.
+        game.LeaveCity();
+        Eq(PlayerRole.Civilian, HeistSession.FromSnapshot(game.ExportSnapshot()).CurrentRole);
+    }
+
+    private static void LaunderingRejectsUnrestorableTimestamps()
+    {
+        var game = StartHeistWithOneItem();
+        game.Escape();
+        game.SellLoot(new Dictionary<string, long> { ["camera"] = 30 });
+        game.CollectCounterCash();
+
+        Throws<InvalidOperationException>(() => game.StartLaundering(30, 25, -1, 10));
+        Throws<OverflowException>(() => game.StartLaundering(30, 25, long.MaxValue, 1));
+        Eq(HeistPhase.DirtyCashCollected, game.Phase);
+        Eq(30L, game.DirtyCash);
+
+        // Time zero is valid and the produced job survives save/reload.
+        game.StartLaundering(30, 25, 0, 1);
+        var restored = HeistSession.FromSnapshot(game.ExportSnapshot());
+        Eq(1L, restored.LaunderingReadyAt!.Value);
+        Throws<InvalidOperationException>(() => restored.CompleteLaundering(0));
+        restored.CompleteLaundering(1);
+        Eq(25L, restored.CleanCash);
     }
 
     private static HeistSession StartHeistWithOneItem()
