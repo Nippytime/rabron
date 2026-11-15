@@ -181,6 +181,8 @@ namespace Rabron.Prototype
                                               !_session.StaffControlled,
                 StationAction.Escape => _session.Phase == HeistPhase.Robbing &&
                                         _session.Loot.Count > 0,
+                StationAction.WithdrawEmptyHanded => city && criminal &&
+                    _session.Phase == HeistPhase.Robbing && _session.Loot.Count == 0,
                 StationAction.Fence => _session.Phase == HeistPhase.Escaped &&
                                        _session.Loot.Count > 0,
                 StationAction.CollectCash => _session.Phase == HeistPhase.CashOnCounter &&
@@ -236,6 +238,9 @@ namespace Rabron.Prototype
                 case StationAction.Escape:
                     _session.Escape();
                     break;
+                case StationAction.WithdrawEmptyHanded:
+                    _session.WithdrawEmptyHanded();
+                    break;
                 case StationAction.Fence:
                     var quotes = new Dictionary<string, long>();
                     foreach (string item in _session.Loot)
@@ -286,12 +291,15 @@ namespace Rabron.Prototype
                 HeistPhase.Scouted when _session.CurrentRole == PlayerRole.Civilian
                     => "Activate the red MASK marker beside the warehouse.",
                 HeistPhase.Scouted => "Go through the warehouse entrance to BEGIN HEIST.",
+                HeistPhase.Robbing when _session.AlarmRaised &&
+                                         _session.Loot.Count == 0
+                    => "ALARM! Evade the guard and use WITHDRAW outside to leave with no reward.",
                 HeistPhase.Robbing when _session.AlarmRaised
                     => "ALARM! Finish collecting loot and escape the warehouse.",
                 HeistPhase.Robbing when _session.Loot.Count == 0 && !_session.StaffControlled
-                    => "Avoid the guard's view. Approach from the side to control staff, or find loot.",
+                    => "Control the guard or collect loot; WITHDRAW outside for no reward.",
                 HeistPhase.Robbing when _session.Loot.Count == 0
-                    => "Staff controlled. Collect artwork/watch loot.",
+                    => "Staff controlled. Collect loot or use WITHDRAW outside for no reward.",
                 HeistPhase.Robbing => "Take the other object or reach the green ESCAPE marker.",
                 HeistPhase.Escaped => "Move to the western FENCE counter and sell your loot.",
                 HeistPhase.CashOnCounter => "Pick up the physical cash pile at the counter.",
