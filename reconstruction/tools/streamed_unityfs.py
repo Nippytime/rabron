@@ -15,6 +15,36 @@ from types import SimpleNamespace
 MAX_BLOCK = 32 * 1024 * 1024
 MAX_READ = 32 * 1024 * 1024
 MAX_CACHE_BYTES = 128 * 1024 * 1024
+# A giant Wwise MonoBehaviour payload can expand into many gigabytes of
+# Python values even though its serialized byte count is much smaller.
+# Above this source-scoped bound, preserve the object as explicitly unparsed.
+MAX_WWISE_MONO_OBJECT_BYTES = 8 * 1024 * 1024
+
+
+class WwiseMonoObjectBudgetExceeded(ValueError):
+    """An original MonoBehaviour was not parsed; numeric evidence incomplete."""
+
+
+def _parse_bounded_wwise_mono(reader, original, mono_type, *args, **kwargs):
+    if reader.type == mono_type:
+        raw_size = getattr(reader, "byte_size", None)
+        if type(raw_size) is not int or raw_size < 0:
+            raise WwiseMonoObjectBudgetExceeded(
+                "Missing/invalid original Wwise MonoBehaviour byte count"
+            )
+        print(f"WWISE_INVENTORY_MONO path_id={reader.path_id} "
+              f"byte_size={raw_size} budget={MAX_WWISE_MONO_OBJECT_BYTES}",
+              flush=True)
+        if raw_size > MAX_WWISE_MONO_OBJECT_BYTES:
+            print(f"WWISE_INVENTORY_MONO_UNPARSED_SIZE_BUDGET "
+                  f"path_id={reader.path_id} byte_size={raw_size}", flush=True)
+            raise WwiseMonoObjectBudgetExceeded(
+                f"Wwise MonoBehaviour byte size {raw_size} exceeds "
+                f"bounded parse budget {MAX_WWISE_MONO_OBJECT_BYTES}"
+            )
+    return original(reader, *args, **kwargs)
+
+
 
 
 class BlockStream(RawIOBase):
@@ -176,12 +206,13 @@ def _parse_without_unused_container_index(reader, original, assetbundle_type, *a
 def streamed_unityfs():
     """Temporarily replace eager UnityFS reads and unused container indexing.
 
-    The Wwise inventory counts all Unity object headers and parses every
-    MonoBehaviour. UnityPy also eagerly expands the non-MonoBehaviour
-    AssetBundle container index during SerializedFile initialization, which
-    this inventory never consults. Avoid that unbounded allocation, but keep
-    every original AssetBundle object in the counted metadata. Restore all
-    UnityPy methods on error; missing/capped MonoBehaviours still fail closed.
+    The Wwise inventory counts all original Unity object headers and parses
+    manageable MonoBehaviours. Larger original MonoBehaviours are **explicitly
+    unparsed** with a recorded reason, not reported as full numeric extraction.
+    UnityPy also eagerly builds an optional AssetBundle container index,
+    which this metadata-only inventory never uses. Preserve every original
+    object in type counts, restore all UnityPy methods on error, and never
+    hide unknown numeric fields or claim complete source code reconstruction.
     """
     from UnityPy.enums import ArchiveFlags, ArchiveFlagsOld, ClassIDType
     from UnityPy.files import BundleFile, File, ObjectReader, SerializedFile
@@ -191,10 +222,16 @@ def streamed_unityfs():
     old_fs = BundleFile.read_fs
     old_files = File.read_files
     old_parse_object = ObjectReader.parse_as_object
+    old_parse_dict = ObjectReader.parse_as_dict
 
     def parse_as_object(reader, *args, **kwargs):
         return _parse_without_unused_container_index(
             reader, old_parse_object, ClassIDType.AssetBundle, *args, **kwargs
+        )
+
+    def parse_as_dict(reader, *args, **kwargs):
+        return _parse_bounded_wwise_mono(
+            reader, old_parse_dict, ClassIDType.MonoBehaviour, *args, **kwargs
         )
 
     def read_fs(self, reader):
@@ -287,9 +324,11 @@ def streamed_unityfs():
     BundleFile.read_fs = read_fs
     File.read_files = read_files
     ObjectReader.parse_as_object = parse_as_object
+    ObjectReader.parse_as_dict = parse_as_dict
     try:
         yield
     finally:
+        ObjectReader.parse_as_dict = old_parse_dict
         ObjectReader.parse_as_object = old_parse_object
         File.read_files = old_files
         BundleFile.read_fs = old_fs
