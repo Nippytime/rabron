@@ -41,14 +41,16 @@ $arguments = @(
 
 Write-Host "Running real Unity Play Mode acceptance tests in $project"
 Write-Host "Editor: $EditorPath"
-& $EditorPath @arguments
-$exitCode = $LASTEXITCODE
+$exitCode = & (Join-Path $PSScriptRoot 'Invoke-UnityEditor.ps1') `
+    -EditorPath $EditorPath -Arguments $arguments
 
 if (-not (Test-Path -LiteralPath $results -PathType Leaf)) {
     if (Test-Path -LiteralPath $log) {
         Get-Content -LiteralPath $log -Tail 80
     }
-    throw "Unity returned $exitCode and did not produce Play Mode NUnit XML: $results"
+    throw "Unity process ended (exit $exitCode) without Play Mode NUnit XML: $results. " +
+          "Close any graphical Unity Editor already using this project. " +
+          "Check $log and the project's Logs/upm.log; no Play Mode pass is claimed."
 }
 
 try {

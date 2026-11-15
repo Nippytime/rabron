@@ -51,6 +51,7 @@ jobs:
           $tokens = $null
           $parseErrors = $null
           foreach ($script in @(
+            "reconstruction/unity-prototype/Tools/Invoke-UnityEditor.ps1",
             "reconstruction/unity-prototype/Tools/Verify-Unity.ps1",
             "reconstruction/unity-prototype/Tools/Verify-PlayMode.ps1",
             "reconstruction/unity-prototype/Tools/Assert-PlayModeResults.ps1",

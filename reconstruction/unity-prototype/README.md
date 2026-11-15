@@ -91,8 +91,9 @@ The source-only CI cannot prove that Unity compiles or plays the project.
 A real Unity 6000.5.0f1 installation can run the authored Editor smoke
 test and optionally build a Windows executable in a deterministic CLI session.
 
-Close the project in the graphical Unity Editor first, then run from
-the repository root in PowerShell:
+Close **every graphical Unity Editor instance** using this project first,
+including any Unity Hub-launched session; Unity 6.5 cannot batch-open a
+project that is already open. From the repository root in PowerShell:
 
 ~~~powershell
 # Compiles the project in Unity and checks procedural station/collider setup
@@ -106,8 +107,10 @@ the repository root in PowerShell:
 ~~~
 
 The runner locates Unity through the normal Unity Hub installation path
-(or uses the UNITY_EDITOR environment variable or -EditorPath), starts
-Unity in -batchmode, and inspects Logs/editor-smoke.log. The Editor
+(or uses the UNITY_EDITOR environment variable or -EditorPath), launches
+Unity in -batchmode with a synchronous process-tree wait, and inspects
+Logs/editor-smoke.log. Windows Unity.exe is a GUI application; an immediate
+PowerShell exit code 0 without a fresh log does not prove Editor execution. The Editor
 creates the scene through AssetDatabase and writes Windows build outputs
 inside the Unity project irrespective of the shell's current directory.
 The smoke check fails if the new Input System backend is disabled; enable
@@ -126,6 +129,15 @@ Builds/RabronPrototype.exe inside the Unity project.
 Launching the EXE remains necessary to verify input, camera, HUD, and
 the full interactive play-mode loop. The first Editor import might
 need a graphical session to activate the Input System.
+
+**If Unity reports exit 0 but no Editor log:** verify the same project is
+not already open in the graphical Editor, then inspect
+`reconstruction/unity-prototype/Logs/`, `Logs/upm.log` for Package Manager
+errors, and `%LOCALAPPDATA%\Unity\Editor\Editor.log` for fallback Editor output.
+The runner never substitutes a stale global log for its fresh per-run log.
+The failure remains unverified until the Editor creates the expected fresh
+smoke success token. See [Unity 6000.5 Editor CLI](https://docs.unity.com/en-us/engine/6000.5/manual/unity-editor/command-line-arguments/editor)
+and [Unity log locations](https://docs.unity.com/en-us/engine/6000.5/manual/scripting/debugging-and-diagnostics/log-files).
 
 **Verification status:** The hosted GitHub CI has not executed
 Unity Editor or built a Windows player. Passing Python, .NET, and
