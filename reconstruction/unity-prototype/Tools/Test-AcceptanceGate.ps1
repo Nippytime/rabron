@@ -76,6 +76,35 @@ try {
     }
     Write-Host 'PASS rejected: mismatched Unity project version'
 
+    # Synthetic child process must finish before launcher returns, even
+    # when a script path and Editor log path contain spaces. No Unity is run.
+    $launcher = Join-Path $PSScriptRoot 'Invoke-UnityEditor.ps1'
+    $fakeScript = Join-Path $temp 'Fake Editor With Spaces.ps1'
+    $fakeLog = Join-Path $temp 'Editor log with spaces.log'
+    Set-Content -LiteralPath $fakeScript -Encoding utf8 -Value @'
+param([string]$LogFile, [int]$ExitCode = 0)
+Start-Sleep -Milliseconds 250
+if ($ExitCode -ne 0) { exit $ExitCode }
+[System.IO.File]::WriteAllText($LogFile, 'SYNTHETIC_EDITOR_COMPLETED')
+'@
+    $powerShellExecutable = [System.Diagnostics.Process]::GetCurrentProcess().MainModule.FileName
+    $passedExit = & $launcher -EditorPath $powerShellExecutable `
+        -Arguments @('-NoProfile', '-File', $fakeScript, '-LogFile', $fakeLog)
+    if ($passedExit -ne 0 -or
+        -not (Test-Path -LiteralPath $fakeLog -PathType Leaf) -or
+        (Get-Content -LiteralPath $fakeLog -Raw) -ne 'SYNTHETIC_EDITOR_COMPLETED') {
+        throw 'Synchronous Unity process launcher lost delayed log or split a spaced argument.'
+    }
+    Write-Host 'PASS waited: synthetic Editor completed and wrote delayed spaced-path log'
+    Remove-Item -LiteralPath $fakeLog -Force
+    $failedExit = & $launcher -EditorPath $powerShellExecutable `
+        -Arguments @('-NoProfile', '-File', $fakeScript,
+                     '-LogFile', $fakeLog, '-ExitCode', '17')
+    if ($failedExit -ne 17 -or (Test-Path -LiteralPath $fakeLog)) {
+        throw 'Unity process launcher did not propagate native failure or invented a log.'
+    }
+    Write-Host 'PASS rejected: synthetic Editor returned nonzero without log'
+
     $evidence = Join-Path $temp 'unity-acceptance.json'
     Set-Content -LiteralPath $evidence -Value '{"automatic_gates_passed":true}' -Encoding utf8
     $nonexistent = Join-Path $temp 'nonexistent-unity-editor.exe'

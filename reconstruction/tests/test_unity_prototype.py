@@ -987,6 +987,40 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Test-AcceptanceGate.ps1", workflow)
         self.assertIn("Verify-Acceptance.ps1", workflow)
 
+    def test_unity_gui_editor_launch_waits_for_process_and_fresh_log(self):
+        launcher = (UNITY / "Tools/Invoke-UnityEditor.ps1").read_text(
+            encoding="utf-8"
+        )
+        smoke = (UNITY / "Tools/Verify-Unity.ps1").read_text(
+            encoding="utf-8"
+        )
+        playmode = (UNITY / "Tools/Verify-PlayMode.ps1").read_text(
+            encoding="utf-8"
+        )
+        fixtures = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8"
+        )
+        workflow = (ROOT.parent / ".github/workflows/reconstruction-tests.yml").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("Start-Process -FilePath $EditorPath", launcher)
+        self.assertIn("-PassThru -Wait", launcher)
+        self.assertIn("$process.ExitCode", launcher)
+        self.assertIn("$argument -match", launcher)
+        self.assertIn("Invoke-UnityEditor.ps1", smoke)
+        self.assertIn("Invoke-UnityEditor.ps1", playmode)
+        self.assertNotIn("& $EditorPath @arguments", smoke)
+        self.assertNotIn("& $EditorPath @arguments", playmode)
+        self.assertIn("if ($exitCode -ne 0 -or -not $logText.Contains($token))", smoke)
+        self.assertIn("No Editor smoke success is claimed", smoke)
+        self.assertIn("without Play Mode NUnit XML", playmode)
+        self.assertIn("PASS waited: synthetic Editor completed", fixtures)
+        self.assertIn("PASS rejected: synthetic Editor returned nonzero", fixtures)
+        self.assertIn("Tools/Invoke-UnityEditor.ps1", workflow)
+        self.assertIn("PowerShell exit code 0 without a fresh log", guide)
+
     def test_real_unity_acceptance_requires_binary_version_attestation(self):
         runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
             encoding="utf-8"

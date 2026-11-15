@@ -49,12 +49,18 @@ Write-Host "Unity Editor: $EditorPath"
 Write-Host "Project:      $project"
 Write-Host "Action:       $method"
 
-# Do not launch this in the background or report success before Unity exits.
-& $EditorPath @arguments
-$exitCode = $LASTEXITCODE
+# Unity is a GUI executable: wait for the real process tree, not just a
+# PowerShell native-command invocation that may detach immediately.
+$exitCode = & (Join-Path $PSScriptRoot 'Invoke-UnityEditor.ps1') `
+    -EditorPath $EditorPath -Arguments $arguments
 
 if (-not (Test-Path -LiteralPath $log -PathType Leaf)) {
-    throw "Unity did not create a log. Exit code: $exitCode"
+    $fallback = Join-Path $env:LOCALAPPDATA 'Unity\Editor\Editor.log'
+    $packageLog = Join-Path $project 'Logs\upm.log'
+    throw "Unity process ended (exit $exitCode) without creating fresh Editor log: $log. " +
+          "Close any graphical Unity Editor already using this project. " +
+          "Check the project Logs directory and fallback Editor log at $fallback " +
+          "(Package Manager: $packageLog). No Editor smoke success is claimed."
 }
 
 $logText = Get-Content -LiteralPath $log -Raw
