@@ -201,6 +201,9 @@ namespace Rabron.Prototype.Tests
                     new object[] { StationAction.VehicleEnter }), Is.True);
                 Interact(StationAction.VehicleEnter);
                 Assert.That(motor.IsDriving && car.Occupied, Is.True);
+                var onFootVisual = motor.transform.Find("Player mesh").GetComponent<Renderer>();
+                Assert.That(onFootVisual.enabled, Is.False,
+                            "Seated on-foot mesh must not obstruct the car camera");
                 Assert.That(motor.GetComponent<CharacterController>().enabled, Is.False);
                 Assert.That((bool)availableVehicle.Invoke(director,
                     new object[] { StationAction.VehicleEnter }), Is.False);
@@ -217,6 +220,8 @@ namespace Rabron.Prototype.Tests
                             "Stationary car must allow a collision-clear exit");
                 Assert.That(motor.IsDriving || car.Occupied, Is.False);
                 Assert.That(motor.GetComponent<CharacterController>().enabled, Is.True);
+                Assert.That(onFootVisual.enabled, Is.True,
+                            "Leaving the car must restore the walking avatar");
                 Assert.That(driver.Phase, Is.EqualTo(HeistPhase.Idle));
                 Assert.That(driver.CurrentRole, Is.EqualTo(PlayerRole.Civilian));
                 Assert.That(driver.CleanCash, Is.EqualTo(0L));
