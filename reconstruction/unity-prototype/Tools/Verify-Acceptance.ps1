@@ -31,11 +31,11 @@ if (Test-Path -LiteralPath $editorLogCopy) {
 }
 
 if ([Environment]::OSVersion.Platform -ne [PlatformID]::Win32NT) {
-    throw 'Real Unity acceptance requires a Windows host with Unity 6000.3.18f1.'
+    throw 'Real Unity acceptance requires a Windows host with Unity 6000.5.0f1.'
 }
 
 if (-not $EditorPath) {
-    $EditorPath = Join-Path $env:ProgramFiles 'Unity\Hub\Editor\6000.3.18f1\Editor\Unity.exe'
+    $EditorPath = Join-Path $env:ProgramFiles 'Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe'
 }
 if (-not (Test-Path -LiteralPath $EditorPath -PathType Leaf)) {
     throw "Unity Editor missing: $EditorPath"

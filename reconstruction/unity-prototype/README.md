@@ -1,6 +1,6 @@
-# ROB RUN-style prototype — Unity 6.3
+# ROB RUN-style prototype — Unity 6.5
 
-**Status: source implementation; Unity Editor / packaged build not yet smoke-tested.**
+**Status: source implementation targeting Unity 6000.5.0f1; real Editor / packaged build not yet smoke-tested.**
 
 This is an independently authored playable **prototype design**, using Unity
 primitives and the tested reconstruction gameplay core. It is not the original
@@ -42,13 +42,13 @@ The local gameplay package still resolves because it also lives inside
 
 ## Open and play
 
-1. Install Unity **6000.3.18f1** (or compatible Unity 6000.3 release) with
+1. Install Unity **6000.5.0f1** (exact Editor build required for automated acceptance) with
    Windows build support if you intend to produce a Windows executable.
 2. Open **this folder** in Unity Hub:
    \`reconstruction/unity-prototype/\`
    (do not open the repository root).
 3. Wait for Package Manager import. The manifest pins
-   \`com.unity.inputsystem@1.20.1\` and enables Unity's built-in Physics, Audio and UI Toolkit
+   \`com.unity.inputsystem@1.20.1\` and \`com.unity.test-framework@1.7.0\`, and enables Unity's built-in Physics, Audio and UI Toolkit
    modules. It references the gameplay core as a
    **local package** at \`../../game/Core\`. This local package path is relative to the project's Packages
    directory, not the shell's working directory. The original game content
@@ -88,7 +88,7 @@ audio mix in this early demo.
 ## Verifiable Unity Editor smoke test (Windows)
 
 The source-only CI cannot prove that Unity compiles or plays the project.
-A real Unity 6000.3.18f1 installation can run the authored Editor smoke
+A real Unity 6000.5.0f1 installation can run the authored Editor smoke
 test and optionally build a Windows executable in a deterministic CLI session.
 
 Close the project in the graphical Unity Editor first, then run from
@@ -102,7 +102,7 @@ the repository root in PowerShell:
 .\reconstruction\unity-prototype\Tools\Verify-Unity.ps1 -BuildWindows
 
 # With a custom Unity installation path
-.\reconstruction\unity-prototype\Tools\Verify-Unity.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe' -BuildWindows
+.\reconstruction\unity-prototype\Tools\Verify-Unity.ps1 -EditorPath 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe' -BuildWindows
 ~~~
 
 The runner locates Unity through the normal Unity Hub installation path
@@ -133,8 +133,9 @@ PowerShell syntax checks cannot establish Unity runtime success.
 
 ## One-command real Unity acceptance evidence (Windows)
 
-Use this after committing a known source revision, with the Unity project
-**closed in the graphical Editor**. This command runs the existing Editor
+Use this after checking out a clean known \`dev\` source revision, with the Unity project
+**closed in the graphical Editor**. The default Editor is
+\`C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe\`. This command runs the existing Editor
 smoke, real Play Mode NUnit and Windows build validation **in sequence**,
 and stops if any stage fails. It also runs a bounded **headless smoke of the
 actual freshly built Windows player** after the Unity build:
@@ -143,7 +144,7 @@ actual freshly built Windows player** after the Unity build:
 .\reconstruction\unity-prototype\Tools\Verify-Acceptance.ps1
 
 # Alternate installed Editor (requires real Unity, not a mock):
-.\reconstruction\unity-prototype\Tools\Verify-Acceptance.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe'
+.\reconstruction\unity-prototype\Tools\Verify-Acceptance.ps1 -EditorPath 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe'
 ~~~
 
 The combined gate refuses a missing Editor, non-Windows host, **incorrect
@@ -163,7 +164,7 @@ Play Mode and the Windows build; a changed scene fails acceptance.
 Before the Editor smoke, the preflight invokes the supplied **actual Unity
 Editor executable** with its officially documented `-version` flag, requiring
 a successful exit and **exactly one Unity-version token equal to
-`6000.3.18f1`**. The configured `ProjectVersion.txt` must match as well.
+`6000.5.0f1`**. The configured `ProjectVersion.txt` must match as well.
 An executable from a different Unity release cannot satisfy acceptance
 merely because it was supplied using `-EditorPath` or has a plausible
 filename. The evidence manifest records `actual_editor_version` separately
@@ -198,7 +199,7 @@ graphics, camera interaction, human controls, real vehicle feel or windowed
 performance. A timeout, crash, missing marker or missing log rejects the
 entire acceptance manifest. Unity's supported standalone command flags
 are documented at
-https://docs.unity.com/en-us/engine/6000.3/manual/unity-editor/command-line-arguments/player.
+https://docs.unity.com/en-us/engine/6000.5/manual/unity-editor/command-line-arguments/player.
 This is **not a real Unity run in hosted CI**, and Git HEAD alone does not
 fingerprint the machine's Unity-generated scene, settings or installed packages.
 No original game resources are copied into the manifest.
@@ -268,7 +269,7 @@ Close the graphical Unity Editor first, then run from repository root:
 .\reconstruction\unity-prototype\Tools\Verify-PlayMode.ps1
 
 # With a custom Editor location
-.\reconstruction\unity-prototype\Tools\Verify-PlayMode.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe'
+.\reconstruction\unity-prototype\Tools\Verify-PlayMode.ps1 -EditorPath 'C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe'
 ~~~
 
 Unity test discovery uses a **dedicated Editor-only test assembly** with
@@ -310,7 +311,7 @@ test coverage; it **does not** execute Unity. A real NUnit report is needed
 before reporting an actual Play Mode pass.
 
 Unity reference:
-https://docs.unity.com/en-us/engine/6000.3/manual/programming-environment/test-framework-introduction/running-tests/run-tests-from-command-line
+https://docs.unity.com/en-us/engine/6000.5/manual/programming-environment/test-framework-introduction/running-tests/run-tests-from-command-line
 
 ## Local progress saving
 
@@ -502,10 +503,11 @@ This uses an invented, low-speed **CharacterController** car with a simple
 original cube body and wheels. It is not a professional wheel/suspension
 simulation, model extracted from the reference game, AI traffic system or
 server-authoritative drive. **Vehicle position resets on restart**; normal
-player banking, courier and heist saves are unaffected. The car cannot carry
-an active courier parcel and does not transfer gameplay role or money. Real
-keyboard/gamepad steering, obstacles, exit clearance and a Windows executable
-must still be checked in Unity 6000.3; the hosted Python/.NET CI has not
+player banking, courier and heist saves are unaffected. The car can carry
+an active courier parcel, but boarding, driving and exiting never deliver it
+or change gameplay role or money. Real keyboard/gamepad steering, obstacles,
+exit clearance and a Windows executable
+must still be checked in Unity 6000.5; the hosted Python/.NET CI has not
 driven the car.
 
 ## Civilian courier alternative (no robbery)

@@ -10,10 +10,10 @@ Set-StrictMode -Version Latest
 
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 if (-not $EditorPath) {
-    $EditorPath = Join-Path $env:ProgramFiles 'Unity\Hub\Editor\6000.3.18f1\Editor\Unity.exe'
+    $EditorPath = Join-Path $env:ProgramFiles 'Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe'
 }
 if (-not (Test-Path -LiteralPath $EditorPath -PathType Leaf)) {
-    throw "Unity 6000.3.18f1 Editor not found at '$EditorPath'. Install through Unity Hub or pass -EditorPath."
+    throw "Unity 6000.5.0f1 Editor not found at '$EditorPath'. Install through Unity Hub or pass -EditorPath."
 }
 $EditorPath = (Resolve-Path -LiteralPath $EditorPath).Path
 

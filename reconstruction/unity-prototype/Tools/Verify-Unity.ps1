@@ -1,4 +1,4 @@
-# Requires Unity Hub Editor 6000.3.18f1 (or an explicit -EditorPath).
+# Requires Unity Hub Editor 6000.5.0f1 (or an explicit -EditorPath).
 # Run while the same Unity project is NOT already open.
 [CmdletBinding()]
 param(
@@ -10,7 +10,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-$editorVersion = '6000.3.18f1'
+$editorVersion = '6000.5.0f1'
 
 if (-not $EditorPath) {
     $EditorPath = Join-Path $env:ProgramFiles "Unity\Hub\Editor\$editorVersion\Editor\Unity.exe"

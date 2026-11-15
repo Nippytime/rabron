@@ -44,21 +44,37 @@ try {
         Write-Host "PASS rejected: Unity Editor $scenario"
     }
 
-    Set-FakeEditorVersion '6000.3.18f1' 0
+    Set-FakeEditorVersion '6000.5.0f1' 0
     $confirmed = & $versionGate -EditorPath $fakeEditor -ProjectVersionPath $versionFile
-    if ($confirmed -cne '6000.3.18f1') {
+    if ($confirmed -cne '6000.5.0f1') {
         throw 'Correct Unity Editor binary version was not attested.'
     }
-    Write-Host 'PASS accepted: exact Unity Editor 6000.3.18f1 version'
+    Write-Host 'PASS accepted: exact Unity Editor 6000.5.0f1 version'
 
-    Set-FakeEditorVersion '6000.3.17f1' 0
-    Assert-VersionRejected 'wrong installed version'
-    Set-FakeEditorVersion '6000.3.18f1 6000.3.17f1' 0
+    Set-FakeEditorVersion '6000.3.18f1' 0
+    Assert-VersionRejected 'wrong installed version (previous editor)'
+    Set-FakeEditorVersion '6000.5.0f1 6000.3.17f1' 0
     Assert-VersionRejected 'ambiguous version output'
-    Set-FakeEditorVersion '6000.3.18f1' 3
+    Set-FakeEditorVersion '6000.5.0f1' 3
     Assert-VersionRejected 'nonzero native version probe'
     Set-FakeEditorVersion 'not-a-version' 0
     Assert-VersionRejected 'missing version token'
+
+    # Matching executable is insufficient if a stale Unity project still
+    # targets the old Editor. This never alters the tracked ProjectVersion.txt.
+    Set-FakeEditorVersion '6000.5.0f1' 0
+    $staleProject = Join-Path $temp 'old-ProjectVersion.txt'
+    Set-Content -LiteralPath $staleProject -Encoding ascii -Value 'm_EditorVersion: 6000.3.18f1'
+    $rejectedProject = $false
+    try {
+        & $versionGate -EditorPath $fakeEditor -ProjectVersionPath $staleProject |
+            Out-Null
+    }
+    catch { $rejectedProject = $true }
+    if (-not $rejectedProject) {
+        throw 'Stale Unity project version was falsely accepted.'
+    }
+    Write-Host 'PASS rejected: mismatched Unity project version'
 
     $evidence = Join-Path $temp 'unity-acceptance.json'
     Set-Content -LiteralPath $evidence -Value '{"automatic_gates_passed":true}' -Encoding utf8

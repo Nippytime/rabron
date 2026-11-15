@@ -50,7 +50,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Unity.InputSystem", prototype_assembly["references"])
         self.assertEqual((UNITY / "ProjectSettings/ProjectVersion.txt")
                          .read_text(encoding="utf-8").strip(),
-                         "m_EditorVersion: 6000.3.18f1")
+                         "m_EditorVersion: 6000.5.0f1")
 
     def test_windows_unity_acceptance_clone_targets_dev_not_default_main(self):
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
@@ -68,6 +68,30 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("git rev-parse --verify HEAD", clone)
         self.assertIn("main", clone)
         self.assertNotIn("git clone --filter=blob:none --sparse", clone)
+
+    def test_installed_unity_6000_5_version_is_consistent_across_native_gates(self):
+        version = "6000.5.0f1"
+        settings = (UNITY / "ProjectSettings/ProjectVersion.txt").read_text(
+            encoding="utf-8"
+        )
+        manifest = json.loads((UNITY / "Packages/manifest.json").read_text(
+            encoding="utf-8"
+        ))["dependencies"]
+        self.assertEqual(settings.strip(), f"m_EditorVersion: {version}")
+        self.assertEqual(manifest["com.unity.inputsystem"], "1.20.1")
+        self.assertEqual(manifest["com.unity.test-framework"], "1.7.0")
+        tools = UNITY / "Tools"
+        for name in ("Assert-UnityEditorVersion.ps1", "Verify-Unity.ps1",
+                     "Verify-PlayMode.ps1", "Verify-Acceptance.ps1"):
+            with self.subTest(script=name):
+                script = (tools / name).read_text(encoding="utf-8")
+                self.assertIn(version, script)
+                self.assertNotIn("6000.3.18f1", script)
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+        self.assertIn(r"C:\Program Files\Unity\Hub\Editor\6000.5.0f1\Editor\Unity.exe",
+                      guide)
+        self.assertIn("com.unity.test-framework@1.7.0", guide)
+        self.assertNotIn("6000.3.18f1", guide)
 
     def test_every_station_is_implemented_and_placed_in_the_world(self):
         marker = read("InteractionMarker.cs")
@@ -619,7 +643,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         )
         save = read("PrototypeSaveStore.cs")
 
-        self.assertEqual(manifest["com.unity.test-framework"], "1.6.0")
+        self.assertEqual(manifest["com.unity.test-framework"], "1.7.0")
         self.assertEqual(asmdef["name"], "Rabron.Prototype.PlayModeTests")
         self.assertIn("Rabron.Prototype", asmdef["references"])
         self.assertIn("Rabron.GameCore", asmdef["references"])
@@ -978,7 +1002,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         )
         guide = (UNITY / "README.md").read_text(encoding="utf-8")
 
-        self.assertIn("'6000.3.18f1'", verifier)
+        self.assertIn("'6000.5.0f1'", verifier)
         self.assertIn("m_EditorVersion:", verifier)
         self.assertIn("ProjectVersionPath", verifier)
         self.assertIn("& $EditorPath -version", verifier)
@@ -1002,6 +1026,9 @@ class UnityPrototypeStructureTests(unittest.TestCase):
             self.assertIn(scenario, fixture)
         self.assertIn("actual unity editor version", guide.lower())
         self.assertIn("not a real unity", guide.lower())
+        self.assertIn("PASS rejected: mismatched Unity project version", fixture)
+        self.assertIn("6000.3.18f1", fixture,
+                      "Old Editor must remain an explicit negative test")
 
     def test_unity_acceptance_rejects_git_head_drift_between_gates(self):
         gate = (UNITY / "Tools/Assert-UnitySourceTree.ps1").read_text(
