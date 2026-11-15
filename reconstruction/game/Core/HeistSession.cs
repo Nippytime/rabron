@@ -191,8 +191,9 @@ namespace Rabron.Reconstruction
 
         public void LeaveCity()
         {
-            Require(CurrentZone == Zone.City && !CarryingCourierParcel,
-                    "Deliver courier cargo before leaving the city.");
+            Require(CurrentZone == Zone.City && !CarryingCourierParcel &&
+                    Phase != HeistPhase.Arrested,
+                    "Custody must be released before leaving the city.");
             CurrentZone = Zone.Desert;
             if (CurrentRole == PlayerRole.Criminal)
                 CurrentRole = PlayerRole.Civilian; // Official status reset occurs on city exit.
