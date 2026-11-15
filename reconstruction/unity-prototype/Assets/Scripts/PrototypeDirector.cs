@@ -132,8 +132,14 @@ namespace Rabron.Prototype
             bool criminal = _session.CurrentRole == PlayerRole.Criminal;
             return action switch
             {
-                StationAction.Scout => city && _session.Phase == HeistPhase.Idle,
+                StationAction.Scout => city && _session.Phase == HeistPhase.Idle &&
+                                       !_session.CarryingCourierParcel,
+                StationAction.CourierPickup => city && civilian &&
+                    _session.Phase == HeistPhase.Idle && !_session.CarryingCourierParcel,
+                StationAction.CourierDropoff => city && civilian &&
+                    _session.Phase == HeistPhase.Idle && _session.CarryingCourierParcel,
                 StationAction.Mask => city && civilian &&
+                                      !_session.CarryingCourierParcel &&
                                       (_session.Phase == HeistPhase.Idle ||
                                        _session.Phase == HeistPhase.Scouted),
                 StationAction.BeginRobbery => city && criminal &&
@@ -167,6 +173,12 @@ namespace Rabron.Prototype
         {
             switch (marker.Action)
             {
+                case StationAction.CourierPickup:
+                    _session.PickUpCourierParcel();
+                    break;
+                case StationAction.CourierDropoff:
+                    _session.DeliverCourierParcel(_balance.CourierReward);
+                    break;
                 case StationAction.Scout:
                     _session.Scout();
                     break;
@@ -228,7 +240,11 @@ namespace Rabron.Prototype
         {
             return _session.Phase switch
             {
-                HeistPhase.Idle => "Move north to the cyan SCOUT marker near the warehouse.",
+                HeistPhase.Idle when _session.CarryingCourierParcel
+                    => "Deliver the legal parcel at the green recipient kiosk across the road.",
+                HeistPhase.Idle when _session.CurrentRole == PlayerRole.Civilian
+                    => "Choose a legal COURIER job to the west or SCOUT a heist to the north.",
+                HeistPhase.Idle => "Travel to the warehouse to plan your next heist.",
                 HeistPhase.Scouted when _session.CurrentRole == PlayerRole.Civilian
                     => "Activate the red MASK marker beside the warehouse.",
                 HeistPhase.Scouted => "Go through the warehouse entrance to BEGIN HEIST.",
