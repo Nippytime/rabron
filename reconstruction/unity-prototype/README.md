@@ -459,7 +459,10 @@ around the city.
    boundary; no reward or save migration is invented.
 9. As a **civilian**, open the bank account at the ATM if not already open,
    and deposit clean cash. A nearby new-heist station resets just the
-   heist phase and retains account balances.
+   heist phase and retains account balances. Both the actual station and
+   the portable gameplay core now require **civilian status inside the city**
+   before resetting; laundering alone never lets a masked criminal start
+   another cycle without the city-exit status clear.
 
 The prototype has one stationary guard **placeholder** whose line-of-sight
 sensor raises an alarm when the player is seen. If the guard subsequently
