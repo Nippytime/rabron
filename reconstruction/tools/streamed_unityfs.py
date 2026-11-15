@@ -164,12 +164,12 @@ def streamed_unityfs():
     old_files = File.File.read_files
 
     def read_fs(self, reader):
+        if self.signature != "UnityFS":
+            return old_fs(self, reader)
         reader.read_long()  # declared full bundle size
         compressed_size = reader.read_u_int()
         uncompressed_size = reader.read_u_int()
         flags = reader.read_u_int()
-        if self.signature != "UnityFS":
-            return old_fs(self, reader)
         version = self.parse_version()
         if (version < (2020,) or
                 (version[0] == 2020 and version < (2020, 3, 34)) or

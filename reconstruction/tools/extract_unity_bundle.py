@@ -57,8 +57,7 @@ def numeric_fields(data, *, max_fields=512, max_depth=16,
 
 
 def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
-                max_depth=16, path_ids=None, expected_sha256=None,
-                streamed_unityfs=False):
+                max_depth=16, path_ids=None, expected_sha256=None):
     if max_fields < 1 or max_depth < 0:
         raise ValueError("max_fields must be positive and max_depth nonnegative")
     if path_ids is not None:
@@ -87,12 +86,7 @@ def scan_bundle(path: Path, *, max_behaviours=None, max_fields=512,
 
     if expected_sha256 is not None and sha256 != expected_sha256:
         raise ValueError("Source bundle SHA-256 does not match recorded evidence")
-    if streamed_unityfs:
-        from reconstruction.tools.streamed_unityfs import streamed_unityfs as stream
-        with stream():
-            environment = UnityPy.load(str(path))
-    else:
-        environment = UnityPy.load(str(path))
+    environment = UnityPy.load(str(path))
     objects = Counter()
     errors = Counter()
     records = []
