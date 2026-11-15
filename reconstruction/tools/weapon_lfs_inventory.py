@@ -21,6 +21,7 @@ AD_EVIDENCE = "GitHub Actions W1-AD original equipment-realm LFS source inventor
 AE_EVIDENCE = "GitHub Actions W1-AE original RC556-TAG12K LFS source inventory artifact"
 AF_EVIDENCE = "GitHub Actions W1-AF original KL545-character LFS source inventory artifact"
 AG_EVIDENCE = "GitHub Actions W1-AG original global-hub LFS source inventory artifact"
+AH_EVIDENCE = "GitHub Actions W1-AH original shared-props Wwise-battle LFS source inventory artifact"
 FIELDS = 2048
 DEPTH = 32
 NAMES = {"weapon-mc10_assets_all.bundle", "weapon-pdw90_assets_all.bundle"}
@@ -28,6 +29,7 @@ AD_NAMES = {"equipement_assets_vfx.bundle", "space-realm_scenes_all.bundle"}
 AE_NAMES = {"weapon-rc556_assets_all.bundle", "weapon-tag12k_assets_all.bundle"}
 AF_NAMES = {"weapon-kl545_assets_all.bundle", "character_assets_.bundle"}
 AG_NAMES = {"space-global_assets_all.bundle", "location-hub_standalone_scenes_all.bundle"}
+AH_NAMES = {"shared-environment-props_assets_all.bundle", "wwisedata_windows_battle_assets_all.bundle"}
 HEX40 = re.compile(r"[a-f0-9]{40}\Z")
 HEX64 = re.compile(r"[a-f0-9]{64}\Z")
 
@@ -37,7 +39,7 @@ def load_targets(path):
     if data.get("schema_version") != 1 or len(data.get("sources", [])) != 2:
         raise ValueError("Exactly two versioned LFS source targets required")
     sources = data["sources"]
-    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES):
+    if {e.get("bundle", "").removeprefix(PREFIX) for e in sources} not in (NAMES, AD_NAMES, AE_NAMES, AF_NAMES, AG_NAMES, AH_NAMES):
         raise ValueError("Unexpected original LFS source scope")
     for e in sources:
         if (set(e) != {"bundle", "git_blob_sha", "lfs_oid_sha256", "size_bytes"}
@@ -93,8 +95,14 @@ def source_plan(sources, ledger, entries, *, expected_tracked=330,
 def scan(entry, run_url, *, scan_evidence=EVIDENCE):
     path = Path(entry["bundle"])
     verified = verify_source(path, entry, phase="bytes")
-    raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
-                      expected_sha256=verified["sha256"])
+    if path.name == "wwisedata_windows_battle_assets_all.bundle":
+        from reconstruction.tools.streamed_unityfs import streamed_unityfs
+        with streamed_unityfs():
+            raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
+                              expected_sha256=verified["sha256"])
+    else:
+        raw = scan_bundle(path, max_fields=FIELDS, max_depth=DEPTH,
+                          expected_sha256=verified["sha256"])
     summary = summarize(raw, samples_per_category=3)
     checked = validate(raw, summary, source=entry["bundle"],
                        expected_size=entry["size_bytes"],
@@ -148,6 +156,30 @@ def reconcile(plan, records, ledger, run_url, tracked, *,
                 type(record.get("unparsed_records")) is not int or
                 record["unparsed_records"] < 0):
             raise ValueError("Source record lacks measured original identity")
+        total = record["monobehaviours_total"]
+        parsed = record.get("monobehaviours_parsed")
+        unparsed = record["unparsed_records"]
+        capped = record.get("numeric_field_cap_records")
+        complete = record.get("bounded_numeric_scan_complete")
+        objects = record.get("objects_by_type")
+        candidates = record.get("candidate_field_counts")
+        if (type(parsed) is not int or parsed < 0 or
+                parsed + unparsed != total or
+                type(capped) is not int or not 0 <= capped <= parsed or
+                type(complete) is not bool or
+                complete != (unparsed == 0 and capped == 0) or
+                not isinstance(objects, dict) or not objects or
+                any(not isinstance(name, str) or not name or
+                    type(count) is not int or count < 0
+                    for name, count in objects.items()) or
+                sum(objects.values()) <= 0 or
+                objects.get("MonoBehaviour", 0) != total or
+                not isinstance(candidates, dict) or
+                set(candidates) != {"economy", "combat", "progression",
+                                    "timing_and_world"} or
+                any(type(count) is not int or count < 0
+                    for count in candidates.values())):
+            raise ValueError("Original Unity object/MonoBehaviour/numeric accounting mismatch")
     if plan["mode"] == "new":
         if any(e["bundle"] in old for e in records):
             raise ValueError("Original source was documented before scan")
@@ -202,6 +234,8 @@ def main():
         evidence, log_prefix = AF_EVIDENCE, "W1AF"
     elif names == AG_NAMES:
         evidence, log_prefix = AG_EVIDENCE, "W1AG"
+    elif names == AH_NAMES:
+        evidence, log_prefix = AH_EVIDENCE, "W1AH"
     else:
         evidence, log_prefix = EVIDENCE, "W1AC"
     ledger = json.loads(args.ledger.read_text(encoding="utf-8"))

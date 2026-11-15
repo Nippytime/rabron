@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "scope": "W1-AH two original shared environment props and Wwise battle Git LFS UnityFS sources; original pointer identities only",
+  "sources": [
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/shared-environment-props_assets_all.bundle",
+      "git_blob_sha": "cf10acf22628deb01f1c30aff6b435e1f3646ede",
+      "lfs_oid_sha256": "4f6060da626a580259fd7f1eec148693e0b727e6f52966afa56fd692224671f5",
+      "size_bytes": 114599702
+    },
+    {
+      "bundle": "StreamingAssets/aa/StandaloneWindows64/wwisedata_windows_battle_assets_all.bundle",
+      "git_blob_sha": "127dca708caaabc64ccf0f8548112a0a3df2b766",
+      "lfs_oid_sha256": "178aa3dfc5353830250498240b1822e31f825baa7b0bef6925d1dd718fde8c59",
+      "size_bytes": 107969136
+    }
+  ]
+}
