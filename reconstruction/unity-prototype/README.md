@@ -542,6 +542,14 @@ configure the ScriptableObject in the Inspector, and save it as
 \`Assets/Resources/DemoEconomy.asset\`. The runtime loads it automatically.
 No hard-coded economic rates live in the portable \`HeistSession\` core.
 
+The demo's clean payout uses **overflow-safe integer arithmetic**:
+`floor(dirtyAmount × percent / 100)`. It correctly handles a positive
+`long.MaxValue` dirty balance at 80% or 100% without floating point,
+silent clamping or a changed exchange rate. A configured percentage outside
+0–100 is rejected even if set programmatically rather than in the Inspector.
+A real Unity Editor smoke scenario is authored for boundary values but
+**not yet executed** in hosted CI; these figures are not original-game rates.
+
 ## Implementation
 
 - \`Assets/Scripts/PrototypeBoot.cs\`: on-scene-load composition root.

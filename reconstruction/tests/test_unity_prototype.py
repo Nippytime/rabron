@@ -125,6 +125,31 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Test-Path -LiteralPath $exe", runner)
         self.assertNotIn("ignorecompilererrors", runner.lower())
 
+    def test_demo_laundering_percentage_is_exact_and_overflow_safe(self):
+        balance = read("PrototypeBalance.cs")
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("if (amount <= 0)", balance)
+        self.assertIn(
+            "CleanPayoutPercent < 0 || CleanPayoutPercent > 100", balance
+        )
+        self.assertIn("long whole = amount / 100;", balance)
+        self.assertIn("long remainder = amount % 100;", balance)
+        self.assertIn("checked(whole * CleanPayoutPercent +", balance)
+        self.assertIn("remainder * CleanPayoutPercent / 100", balance)
+        self.assertNotIn("amount * CleanPayoutPercent / 100", balance)
+        self.assertIn("ValidateDemoEconomy();", smoke)
+        self.assertIn("ScriptableObject.CreateInstance<PrototypeBalance>()", smoke)
+        self.assertIn("CleanPayoutFor(long.MaxValue)", smoke)
+        self.assertIn("7378697629483820645L", smoke)
+        self.assertIn("new[] { -1, 101 }", smoke)
+        self.assertIn("UnityEngine.Object.DestroyImmediate(economy)", smoke)
+        self.assertIn("overflow-safe", guide.lower())
+        self.assertIn("not yet", guide.lower())
+
     def test_fence_cash_is_physical_but_only_session_credits_money(self):
         world = read("PrototypeWorld.cs")
         director = read("PrototypeDirector.cs")
