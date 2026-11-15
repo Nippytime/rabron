@@ -27,6 +27,12 @@ namespace Rabron.Prototype
             var audio = FindFirstObjectByType<PrototypeAudioFeedback>();
             var guard = FindFirstObjectByType<GuardSensor>();
             var vehicle = FindFirstObjectByType<PrototypeVehicle>();
+            // The published procedural warehouse, not just an Editor-only
+            // fixture, must include usable solid crouch cover.
+            Transform cover = director == null
+                ? null : director.transform.Find("Warehouse stealth cover");
+            BoxCollider coverCollider = cover == null
+                ? null : cover.GetComponent<BoxCollider>();
             var cash = FindObjectsByType<CashPilePresenter>(
                 FindObjectsInactive.Include, FindObjectsSortMode.None);
             var parcels = FindObjectsByType<CourierParcelPresenter>(
@@ -46,6 +52,8 @@ namespace Rabron.Prototype
                 guard != null && vehicle != null &&
                 vehicle.GetComponent<CharacterController>() != null &&
                 !vehicle.Occupied &&
+                coverCollider != null && coverCollider.enabled &&
+                !coverCollider.isTrigger &&
                 cash.Length == 1 && parcels.Length == 1 &&
                 markers.Length == 21 && actions.Count == 21;
 
@@ -59,7 +67,7 @@ namespace Rabron.Prototype
                 Debug.LogError("RABRON_WINDOWS_PLAYER_SMOKE_FAILED: " +
                     (booted ? saveError :
                     "Missing runtime camera, motor, HUD, audio, guard, vehicle, " +
-                    "cash, parcel or 21 unique stations."));
+                    "solid stealth cover, cash, parcel or 21 unique stations."));
 
             // Only the automated smoke invocation exits the application.
             Application.Quit(saved ? 0 : 1);
