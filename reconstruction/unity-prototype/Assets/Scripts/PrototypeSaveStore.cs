@@ -13,6 +13,10 @@ namespace Rabron.Prototype
     public static class PrototypeSaveStore
     {
         private const string FileName = "rabron-prototype-v1.json";
+        // Once recovery fails, auto-save must not destroy the original
+        // unreadable primary/backup that a player may still recover manually.
+        // Reset only on a new Load after the player has moved those files.
+        private static bool _preserveUnreadableSaves;
 #if UNITY_EDITOR
         // A fixed test-cache path lets a later -runTests process reload stale
         // arrests or courier jobs from an earlier NUnit execution. Generate one
@@ -41,6 +45,7 @@ namespace Rabron.Prototype
 
         public static HeistSession Load(out string message)
         {
+            _preserveUnreadableSaves = false;
             string primary = SavePath;
             string backup = primary + ".bak";
             Debug.Log("Rabron demo save path: " + primary);
@@ -61,15 +66,22 @@ namespace Rabron.Prototype
                 }
                 catch (Exception exception)
                 {
+                    // Backup is the only proven good checkpoint; never let
+                    // later File.Replace overwrite it with a corrupt primary.
+                    _preserveUnreadableSaves = true;
+                    message = "Backup restored in memory, but repairing the primary failed. " +
+                              "Saves are paused; copy the save files to safety and restart.";
                     Debug.LogWarning("Could not repair primary save: " + exception.Message);
                 }
                 return session;
             }
 
-            message = File.Exists(primary) || File.Exists(backup)
-                ? "Saved progress could not be read. Starting fresh; existing files were kept."
+            _preserveUnreadableSaves = File.Exists(primary) || File.Exists(backup);
+            message = _preserveUnreadableSaves
+                ? "Saved progress is unreadable. Starting fresh without saving; " +
+                  "copy or move the existing save and backup files, then restart."
                 : "New local demo session started.";
-            if (File.Exists(primary) || File.Exists(backup))
+            if (_preserveUnreadableSaves)
                 Debug.LogWarning(message + " Location: " + primary);
             return new HeistSession();
         }
@@ -78,6 +90,13 @@ namespace Rabron.Prototype
         {
             if (session == null)
                 throw new ArgumentNullException(nameof(session));
+
+            if (_preserveUnreadableSaves)
+            {
+                error = "Autosave disabled to preserve unreadable checkpoints. " +
+                        "Copy or move the save and .bak files, then restart.";
+                return false;
+            }
 
             string target = SavePath;
             string temporary = target + ".tmp";
