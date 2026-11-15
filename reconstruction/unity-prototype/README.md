@@ -517,7 +517,14 @@ rather than a fixed standing-height point. The procedural warehouse includes
 a **solid 1.5m-high wooden cover barrier** on the central approach between the
 entrance and guard. Use **Left Ctrl** or **right stick press** to crouch behind
 it; standing exposes the player, and walking around either side restores the
-guard's sightline while leaving routes to the loot and staff-control marker.
+guard's sightline while leaving routes to loot and the **guard-control marker**
+just behind the barrier's left side. That marker is within actual interaction
+range from the approach just left of center, although crouching blocks the
+interaction ray across the cover. Standing restores the reach but can expose
+you to the guard's alarm; instead, use the left-side flank to approach while
+avoiding the sight cone. An authored real Unity Play Mode test now checks the
+production station picker, availability, proximity and occlusion for all three
+approaches, but it has **not executed** in hosted CI.
 You can **crouch behind low cover** to obstruct line of sight, but this is
 not a magical invisibility toggle, and unblocked sightlines can still trigger
 the alarm. The provisional sight range also includes vertical separation,
