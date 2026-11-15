@@ -946,6 +946,46 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Test-AcceptanceGate.ps1", workflow)
         self.assertIn("Verify-Acceptance.ps1", workflow)
 
+    def test_real_unity_acceptance_requires_binary_version_attestation(self):
+        runner = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8"
+        )
+        verifier = (UNITY / "Tools/Assert-UnityEditorVersion.ps1").read_text(
+            encoding="utf-8"
+        )
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8"
+        )
+        workflow = (ROOT.parent / ".github/workflows/reconstruction-tests.yml").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("'6000.3.18f1'", verifier)
+        self.assertIn("m_EditorVersion:", verifier)
+        self.assertIn("ProjectVersionPath", verifier)
+        self.assertIn("& $EditorPath -version", verifier)
+        self.assertIn("$LASTEXITCODE", verifier)
+        self.assertIn("$versions.Count -ne 1", verifier)
+        self.assertIn("$versions[0].Value -cne $required", verifier)
+        self.assertIn("Write-Output $required", verifier)
+        self.assertIn("actual_editor_version = $actualEditorVersion", runner)
+        self.assertIn("'Assert-UnityEditorVersion.ps1'", runner)
+        self.assertLess(
+            runner.index("'Assert-UnityEditorVersion.ps1'"),
+            runner.index("'Verify-Unity.ps1') -EditorPath $EditorPath"),
+        )
+        self.assertIn("Assert-UnityEditorVersion.ps1", workflow)
+        self.assertIn("Test-AcceptanceGate.ps1", workflow)
+        self.assertIn("'fake-unity.cmd'", fixture)
+        self.assertIn("'fake-unity.sh'", fixture)
+        self.assertIn("PASS accepted: exact Unity Editor", fixture)
+        for scenario in ("wrong installed version", "ambiguous version output",
+                         "nonzero native version probe", "missing version token"):
+            self.assertIn(scenario, fixture)
+        self.assertIn("actual unity editor version", guide.lower())
+        self.assertIn("not a real unity", guide.lower())
+
     def test_untracked_unity_assets_rejected_and_scene_fingerprinted(self):
         gate = (UNITY / "Tools/Assert-UnitySourceTree.ps1").read_text(
             encoding="utf-8")

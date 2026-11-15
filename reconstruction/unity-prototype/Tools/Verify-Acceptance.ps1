@@ -42,6 +42,12 @@ if (-not (Test-Path -LiteralPath $EditorPath -PathType Leaf)) {
 }
 $EditorPath = (Resolve-Path -LiteralPath $EditorPath).Path
 
+# -EditorPath is user-supplied; ProjectVersion.txt cannot attest the binary.
+# Unity -version is a real executable probe without opening the project.
+$actualEditorVersion = & (Join-Path $PSScriptRoot 'Assert-UnityEditorVersion.ps1') `
+    -EditorPath $EditorPath `
+    -ProjectVersionPath (Join-Path $project 'ProjectSettings/ProjectVersion.txt')
+
 # Bind every local result to an exact tracked revision, not a loose folder.
 $revision = (& git -C $repoRoot rev-parse --verify HEAD)
 if ($LASTEXITCODE -ne 0 -or
@@ -150,6 +156,7 @@ $manifest = [ordered]@{
     started_utc = $startedUtc.ToString('o')
     finished_utc = (Get-Date).ToUniversalTime().ToString('o')
     editor_executable = $EditorPath
+    actual_editor_version = $actualEditorVersion
     configured_editor_version = (Get-Content -LiteralPath (
         Join-Path $project 'ProjectSettings\ProjectVersion.txt') -Raw).Trim()
     automatic_gates_passed = $true

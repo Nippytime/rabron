@@ -10,6 +10,56 @@ $temp = Join-Path ([System.IO.Path]::GetTempPath()) (
 [System.IO.Directory]::CreateDirectory($temp) | Out-Null
 
 try {
+    # Probe a real executable path through synthetic native shims only;
+    # CI has no licensed Unity. Wrong/ambiguous versions and failed probes
+    # must be rejected before a local acceptance run can begin.
+    $versionGate = Join-Path $PSScriptRoot 'Assert-UnityEditorVersion.ps1'
+    $versionFile = Join-Path $PSScriptRoot '../ProjectSettings/ProjectVersion.txt'
+    $windows = [Environment]::OSVersion.Platform -eq [PlatformID]::Win32NT
+    $fakeEditor = Join-Path $temp $(if ($windows) { 'fake-unity.cmd' } else { 'fake-unity.sh' })
+
+    function Set-FakeEditorVersion([string]$value, [int]$code) {
+        if ($windows) {
+            Set-Content -LiteralPath $fakeEditor -Encoding ascii -Value @(
+                '@echo off', "echo $value", "exit /b $code")
+        }
+        else {
+            Set-Content -LiteralPath $fakeEditor -Encoding ascii -Value @(
+                '#!/bin/sh', "printf '%s\n' '$value'", "exit $code")
+            & chmod +x $fakeEditor
+            if ($LASTEXITCODE -ne 0) { throw 'Cannot create synthetic executable.' }
+        }
+    }
+
+    function Assert-VersionRejected([string]$scenario) {
+        $rejected = $false
+        try {
+            & $versionGate -EditorPath $fakeEditor -ProjectVersionPath $versionFile |
+                Out-Null
+        }
+        catch { $rejected = $true }
+        if (-not $rejected) {
+            throw "Expected Unity Editor version rejection: $scenario"
+        }
+        Write-Host "PASS rejected: Unity Editor $scenario"
+    }
+
+    Set-FakeEditorVersion '6000.3.18f1' 0
+    $confirmed = & $versionGate -EditorPath $fakeEditor -ProjectVersionPath $versionFile
+    if ($confirmed -cne '6000.3.18f1') {
+        throw 'Correct Unity Editor binary version was not attested.'
+    }
+    Write-Host 'PASS accepted: exact Unity Editor 6000.3.18f1 version'
+
+    Set-FakeEditorVersion '6000.3.17f1' 0
+    Assert-VersionRejected 'wrong installed version'
+    Set-FakeEditorVersion '6000.3.18f1 6000.3.17f1' 0
+    Assert-VersionRejected 'ambiguous version output'
+    Set-FakeEditorVersion '6000.3.18f1' 3
+    Assert-VersionRejected 'nonzero native version probe'
+    Set-FakeEditorVersion 'not-a-version' 0
+    Assert-VersionRejected 'missing version token'
+
     $evidence = Join-Path $temp 'unity-acceptance.json'
     Set-Content -LiteralPath $evidence -Value '{"automatic_gates_passed":true}' -Encoding utf8
     $nonexistent = Join-Path $temp 'nonexistent-unity-editor.exe'

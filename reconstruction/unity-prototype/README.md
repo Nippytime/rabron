@@ -127,8 +127,9 @@ actual freshly built Windows player** after the Unity build:
 .\reconstruction\unity-prototype\Tools\Verify-Acceptance.ps1 -EditorPath 'D:\Unity\6000.3.18f1\Editor\Unity.exe'
 ~~~
 
-The combined gate refuses a missing Editor, non-Windows host, dirty tracked
-reconstruction files, **unexpected untracked Unity acceptance inputs**
+The combined gate refuses a missing Editor, non-Windows host, **incorrect
+actual Unity Editor version**, dirty tracked reconstruction files, **unexpected
+untracked Unity acceptance inputs**
 (any authored Assets, Packages, ProjectSettings, Tools or C# files in the linked
 `reconstruction/game/Core` package), missing Play Mode results, stale
 executable, empty build data, missing/failed/timed-out Windows Player startup,
@@ -139,6 +140,17 @@ build logs and IDE files remain excluded. Commit or remove unexpected inputs
 before producing evidence for a particular tracked Git revision. The generated scene must be
 nonempty after the Editor smoke gate and retain the exact same SHA-256 through
 Play Mode and the Windows build; a changed scene fails acceptance.
+
+Before the Editor smoke, the preflight invokes the supplied **actual Unity
+Editor executable** with its officially documented `-version` flag, requiring
+a successful exit and **exactly one Unity-version token equal to
+`6000.3.18f1`**. The configured `ProjectVersion.txt` must match as well.
+An executable from a different Unity release cannot satisfy acceptance
+merely because it was supplied using `-EditorPath` or has a plausible
+filename. The evidence manifest records `actual_editor_version` separately
+from the configured project version. CI tests this with temporary fake
+executables, rejecting wrong, ambiguous, missing or failed version probes;
+that synthetic check is **not a real Unity run**.
 
 The gate writes a **new, local-only** `Logs/unity-acceptance.json` only after
 all four actual validations succeed. The ignored `Logs/` folder contains

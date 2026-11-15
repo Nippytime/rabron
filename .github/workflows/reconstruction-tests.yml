@@ -56,6 +56,7 @@ jobs:
             "reconstruction/unity-prototype/Tools/Assert-PlayModeResults.ps1",
             "reconstruction/unity-prototype/Tools/Test-PlayModeResults.ps1",
             "reconstruction/unity-prototype/Tools/Verify-Acceptance.ps1",
+            "reconstruction/unity-prototype/Tools/Assert-UnityEditorVersion.ps1",
             "reconstruction/unity-prototype/Tools/Verify-WindowsPlayer.ps1",
             "reconstruction/unity-prototype/Tools/Assert-UnitySourceTree.ps1",
             "reconstruction/unity-prototype/Tools/Test-AcceptanceGate.ps1"
