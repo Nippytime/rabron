@@ -521,10 +521,17 @@ guard's sightline while leaving routes to loot and the **guard-control marker**
 just behind the barrier's left side. That marker is within actual interaction
 range from the approach just left of center, although crouching blocks the
 interaction ray across the cover. Standing restores the reach but can expose
-you to the guard's alarm; instead, use the left-side flank to approach while
-avoiding the sight cone. An authored real Unity Play Mode test now checks the
-production station picker, availability, proximity and occlusion for all three
-approaches, but it has **not executed** in hosted CI.
+you to the guard's alarm. The **near left flank** beside the barricade
+still lies inside the guard's forward detection cone; it is a loud approach,
+not a guaranteed silent one. For a provisional quiet option, take the
+**wider left flank** inside the warehouse (about 3.6m left of the guard and
+2m toward the entrance). From there the control marker is still within
+interaction range and physically unobstructed but outside the guard's 55°
+field of view. Use the marker to control the guard before exposing yourself.
+This is an original prototype tactic, not reconstructed source-game AI.
+Authored real Unity Editor geometry smoke and a Unity Play Mode test now
+check the actual guard sensor, station picker, real control action and
+absence of alarm on this path, but they have **not executed** in hosted CI.
 You can **crouch behind low cover** to obstruct line of sight, but this is
 not a magical invisibility toggle, and unblocked sightlines can still trigger
 the alarm. The provisional sight range also includes vertical separation,

@@ -588,6 +588,36 @@ namespace Rabron.Prototype.Tests
                     Assert.That(((InteractionMarker)findStation.Invoke(director, null))
                         .Action, Is.EqualTo(StationAction.ControlStaff),
                         "Walking around live cover must restore nearby station focus");
+
+                    // The close flank above remains inside the forward guard
+                    // cone. Prove a SECOND wider route can control staff
+                    // quietly using the actual sensor and station dispatcher.
+                    motor.WarpTo(new Vector3(-3.6f, 0.12f, 31f));
+                    Physics.SyncTransforms();
+                    var liveGuard = UnityEngine.Object.FindFirstObjectByType<GuardSensor>();
+                    Assert.That(liveGuard, Is.Not.Null);
+                    var clearGuardRayHits = new RaycastHit[24];
+                    Assert.That(WorldOcclusion.HasClearLine(
+                        liveGuard.transform.position + Vector3.up * 1.5f,
+                        WorldOcclusion.UpperBodyPoint(motor.transform),
+                        liveGuard.transform, clearGuardRayHits, motor.transform), Is.True,
+                        "Quiet flank is outside FOV, not behind a separate physical obstacle");
+                    Assert.That(liveGuard.CanSee(motor.transform), Is.False,
+                        "Wider left flank must be outside active guard detection cone");
+                    var quietFocus = (InteractionMarker)findStation.Invoke(
+                        director, null);
+                    Assert.That(quietFocus, Is.Not.Null,
+                        "Quiet approach must select an actually reachable station");
+                    Assert.That(quietFocus.Action, Is.EqualTo(StationAction.ControlStaff),
+                        "Quiet flank must select guard control, not another station");
+                    perform.Invoke(director, new object[] { quietFocus, now });
+                    Assert.That(coverSession.StaffControlled, Is.True,
+                        "Quiet flank must control actual staff without a fake stealth toggle");
+                    Assert.That(coverSession.AlarmRaised, Is.False,
+                        "Quiet guard-control path must not trigger a prior alarm");
+                    update.Invoke(director, null);
+                    Assert.That(coverSession.AlarmRaised, Is.False,
+                        "Runtime guard update cannot raise an alarm after staff control");
                 }
                 finally
                 {
