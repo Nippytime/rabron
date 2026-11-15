@@ -56,6 +56,20 @@ namespace Rabron.Prototype.Editor
                 Check(root.transform.Find("Ground") != null,
                       "No collidable ground was created");
 
+                // The independently authored car has a real movement
+                // collider, and its enter pillar must travel with it.
+                var car = root.GetComponentInChildren<PrototypeVehicle>(true);
+                Check(car != null && car.GetComponent<CharacterController>() != null,
+                      "No collider-backed prototype vehicle was created");
+                Check(!car.Occupied, "Practice car must start unoccupied");
+                bool carMarkerFollows = false;
+                foreach (var station in stations)
+                {
+                    if (station.Action == StationAction.VehicleEnter)
+                        carMarkerFollows = station.transform.IsChildOf(car.transform);
+                }
+                Check(carMarkerFollows, "Car entrance marker must follow the vehicle");
+
                 // Source-side step verification in the actual Unity Editor.
                 // This does not simulate pressing a jump key or prove traversal.
                 var flags = BindingFlags.Static | BindingFlags.NonPublic;
