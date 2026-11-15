@@ -476,8 +476,13 @@ around the city.
 The prototype has one stationary guard **placeholder** whose line-of-sight
 sensor raises an alarm when the player is seen. If the guard subsequently
 spots the nearby criminal while still active, it triggers the **invented
-single-player custody outcome**; release has no fee or duration. Controlling
-the guard prevents subsequent detection but cannot erase an existing alarm.
+single-player custody outcome**; release has no fee or duration. Physical
+overlap with the guard's trigger mesh is **not** a blind spot: at near-zero
+distance, the guard ignores the undefined facing angle but still applies
+any meaningful wall-occlusion check, allowing an active guard to arrest
+an overlapping criminal after an alarm. Ordinary positions retain the
+original limited field-of-view cone. Controlling the guard prevents
+subsequent detection but cannot erase an existing alarm.
 This is **not** the original NPC AI, arrest formula, police dispatch,
 wanted-level system or any authoritative online gameplay. Police patrol
 movement, pursuit and server enforcement are not implemented.

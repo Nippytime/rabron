@@ -642,11 +642,18 @@ namespace Rabron.Prototype.Tests
                 alarmed.TakeLoot("arrest-test-loot");
                 alarmed.RaiseAlarm();
                 field.SetValue(director, alarmed);
-                motor.WarpTo(new Vector3(0f, 0.12f, 31.5f));
+                var activeGuard = UnityEngine.Object.FindFirstObjectByType<GuardSensor>();
+                Assert.That(activeGuard, Is.Not.Null);
+                // The procedural guard mesh has a trigger collider. A player
+                // may physically overlap the guard; zero horizontal distance
+                // must never be a blind spot that bypasses a raised alarm.
+                motor.WarpTo(activeGuard.transform.position);
                 Physics.SyncTransforms();
+                Assert.That(activeGuard.CanSee(motor.transform), Is.True,
+                            "Guard must detect a player at its exact position");
                 update.Invoke(director, null);
                 Assert.That(alarmed.Phase, Is.EqualTo(HeistPhase.Arrested),
-                            "Visible close guard must cause confiscation after alarm");
+                            "Overlapping guard must cause confiscation after alarm");
                 Assert.That(alarmed.Loot.Count, Is.EqualTo(0));
                 Assert.That(alarmed.DirtyCash, Is.EqualTo(0L));
                 Assert.That(alarmed.CurrentRole, Is.EqualTo(PlayerRole.Criminal));
