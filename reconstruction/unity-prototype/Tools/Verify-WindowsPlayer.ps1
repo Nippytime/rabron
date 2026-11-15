@@ -2,10 +2,8 @@
 # A fresh runtime marker, clean process exit and bounded deadline are required.
 [CmdletBinding()]
 param(
-    [string]$ExePath = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-        'Builds\RabronPrototype.exe'),
-    [string]$LogPath = (Join-Path (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
-        'Logs\windows-player-smoke.log'),
+    [string]$ExePath,
+    [string]$LogPath,
     [ValidateRange(1, 300)]
     [int]$TimeoutSeconds = 90
 )
@@ -13,6 +11,13 @@ param(
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
+$project = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+if (-not $ExePath) {
+    $ExePath = Join-Path $project 'Builds\RabronPrototype.exe'
+}
+if (-not $LogPath) {
+    $LogPath = Join-Path $project 'Logs\windows-player-smoke.log'
+}
 $LogPath = [System.IO.Path]::GetFullPath($LogPath)
 [System.IO.Directory]::CreateDirectory([System.IO.Path]::GetDirectoryName($LogPath)) |
     Out-Null
