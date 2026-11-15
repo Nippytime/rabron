@@ -986,6 +986,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("civilian", guide.lower())
         self.assertIn("city", core_guide.lower())
 
+    def test_mask_requires_unfinished_idle_or_scouted_cycle(self):
+        core = (ROOT / "game/Core/HeistSession.cs").read_text(
+            encoding="utf-8"
+        )
+        tests = (ROOT / "game/Tests/Program.cs").read_text(
+            encoding="utf-8"
+        )
+        director = read("PrototypeDirector.cs")
+        guide = (ROOT / "game/README.md").read_text(encoding="utf-8")
+
+        masking = core.split("public void PutOnMask()", 1)[1].split(
+            "public void StartHeist()", 1
+        )[0]
+        self.assertIn("CurrentZone == Zone.City", masking)
+        self.assertIn("CurrentRole == PlayerRole.Civilian", masking)
+        self.assertIn("!CarryingCourierParcel", masking)
+        self.assertIn(
+            "(Phase == HeistPhase.Idle || Phase == HeistPhase.Scouted)", masking
+        )
+        self.assertIn("StationAction.Mask => city && civilian &&", director)
+        self.assertIn(
+            "(_session.Phase == HeistPhase.Idle ||", director
+        )
+        self.assertIn("MaskRequiresFreshIdleOrScoutedCycle,", tests)
+        self.assertIn(
+            "Throws<InvalidOperationException>(() => game.PutOnMask())", tests
+        )
+        self.assertIn("resumed.PutOnMask()", tests)
+        self.assertIn("game.BeginAnotherHeist();", tests)
+        self.assertIn("scoutFirst.PutOnMask();", tests)
+        self.assertIn("cannot mask", guide.lower())
+
     def test_desert_return_objective_and_next_heist_marker_are_city_gated(self):
         director = read("PrototypeDirector.cs")
         playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
