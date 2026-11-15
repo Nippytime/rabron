@@ -513,8 +513,12 @@ original limited field-of-view cone. Controlling the guard prevents
 subsequent detection but cannot erase an existing alarm.
 
 The demo guard's physical ray now aims at the player's actual upper capsule
-rather than a fixed standing-height point. You can **crouch behind low cover**
-to obstruct line of sight, then become visible above it when standing; this is
+rather than a fixed standing-height point. The procedural warehouse includes
+a **solid 1.5m-high wooden cover barrier** on the central approach between the
+entrance and guard. Use **Left Ctrl** or **right stick press** to crouch behind
+it; standing exposes the player, and walking around either side restores the
+guard's sightline while leaving routes to the loot and staff-control marker.
+You can **crouch behind low cover** to obstruct line of sight, but this is
 not a magical invisibility toggle, and unblocked sightlines can still trigger
 the alarm. The provisional sight range also includes vertical separation,
 rather than allowing detection far above the guard. A real Unity Editor
