@@ -186,9 +186,17 @@ its result can be claimed as verified.
 | Move | WASD | Left stick |
 | Look | Mouse | Right stick |
 | Sprint | Left Shift | Left-stick click |
+| Jump (grounded only) | Space | North face button (Y / Triangle) |
 | Interact at a highlighted pillar | E | South face button (A) |
 | Release mouse cursor | Escape | — |
 | Lock cursor again | Left click in the Game view | — |
+
+The independently authored motor uses a provisional jump height and gravity.
+Jumping requires ground contact and cancels upward velocity when the player
+hits a ceiling. The north-face gamepad button was selected to retain the
+existing south-face interact control. Air jumping, vaulting and crouching are
+not implemented. The movement and camera must still be manually validated
+in an actual Unity Editor and Windows build.
 
 ## Civilian courier alternative (no robbery)
 
