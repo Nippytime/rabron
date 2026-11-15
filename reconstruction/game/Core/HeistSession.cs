@@ -195,6 +195,11 @@ namespace Rabron.Reconstruction
                     "Cannot launder more than available dirty cash.");
             Require(cleanPayout >= 0 && cleanPayout <= dirtyAmount,
                     "Conversion quote must be non-negative and cannot mint value.");
+            // No session action can free clean-wallet capacity while a job
+            // is running. Reject an unpayable job before consuming dirty cash
+            // so completion never traps the save in Laundering.
+            Require(cleanPayout <= long.MaxValue - CleanCash,
+                    "Clean cash balance cannot hold the laundering payout.");
             Require(durationSeconds > 0,
                     "A positive laundering duration must be supplied.");
             // Checkpoints require a positive completion timestamp on reload.
@@ -442,6 +447,13 @@ namespace Rabron.Reconstruction
 
             if (!validJob || !validMoneyStage || !validAlertStage)
                 throw new ArgumentException("Save contains inconsistent heist state.", nameof(snapshot));
+            // An active job must be payable on completion. Older or forged
+            // snapshots with a mathematically impossible credit cannot be
+            // restored into an unfinishable laundering phase.
+            if (isLaundering &&
+                snapshot.LaunderingPayout > long.MaxValue - snapshot.CleanCash)
+                throw new ArgumentException(
+                    "Save contains an unpayable laundering job.", nameof(snapshot));
 
             var session = new HeistSession(snapshot.Zone, snapshot.Role)
             {

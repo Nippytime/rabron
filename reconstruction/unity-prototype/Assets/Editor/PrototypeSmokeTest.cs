@@ -183,6 +183,7 @@ namespace Rabron.Prototype.Editor
 
                 ValidateHeistCore();
                 ValidateDemoEconomy();
+                ValidateLaunderingCapacity();
             }
             finally
             {
@@ -254,6 +255,51 @@ namespace Rabron.Prototype.Editor
             {
                 UnityEngine.Object.DestroyImmediate(economy);
             }
+        }
+
+        private static void ValidateLaunderingCapacity()
+        {
+            // This runs in the actual Unity Editor using JsonUtility; the
+            // hosted Python/.NET jobs do not execute Editor code.
+            var nearLimit = new HeistSession();
+            nearLimit.PickUpCourierParcel();
+            nearLimit.DeliverCourierParcel(long.MaxValue - 1);
+            nearLimit.Scout();
+            nearLimit.PutOnMask();
+            nearLimit.StartHeist();
+            nearLimit.TakeLoot("editor-capacity-loot");
+            nearLimit.Escape();
+            nearLimit.SellLoot(new Dictionary<string, long>
+            {
+                ["editor-capacity-loot"] = 10
+            });
+            nearLimit.CollectCounterCash();
+            bool refused = false;
+            try { nearLimit.StartLaundering(10, 2, 100, 2); }
+            catch (InvalidOperationException) { refused = true; }
+            Check(refused && nearLimit.Phase == HeistPhase.DirtyCashCollected &&
+                  nearLimit.DirtyCash == 10 && nearLimit.CleanCash == long.MaxValue - 1,
+                  "Unpayable laundering must not debit dirty cash or strand the phase");
+
+            nearLimit.StartLaundering(1, 1, 100, 2);
+            var invalid = nearLimit.ExportSnapshot();
+            invalid.CleanCash = long.MaxValue;
+            bool rejected = false;
+            try
+            {
+                HeistSession.FromSnapshot(JsonUtility.FromJson<HeistSessionSnapshot>(
+                    JsonUtility.ToJson(invalid)));
+            }
+            catch (ArgumentException) { rejected = true; }
+            Check(rejected, "Unity JSON accepted an unpayable laundering checkpoint");
+
+            var restored = HeistSession.FromSnapshot(
+                JsonUtility.FromJson<HeistSessionSnapshot>(
+                    JsonUtility.ToJson(nearLimit.ExportSnapshot())));
+            restored.CompleteLaundering(102);
+            Check(restored.CleanCash == long.MaxValue &&
+                  restored.DirtyCash == 9 && restored.Phase == HeistPhase.Laundered,
+                  "Maximum-size payable laundering job failed to complete after Unity JSON");
         }
 
         private static void ValidateHeistCore()

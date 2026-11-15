@@ -549,6 +549,11 @@ silent clamping or a changed exchange rate. A configured percentage outside
 0–100 is rejected even if set programmatically rather than in the Inspector.
 A real Unity Editor smoke scenario is authored for boundary values but
 **not yet executed** in hosted CI; these figures are not original-game rates.
+The core also prevents **unpayable laundering jobs** when the promised clean
+payout would exceed the remaining wallet capacity. It rejects the offer
+before consuming dirty cash and refuses impossible pending jobs on save
+restore. This is a local-demo safety rule, not a reference-game mechanic;
+its Unity JSON smoke scenario is authored but not executed in hosted CI.
 
 ## Implementation
 

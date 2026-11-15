@@ -46,6 +46,11 @@ timer/payout integrity before using any saved values. A criminal can never
 persist or start in the **desert**: leaving the city clears criminal status,
 and forged desert/criminal role combinations are rejected before recovery.
 Legitimate civilian and police saves in the desert still restore normally.
+An **unpayable laundering job** is rejected *before* reserving dirty cash: the
+pending clean payout must fit the remaining 64-bit clean wallet capacity.
+Save restoration also rejects a corrupted or legacy in-progress job whose
+credit would overflow that wallet, instead of accepting an unfinishable timer.
+A rejected start leaves the phase, dirty balance and current savings intact.
 
 \`Core/HeistSessionSnapshot.cs\` is a pure C# serializable data carrier.
 The core never touches JSON, Unity APIs or file storage. The Unity
