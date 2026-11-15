@@ -159,6 +159,16 @@ namespace Rabron.Prototype
             {
                 Directory.CreateDirectory(Path.GetDirectoryName(target));
                 string json = JsonUtility.ToJson(session.ExportSnapshot());
+                // A primary that was valid at Load can become unreadable while
+                // gameplay continues. Rotating it into .bak would destroy the
+                // last valid backup, so reject before touching any save files.
+                if (File.Exists(target) && !TryRead(target, out _))
+                {
+                    _preserveUnreadableSaves = true;
+                    throw new InvalidDataException(
+                        "Existing primary checkpoint became unreadable; autosave disabled " +
+                        "to preserve primary and backup. Copy the files and restart.");
+                }
                 // A previous interrupted replacement may leave a newer
                 // staged checkpoint beside a valid committed primary. Never
                 // overwrite those bytes: preserve the stage for manual
