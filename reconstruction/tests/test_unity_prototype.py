@@ -785,6 +785,37 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Application.temporaryCachePath", playmode)
         self.assertIn("per-invocation", guide.lower())
 
+    def test_custody_release_cannot_consume_the_pre_arrest_interaction_press(self):
+        director = read("PrototypeDirector.cs")
+        motor = read("ThirdPersonMotor.cs")
+        playmode = (UNITY / "Assets/Tests/PlayMode/PlayModeFlowTests.cs").read_text(
+            encoding="utf-8")
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("bool arrestedThisFrame = false;", director)
+        self.assertIn("_session.ArrestAfterAlarm();\n                arrestedThisFrame = true;", director)
+        self.assertIn(
+            "if (CanConsumeInteraction(_player.InteractPressed, arrestedThisFrame))",
+            director,
+        )
+        self.assertIn(
+            "private static bool CanConsumeInteraction(bool pressed, bool arrestedThisFrame)",
+            director,
+        )
+        self.assertIn("=> pressed && !arrestedThisFrame;", director)
+        self.assertLess(
+            director.index("arrestedThisFrame = true;"),
+            director.index("if (CanConsumeInteraction(_player.InteractPressed"),
+        )
+        self.assertIn("public bool InteractPressed =>", motor)
+        self.assertIn("CanConsumeInteraction", playmode)
+        self.assertIn("Arrest frame must not reuse an earlier press", playmode)
+        self.assertIn("A fresh later-frame press must allow release from custody", playmode)
+        self.assertIn("Guard capture must remain active until a new release interaction",
+                      playmode)
+        self.assertIn("Interact(StationAction.ReleaseCustody);", playmode)
+        self.assertIn("new press", guide.lower())
+
     def test_empty_heist_withdrawal_has_no_cash_faucet_or_stuck_escape(self):
         core = (ROOT / "game/Core/HeistSession.cs").read_text(
             encoding="utf-8")
