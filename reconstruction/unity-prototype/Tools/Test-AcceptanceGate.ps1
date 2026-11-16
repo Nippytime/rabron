@@ -360,7 +360,7 @@ if ($ExitCode -ne 0) { exit $ExitCode }
         }
         catch { $rejected = $true }
         if (-not $rejected -or
-            [IO.File]::ReadAllText($generatedPlayerSettings) -cne $badYaml) {
+            ([IO.File]::ReadAllText($generatedPlayerSettings)) -cne $badYaml) {
             throw 'Malformed or duplicate Unity Input System configuration was not rejected safely.'
         }
     }
@@ -375,7 +375,7 @@ if ($ExitCode -ne 0) { exit $ExitCode }
     }
     catch { $trackedRejected = $_.Exception.Message -like '*Git-tracked PlayerSettings*' }
     if (-not $trackedRejected -or
-        [IO.File]::ReadAllText($generatedPlayerSettings) -cne $originalYaml) {
+        ([IO.File]::ReadAllText($generatedPlayerSettings)) -cne $originalYaml) {
         throw 'Git-tracked PlayerSettings must not be automatically modified.'
     }
     Write-Host 'PASS rejected: malformed and tracked PlayerSettings remain unchanged'

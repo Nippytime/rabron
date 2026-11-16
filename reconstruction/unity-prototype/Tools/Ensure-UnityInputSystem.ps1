@@ -74,7 +74,8 @@ catch {
     [IO.File]::WriteAllBytes($settings, $raw)
     throw
 }
-if (-not [IO.File]::ReadAllBytes($settings).SequenceEqual($replacement)) {
+if ([Convert]::ToBase64String([IO.File]::ReadAllBytes($settings)) -cne
+    [Convert]::ToBase64String($replacement)) {
     throw "Unity PlayerSettings verification failed; original copy retained in $backup."
 }
 Write-Host "Unity Input System enabled (activeInputHandler=1). Original settings backed up: $backup"
