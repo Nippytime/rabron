@@ -96,9 +96,18 @@ namespace Rabron.Prototype
             _hiddenRenderers.Clear();
         }
 
-        private void Awake()
+        // The procedural Editor smoke instantiates this runtime component
+        // outside Play Mode, where Awake is not invoked. The same geometry
+        // initialization must work for actual runtime and edit-mode crouch
+        // physics; never enable all runtime callbacks via ExecuteAlways.
+        private void EnsureCrouchGeometryInitialized()
         {
+            if (_character != null)
+                return;
+
             _character = GetComponent<CharacterController>();
+            if (_character == null)
+                throw new InvalidOperationException("ThirdPersonMotor needs a CharacterController.");
             _standingHeight = _character.height;
             _standingCenter = _character.center;
             _standingStepOffset = _character.stepOffset;
@@ -109,6 +118,11 @@ namespace Rabron.Prototype
                 _standingVisualPosition = _bodyVisual.localPosition;
                 _standingVisualScale = _bodyVisual.localScale;
             }
+        }
+
+        private void Awake()
+        {
+            EnsureCrouchGeometryInitialized();
             // Editor smoke tests instantiate the procedural world outside Play Mode.
             // Do not spawn an unparented camera or capture the cursor in edit mode.
             if (!Application.isPlaying)
@@ -259,6 +273,7 @@ namespace Rabron.Prototype
         // a button release that can clip the player through a ceiling.
         private void UpdateCrouch(bool held)
         {
+            EnsureCrouchGeometryInitialized();
             if (held == _isCrouched)
                 return;
             if (!held && !CanStand())
@@ -286,6 +301,7 @@ namespace Rabron.Prototype
 
         private bool CanStand()
         {
+            EnsureCrouchGeometryInitialized();
             // Test only the upper volume gained by standing, so the ground
             // underneath the player's current capsule is not an obstacle.
             float radius = _character.radius;

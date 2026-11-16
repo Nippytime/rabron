@@ -829,6 +829,32 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("parcel.IsVisible, Is.True", playmode)
         self.assertIn("parcel.IsVisible, Is.False", playmode)
 
+    def test_editor_crouch_smoke_initializes_real_motor_geometry(self):
+        # Real Unity 6000.5.0f1 edit-mode smoke previously called
+        # UpdateCrouch/CanStand before MonoBehaviour.Awake, leaving the
+        # CharacterController field null. Do not weaken the real physics test.
+        motor = read("ThirdPersonMotor.cs")
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        self.assertIn("private void EnsureCrouchGeometryInitialized()", motor)
+        self.assertIn("_character = GetComponent<CharacterController>();", motor)
+        self.assertIn("_standingHeight = _character.height;", motor)
+        self.assertIn('_bodyVisual = transform.Find("Player mesh");', motor)
+        self.assertIn("if (_character != null)\n                return;", motor)
+        self.assertEqual(motor.count("EnsureCrouchGeometryInitialized();"), 3)
+        self.assertIn("private void Awake()\n        {\n"
+                      "            EnsureCrouchGeometryInitialized();", motor)
+        self.assertIn("private void UpdateCrouch(bool held)\n        {\n"
+                      "            EnsureCrouchGeometryInitialized();", motor)
+        self.assertIn("private bool CanStand()\n        {\n"
+                      "            EnsureCrouchGeometryInitialized();", motor)
+        self.assertNotIn("[ExecuteAlways]", motor)
+        self.assertIn("ValidateCrouchedGuardCover(root.transform, player, guard)", smoke)
+        self.assertIn("crouch.Invoke(player, new object[] { true });", smoke)
+        self.assertIn("crouch.Invoke(player, new object[] { false });", smoke)
+        self.assertIn("Standing back up must restore guard visibility", smoke)
+
     def test_grounded_jump_preserves_interact_and_handles_ceiling(self):
         motor = read("ThirdPersonMotor.cs")
         hud = read("PrototypeHud.cs")

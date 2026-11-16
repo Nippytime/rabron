@@ -40,6 +40,28 @@ This avoids downloading the original Unity assets to open the prototype.
 The local gameplay package still resolves because it also lives inside
 \`reconstruction/\`.
 
+## Quick hands-on Unity validation (without the long batch log)
+
+You can validate the visible gameplay directly in the graphical Editor; the
+full native acceptance script remains separately required for automated
+Editor, NUnit and Windows Player evidence. Close any previous Unity instance,
+then open **F:\\Projects\\rabrun\\rabron\\reconstruction\\unity-prototype**
+in Unity Hub using Editor **6000.5.0f1**. When compilation finishes, choose
+**Tools > Rabron > Prepare Demo Scene**, open
+`Assets/Scenes/Prototype.unity`, and press **Play**. Test walking (WASD),
+camera look (mouse), crouching (hold Left Ctrl), interaction (E), jumping
+(Space), and the courier pickup/drop-off markers. The game assets are simple
+original placeholders; a successful Editor Play is not evidence of a complete
+ROB RUN recreation.
+
+To test the same Editor smoke without the full PowerShell chain, choose
+**Tools > Rabron > Verify Unity Prototype** after exiting Play Mode. If it
+fails, copy the **first exception and stack trace** from Unity Console, not
+the entire import log. The **Play Mode NUnit suite and packaged Windows
+Player still require their existing strict automated or test-runner gates**.
+The single PowerShell `Verify-Acceptance.ps1` is only needed when collecting
+full automated acceptance evidence.
+
 ## Open and play
 
 1. Install Unity **6000.5.0f1** (exact Editor build required for automated acceptance) with
