@@ -113,9 +113,17 @@ Logs/editor-smoke.log. Windows Unity.exe is a GUI application; an immediate
 PowerShell exit code 0 without a fresh log does not prove Editor execution. The Editor
 creates the scene through AssetDatabase and writes Windows build outputs
 inside the Unity project irrespective of the shell's current directory.
-The smoke check fails if the new Input System backend is disabled; enable
-it in Player Settings and restart Unity. The runner requires both
-a zero Unity exit code and an explicit smoke success token. Builds also
+The real acceptance runner preflights Unity Player Settings before launching
+the Editor smoke: it preserves the generated `ProjectSettings/ProjectSettings.asset`,
+enables `activeInputHandler: 1` (Input System Package, New) only if the current
+value is `0` (legacy Input Manager), and backs up the original bytes under the
+ignored `Logs/` directory. An already-enabled `1` or `2` is not modified.
+A missing generated file triggers a separate genuine Unity first-import run;
+this is **not** Editor smoke acceptance. Malformed, ambiguous, or tracked
+settings that require modification fail closed rather than silently writing
+a new configuration. The separate smoke process checks the real
+`ENABLE_INPUT_SYSTEM` define after the required Editor restart. The runner
+still requires both a zero Unity exit code and a fresh smoke success token. Builds also
 require the EXE and matching data directory. It fails instead of reporting
 a false green when Unity is missing, package import fails, or checks fail.
 
@@ -127,8 +135,10 @@ build requires Windows Build Support and produces
 Builds/RabronPrototype.exe inside the Unity project.
 
 Launching the EXE remains necessary to verify input, camera, HUD, and
-the full interactive play-mode loop. The first Editor import might
-need a graphical session to activate the Input System.
+the full interactive play-mode loop. The preflight uses a real first import when needed; no graphical-session
+activation is required for generated Player Settings with the known Unity
+`activeInputHandler` field. If Unity changes that serialization, the script
+fails with a concrete diagnostic instead of claiming success.
 
 **If Unity reports exit 0 but no Editor log:** verify the same project is
 not already open in the graphical Editor, then inspect

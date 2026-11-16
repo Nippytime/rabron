@@ -151,6 +151,38 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("Rabron.Prototype", references)
         self.assertIn("Rabron.GameCore", references)
 
+    def test_native_acceptance_enables_new_input_system_without_weakening_gates(self):
+        preflight = (UNITY / "Tools/Ensure-UnityInputSystem.ps1").read_text(
+            encoding="utf-8"
+        )
+        acceptance = (UNITY / "Tools/Verify-Acceptance.ps1").read_text(
+            encoding="utf-8"
+        )
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8"
+        )
+        workflow = (ROOT.parent / ".github/workflows/reconstruction-tests.yml").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertIn("activeInputHandler", preflight)
+        self.assertIn("ProjectSettings/ProjectSettings.asset", preflight)
+        self.assertIn("Unity Input System already enabled", preflight)
+        self.assertIn("Unity Input System enabled", preflight)
+        self.assertIn("Git-tracked PlayerSettings", preflight)
+        self.assertIn("WriteAllBytes($backup, $raw)", preflight)
+        self.assertIn("WriteAllBytes($settings, $replacement)", preflight)
+        self.assertIn("Ensure-UnityInputSystem.ps1", acceptance)
+        self.assertIn("input-system-first-import.log", acceptance)
+        self.assertIn("Unity Input System preflight modified tracked", acceptance)
+        self.assertLess(acceptance.index("'Ensure-UnityInputSystem.ps1'"),
+                        acceptance.index("'Verify-Unity.ps1') -EditorPath $EditorPath"))
+        self.assertIn("PASS configured: legacy input", fixture)
+        self.assertIn("PASS rejected: malformed and tracked PlayerSettings", fixture)
+        self.assertIn("Tools/Ensure-UnityInputSystem.ps1", workflow)
+        self.assertIn("backs up the original bytes", guide)
+
     def test_actual_editor_validation_is_explicit_and_not_falsely_green(self):
         editor = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
             encoding="utf-8"
@@ -1107,7 +1139,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("$actualRevision -cne $ExpectedRevision", gate)
         self.assertIn("Git HEAD changed during Unity acceptance", gate)
         self.assertIn("Expected Unity acceptance Git revision must be", gate)
-        self.assertEqual(runner.count("-ExpectedRevision $revision"), 4)
+        self.assertEqual(runner.count("-ExpectedRevision $revision"), 5)
         self.assertIn("git_revision = $revision", runner)
         self.assertIn("$expectedHead = (& git -C $repoRoot rev-parse --verify HEAD)",
                       fixture)
@@ -1152,7 +1184,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("foreach ($bad in $unexpectedInputs)", fixture)
         self.assertIn("@($meta) + $unexpectedInputs", fixture)
         self.assertIn("Assert-UnitySourceTree.ps1", workflow)
-        self.assertEqual(runner.count("'Assert-UnitySourceTree.ps1'"), 4)
+        self.assertEqual(runner.count("'Assert-UnitySourceTree.ps1'"), 5)
         self.assertIn("$sceneAtSmoke = File-Summary $scene", runner)
         self.assertEqual(
             runner.count("(File-Summary $scene).sha256 -ne $sceneAtSmoke.sha256"), 2
