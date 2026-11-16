@@ -313,6 +313,72 @@ if ($ExitCode -ne 0) { exit $ExitCode }
         }
     }
     Write-Host 'PASS rejected: unknown Unity project settings, package files and orphan core .meta'
+
+    # Synthetic PlayerSettings only; never run a real Unity Editor here.
+    $preflight = Join-Path $PSScriptRoot 'Ensure-UnityInputSystem.ps1'
+    $generatedPlayerSettings = Join-Path $projectSettings 'ProjectSettings.asset'
+    $originalYaml = "PlayerSettings:`r`n  companyName: Rabron`r`n  activeInputHandler: 0`r`n  productName: Prototype`r`n"
+    [IO.File]::WriteAllText($generatedPlayerSettings, $originalYaml,
+        [Text.UTF8Encoding]::new($false))
+    & $preflight -ProjectRoot (Join-Path $fakeRepo 'reconstruction/unity-prototype') `
+        -RepoRoot $fakeRepo | Out-Null
+    $updatedYaml = [IO.File]::ReadAllText($generatedPlayerSettings)
+    $expectedYaml = $originalYaml.Replace('activeInputHandler: 0', 'activeInputHandler: 1')
+    if ($updatedYaml -cne $expectedYaml) {
+        throw 'Input System preflight changed settings other than its one backend digit.'
+    }
+    $backups = @(Get-ChildItem -LiteralPath (Join-Path $fakeRepo 'reconstruction/unity-prototype/Logs') `
+        -Filter 'ProjectSettings-before-input-system-*.asset')
+    if ($backups.Count -ne 1 -or
+        [IO.File]::ReadAllText($backups[0].FullName) -cne $originalYaml) {
+        throw 'Input System preflight did not preserve original PlayerSettings bytes.'
+    }
+    & $preflight -ProjectRoot (Join-Path $fakeRepo 'reconstruction/unity-prototype') `
+        -RepoRoot $fakeRepo | Out-Null
+    if (@(Get-ChildItem -LiteralPath $backups[0].DirectoryName -Filter '*.asset').Count -ne 1) {
+        throw 'Already enabled Input System must not create a second backup.'
+    }
+    [IO.File]::WriteAllText($generatedPlayerSettings,
+        $originalYaml.Replace('activeInputHandler: 0', 'activeInputHandler: 2'))
+    & $preflight -ProjectRoot (Join-Path $fakeRepo 'reconstruction/unity-prototype') `
+        -RepoRoot $fakeRepo | Out-Null
+    if (-not ([IO.File]::ReadAllText($generatedPlayerSettings)).Contains('activeInputHandler: 2')) {
+        throw 'Already enabled Both input backends should remain unmodified.'
+    }
+    Write-Host 'PASS configured: legacy input 0 -> new 1, backup preserved, enabled settings 1/2 idempotent'
+
+    foreach ($badYaml in @(
+        "PlayerSettings:`n  companyName: Rabron`n",
+        "PlayerSettings:`n  activeInputHandler: 0`n  activeInputHandler: 2`n",
+        "PlayerSettings:`n  activeInputHandler: 3`n"
+    )) {
+        [IO.File]::WriteAllText($generatedPlayerSettings, $badYaml)
+        $rejected = $false
+        try {
+            & $preflight -ProjectRoot (Join-Path $fakeRepo 'reconstruction/unity-prototype') `
+                -RepoRoot $fakeRepo | Out-Null
+        }
+        catch { $rejected = $true }
+        if (-not $rejected -or
+            ([IO.File]::ReadAllText($generatedPlayerSettings)) -cne $badYaml) {
+            throw 'Malformed or duplicate Unity Input System configuration was not rejected safely.'
+        }
+    }
+    [IO.File]::WriteAllText($generatedPlayerSettings, $originalYaml)
+    & git -C $fakeRepo add -- reconstruction/unity-prototype/ProjectSettings/ProjectSettings.asset
+    & git -C $fakeRepo commit -q -m 'synthetic tracked PlayerSettings'
+    if ($LASTEXITCODE -ne 0) { throw 'Cannot commit synthetic PlayerSettings.' }
+    $trackedRejected = $false
+    try {
+        & $preflight -ProjectRoot (Join-Path $fakeRepo 'reconstruction/unity-prototype') `
+            -RepoRoot $fakeRepo | Out-Null
+    }
+    catch { $trackedRejected = $_.Exception.Message -like '*Git-tracked PlayerSettings*' }
+    if (-not $trackedRejected -or
+        ([IO.File]::ReadAllText($generatedPlayerSettings)) -cne $originalYaml) {
+        throw 'Git-tracked PlayerSettings must not be automatically modified.'
+    }
+    Write-Host 'PASS rejected: malformed and tracked PlayerSettings remain unchanged'
 }
 finally {
     Remove-Item -LiteralPath $temp -Recurse -Force

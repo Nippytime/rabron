@@ -60,6 +60,33 @@ if ($LASTEXITCODE -ne 0 -or $dirty.Count -gt 0) {
 }
 & (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
 
+# Unity 6.5 does not enable the new backend solely because the package is
+# installed. A first import generates PlayerSettings; configure it before
+# the separate smoke process so Unity reloads ENABLE_INPUT_SYSTEM.
+$playerSettings = Join-Path $project 'ProjectSettings/ProjectSettings.asset'
+if (-not (Test-Path -LiteralPath $playerSettings -PathType Leaf)) {
+    $importLog = Join-Path $logs 'input-system-first-import.log'
+    if (Test-Path -LiteralPath $importLog) {
+        Remove-Item -LiteralPath $importLog -Force
+    }
+    $importCode = & (Join-Path $PSScriptRoot 'Invoke-UnityEditor.ps1') `
+        -EditorPath $EditorPath `
+        -Arguments @('-batchmode', '-quit', '-projectPath', $project,
+                     '-logFile', $importLog)
+    if ($importCode -ne 0 -or
+        -not (Test-Path -LiteralPath $importLog -PathType Leaf) -or
+        (Get-Item -LiteralPath $importLog).Length -eq 0) {
+        throw "Unity first import failed (exit $importCode); inspect $importLog. No acceptance success claimed."
+    }
+}
+& (Join-Path $PSScriptRoot 'Ensure-UnityInputSystem.ps1') `
+    -ProjectRoot $project -RepoRoot $repoRoot
+$dirtyAfterInput = @(& git -C $repoRoot status --porcelain --untracked-files=no -- reconstruction)
+if ($LASTEXITCODE -ne 0 -or $dirtyAfterInput.Count -gt 0) {
+    throw 'Unity Input System preflight modified tracked reconstruction inputs.'
+}
+& (Join-Path $PSScriptRoot 'Assert-UnitySourceTree.ps1') -RepoRoot $repoRoot -ExpectedRevision $revision
+
 function Assert-NonemptyFile([string]$path) {
     if (-not (Test-Path -LiteralPath $path -PathType Leaf)) {
         throw "Acceptance evidence missing: $path"
