@@ -829,7 +829,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("PASS rejected: changed generated URP pipeline bytes", fixture)
         self.assertIn("OtherPipeline.asset", fixture)
         self.assertIn("& $unity.Source run $project", runner)
-        self.assertIn("-executeMethod',", runner)
+        self.assertIn("-executeMethod 'Rabron.Prototype.Editor.PrototypeUrpSetup.Configure'", runner)
         self.assertIn("RABRON_URP_CONFIGURED_PASS", runner)
         self.assertIn("unity run", guide)
         self.assertIn("not a real unity", guide.lower())
