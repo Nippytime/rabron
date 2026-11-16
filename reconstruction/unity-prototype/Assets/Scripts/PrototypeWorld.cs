@@ -272,10 +272,10 @@ namespace Rabron.Prototype
         {
             if (Palette.TryGetValue(color, out var material))
                 return material;
-            var shader = Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit")
-                         ?? Shader.Find("Unlit/Color");
+            var shader = Shader.Find("Universal Render Pipeline/Lit");
             if (shader == null)
-                return null!;
+                throw new System.InvalidOperationException(
+                    "URP Lit shader is unavailable; configure the Unity 6.5 URP pipeline before spawning gameplay.");
             material = new Material(shader) { color = color };
             Palette.Add(color, material);
             return material;

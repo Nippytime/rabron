@@ -784,6 +784,57 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertNotIn("CleanCash =", director)
         self.assertNotIn("BankBalance =", director)
 
+    def test_unity_65_urp_cli_migration_is_real_and_provenance_bound(self):
+        manifest = json.loads((UNITY / "Packages/manifest.json").read_text(
+            encoding="utf-8"
+        ))["dependencies"]
+        setup = (UNITY / "Assets/Editor/PrototypeUrpSetup.cs").read_text(
+            encoding="utf-8"
+        )
+        installer = (UNITY / "Assets/Editor/PrototypeSceneInstaller.cs").read_text(
+            encoding="utf-8"
+        )
+        smoke = (UNITY / "Assets/Editor/PrototypeSmokeTest.cs").read_text(
+            encoding="utf-8"
+        )
+        world = read("PrototypeWorld.cs")
+        boot = read("PrototypeBoot.cs")
+        gate = (UNITY / "Tools/Assert-UnitySourceTree.ps1").read_text(
+            encoding="utf-8"
+        )
+        fixture = (UNITY / "Tools/Test-AcceptanceGate.ps1").read_text(
+            encoding="utf-8"
+        )
+        runner = (UNITY / "Tools/Configure-URP.ps1").read_text(
+            encoding="utf-8"
+        )
+        guide = (UNITY / "README.md").read_text(encoding="utf-8")
+
+        self.assertEqual(manifest["com.unity.render-pipelines.universal"], "17.5.0")
+        self.assertIn("UniversalRenderPipelineAsset.Create(renderer)", setup)
+        self.assertIn("ScriptableObject.CreateInstance<UniversalRendererData>()", setup)
+        self.assertIn("GraphicsSettings.defaultRenderPipeline = pipeline;", setup)
+        self.assertIn("QualitySettings.renderPipeline = pipeline;", setup)
+        self.assertIn("QualitySettings.GetRenderPipelineAssetAt(i)", setup)
+        self.assertIn("RABRON_URP_CONFIGURED_PASS", setup)
+        self.assertIn("refusing to overwrite", setup)
+        self.assertIn("PrototypeUrpSetup.EnsureConfigured();", installer)
+        self.assertIn("PrototypeUrpSetup.VerifyConfigured();", smoke)
+        self.assertIn("Shader.Find(\"Universal Render Pipeline/Lit\")", world)
+        self.assertNotIn('Shader.Find("Standard")', world)
+        self.assertIn("GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset", boot)
+        self.assertIn("Settings/RabronURP.asset", gate)
+        self.assertIn("Settings/RabronRenderer.asset", gate)
+        self.assertIn("$urpAssets.Contains($relative)", gate)
+        self.assertIn("Get-FileHash -LiteralPath $path -Algorithm SHA256", gate)
+        self.assertIn("PASS rejected: changed generated URP pipeline bytes", fixture)
+        self.assertIn("OtherPipeline.asset", fixture)
+        self.assertIn("& $unity.Source run $project", runner)
+        self.assertIn("-executeMethod 'Rabron.Prototype.Editor.PrototypeUrpSetup.Configure'", runner)
+        self.assertIn("RABRON_URP_CONFIGURED_PASS", runner)
+        self.assertIn("unity run", guide)
+        self.assertIn("not a real unity", guide.lower())
+
     def test_courier_presenter_closes_class_and_namespace(self):
         # Real Unity 6000.5.0f1 compilation failed with CS1513 because
         # CourierParcelPresenter.cs omitted its namespace-closing brace.

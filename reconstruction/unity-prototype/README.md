@@ -794,3 +794,49 @@ of where the repository was cloned. There is no requirement to retain a
 nested `rabron/rabron` directory. The real Editor and Play Mode acceptance
 manifest remains governed by `Tools/Verify-Acceptance.ps1`; a successful
 CLI command alone is not evidence that all native acceptance gates ran.
+
+
+## URP 17.5 via Unity CLI — Windows (W3-BG)
+
+Unity 6000.5.0f1 uses the Universal Render Pipeline package `17.5.0`.
+The project now **requires URP**, rather than selecting the deprecated
+Built-In `Standard` shader at runtime. This is an independent procedural
+prototype, so there are no imported Built-In materials to convert.
+
+Close the graphical Unity Editor before using the batch Unity CLI. From
+the checkout root `F:\\Projects\\rabrun\\rabron`, fast-forward your clean
+`dev` branch as usual, then run one helper:
+
+~~~powershell
+.\\reconstruction\\unity-prototype\\Tools\\Configure-URP.ps1
+~~~
+
+The helper runs the installed `unity run` CLI (with
+`--editor-version 6000.5.0f1`) to execute
+`Rabron.Prototype.Editor.PrototypeUrpSetup.Configure`, checks the real
+Editor exit and a fresh `RABRON_URP_CONFIGURED_PASS` log marker, and
+runs the existing strict Git/generated-asset provenance guard. It never
+interprets missing or stale logs as success. Equivalent direct command:
+
+~~~powershell
+unity run .\\reconstruction\\unity-prototype --editor-version 6000.5.0f1 -- -executeMethod Rabron.Prototype.Editor.PrototypeUrpSetup.Configure
+~~~
+
+Unity creates `Assets/Settings/RabronURP.asset` and
+`Assets/Settings/RabronRenderer.asset` with its own 17.5 serializer,
+assigns URP in Graphics and every quality level, and writes the generated
+`ProjectSettings/GraphicsSettings.asset` and `QualitySettings.asset`.
+The first setup is safe to rerun; invalid pre-existing assets fail rather
+than being overwritten. These **two exact generated .asset paths** are
+allowlisted as untracked Unity inputs and independently SHA-256 bound
+alongside their metadata and generated ProjectSettings during the **real**
+acceptance script. No other untracked authored assets are allowed.
+
+The regular Editor scene bootstrap also verifies URP, and the runtime
+player refuses to start under Built-In. After CLI configuration, run
+`Tools/Verify-Acceptance.ps1` separately for the real Editor smoke,
+three NUnit Play Mode tests, Windows build and Player startup; the
+CLI configuration marker is **not** a substitute for those checks.
+If `unity` is not installed, `Get-Command unity` must resolve it;
+review your original Unity CLI installation rather than using a mock.
+No real Unity CLI execution occurred in hosted GitHub CI.

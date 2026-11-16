@@ -1,5 +1,7 @@
 using System;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Rendering.Universal;
 
 namespace Rabron.Prototype
 {
@@ -9,6 +11,9 @@ namespace Rabron.Prototype
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void Spawn()
         {
+            if (!(GraphicsSettings.currentRenderPipeline is UniversalRenderPipelineAsset))
+                throw new InvalidOperationException(
+                    "Rabron requires the configured Universal Render Pipeline, including in Windows Player.");
             var director = UnityEngine.Object.FindFirstObjectByType<PrototypeDirector>();
             if (director == null)
             {
