@@ -36,10 +36,14 @@ $code = $LASTEXITCODE
 if ($code -ne 0 -or
     -not (Test-Path -LiteralPath $log -PathType Leaf) -or
     (Get-Item -LiteralPath $log).Length -eq 0) {
+    if (Test-Path -LiteralPath $log) {
+        Get-Content -LiteralPath $log -Tail 60
+    }
     throw "Unity CLI URP setup failed (exit $code) or did not write a fresh Editor log: $log"
 }
 $contents = Get-Content -LiteralPath $log -Raw
 if (-not $contents.Contains('RABRON_URP_CONFIGURED_PASS')) {
+    Get-Content -LiteralPath $log -Tail 60
     throw "Unity CLI finished without the real URP configuration success token: $log"
 }
 $dirtyAfter = @(& git -C $repoRoot status --porcelain --untracked-files=no -- reconstruction)

@@ -817,6 +817,7 @@ class UnityPrototypeStructureTests(unittest.TestCase):
         self.assertIn("QualitySettings.renderPipeline = pipeline;", setup)
         self.assertIn("QualitySettings.GetRenderPipelineAssetAt(i)", setup)
         self.assertIn("RABRON_URP_CONFIGURED_PASS", setup)
+        self.assertIn("refusing to overwrite", setup)
         self.assertIn("PrototypeUrpSetup.EnsureConfigured();", installer)
         self.assertIn("PrototypeUrpSetup.VerifyConfigured();", smoke)
         self.assertIn("Shader.Find(\"Universal Render Pipeline/Lit\")", world)

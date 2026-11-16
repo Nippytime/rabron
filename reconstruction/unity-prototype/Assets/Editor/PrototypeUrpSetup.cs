@@ -32,6 +32,9 @@ namespace Rabron.Prototype.Editor
                 AssetDatabase.CreateFolder("Assets", "Settings");
 
             var rendererObject = AssetDatabase.LoadMainAssetAtPath(RendererPath);
+            if (rendererObject == null && System.IO.File.Exists(
+                    System.IO.Path.Combine(Application.dataPath, "Settings/RabronRenderer.asset")))
+                throw new InvalidOperationException("Existing URP renderer failed import; refusing to overwrite " + RendererPath);
             if (rendererObject != null && !(rendererObject is UniversalRendererData))
                 throw new InvalidOperationException("Expected a URP Universal Renderer at " + RendererPath);
             var renderer = rendererObject as UniversalRendererData;
@@ -43,6 +46,9 @@ namespace Rabron.Prototype.Editor
             }
 
             var pipelineObject = AssetDatabase.LoadMainAssetAtPath(PipelinePath);
+            if (pipelineObject == null && System.IO.File.Exists(
+                    System.IO.Path.Combine(Application.dataPath, "Settings/RabronURP.asset")))
+                throw new InvalidOperationException("Existing URP pipeline failed import; refusing to overwrite " + PipelinePath);
             if (pipelineObject != null && !(pipelineObject is UniversalRenderPipelineAsset))
                 throw new InvalidOperationException("Expected a URP pipeline at " + PipelinePath);
             var pipeline = pipelineObject as UniversalRenderPipelineAsset;
