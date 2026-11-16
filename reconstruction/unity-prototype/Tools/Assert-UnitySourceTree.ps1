@@ -47,6 +47,13 @@ $corePrefix = 'reconstruction/game/Core/'
 $settingsPrefix = 'reconstruction/unity-prototype/ProjectSettings/'
 $bootstrapScene = $assetsPrefix + 'Scenes/Prototype.unity'
 $packagesLock = 'reconstruction/unity-prototype/Packages/packages-lock.json'
+# Only these generated URP 17.5 pipeline assets may remain untracked. They
+# are created by our real Unity CLI method, never imported from game bundles,
+# and their exact bytes are recorded before Play Mode/build and compared after.
+$urpAssets = [System.Collections.Generic.HashSet[string]]::new(
+    [StringComparer]::Ordinal)
+[void]$urpAssets.Add($assetsPrefix + 'Settings/RabronURP.asset')
+[void]$urpAssets.Add($assetsPrefix + 'Settings/RabronRenderer.asset')
 $defaultSettings = @(
     'AudioManager.asset',
     'ClusterInputManager.asset',
@@ -95,6 +102,7 @@ foreach ($file in $untracked) {
         $trackedSet.Contains($relative.Substring(0, $relative.Length - 5))
     $isGenerated = $isAssetMeta -or $isCoreMeta -or
         $allowedSettings.Contains($relative) -or
+        $urpAssets.Contains($relative) -or
         [string]::Equals($relative, $packagesLock, [StringComparison]::Ordinal)
     if ([string]::Equals($relative, $bootstrapScene, [StringComparison]::Ordinal)) {
         continue # Generated scene is independently SHA-256 checked by the runner.

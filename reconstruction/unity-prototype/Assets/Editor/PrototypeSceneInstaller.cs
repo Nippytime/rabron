@@ -30,6 +30,10 @@ namespace Rabron.Prototype.Editor
                 return;
             }
 
+            // The real pipeline is bootstrapped before creating the first scene,
+            // not merely downloaded as a Package Manager dependency.
+            PrototypeUrpSetup.EnsureConfigured();
+
             // A stable product/company name gives the Editor and Windows
             // player the same persistentDataPath for this local-only demo.
             if (PlayerSettings.companyName != "RabronReconstruction")

@@ -266,16 +266,35 @@ if ($ExitCode -ne 0) { exit $ExitCode }
     foreach ($item in @($coreMeta, $lock, $settings, $assetMeta)) {
         Set-Content -LiteralPath $item -Value ('synthetic generated input ' + $item)
     }
+    # Exactly two Unity-generated URP assets are accepted but must be
+    # fingerprinted like default project settings and imported metadata.
+    $urpFolder = Join-Path $fakeRepo 'reconstruction/unity-prototype/Assets/Settings'
+    [IO.Directory]::CreateDirectory($urpFolder) | Out-Null
+    $urpPipeline = Join-Path $urpFolder 'RabronURP.asset'
+    $urpRenderer = Join-Path $urpFolder 'RabronRenderer.asset'
+    Set-Content -LiteralPath $urpPipeline -Value 'synthetic URP pipeline'
+    Set-Content -LiteralPath $urpRenderer -Value 'synthetic URP renderer'
     $baseline = @(& $provenance -RepoRoot $fakeRepo -ExpectedRevision $fakeHead `
         -CaptureGeneratedInputs)
-    if ($baseline.Count -ne 4 -or @($baseline | Where-Object {
+    if ($baseline.Count -ne 6 -or @($baseline | Where-Object {
             -not $_.sha256 -or $_.sha256.Length -ne 64
         }).Count -gt 0) {
-        throw 'Unity-generated inputs did not produce a complete four-file SHA-256 snapshot.'
+        throw 'Unity-generated inputs did not produce a complete six-file SHA-256 snapshot.'
     }
     & $provenance -RepoRoot $fakeRepo -ExpectedRevision $fakeHead `
         -ExpectedGeneratedInputs $baseline | Out-Null
     Write-Host 'PASS accepted: known Unity-generated settings, lock, linked core .meta and asset .meta with SHA-256'
+
+    $originalUrp = Get-Content -LiteralPath $urpPipeline -Raw
+    Set-Content -LiteralPath $urpPipeline -Value 'different URP pipeline'
+    $rejectedURP = $false
+    try {
+        & $provenance -RepoRoot $fakeRepo -ExpectedGeneratedInputs $baseline | Out-Null
+    }
+    catch { $rejectedURP = $_.Exception.Message -like '*SHA-256 changed*' }
+    if (-not $rejectedURP) { throw 'Altered URP pipeline escaped generated input SHA-256 gate.' }
+    Set-Content -LiteralPath $urpPipeline -Value $originalUrp -NoNewline
+    Write-Host 'PASS rejected: changed generated URP pipeline bytes'
 
     $originalSettings = Get-Content -LiteralPath $settings -Raw
     Set-Content -LiteralPath $settings -Value 'changed settings contents'
@@ -300,6 +319,7 @@ if ($ExitCode -ne 0) { exit $ExitCode }
 
     foreach ($bad in @(
         (Join-Path $projectSettings 'CustomSettings.asset'),
+        (Join-Path $urpFolder 'OtherPipeline.asset'),
         (Join-Path $packages 'custom.json'),
         (Join-Path $fakeRepo 'reconstruction/game/Core/Untracked.cs.meta')
     )) {

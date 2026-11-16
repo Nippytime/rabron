@@ -26,6 +26,7 @@ namespace Rabron.Prototype.Editor
                 "under Project Settings > Player > Active Input Handling and restart Unity.");
 #else
             PrototypeSceneInstaller.EnsureScene();
+            PrototypeUrpSetup.VerifyConfigured();
 
             var root = new GameObject("Temporary prototype verification");
             try

@@ -2,6 +2,7 @@
   "dependencies": {
     "com.rabron.reconstruction-core": "file:../../game/Core",
     "com.unity.inputsystem": "1.20.1",
+    "com.unity.render-pipelines.universal": "17.5.0",
     "com.unity.modules.audio": "1.0.0",
     "com.unity.modules.jsonserialize": "1.0.0",
     "com.unity.modules.physics": "1.0.0",
